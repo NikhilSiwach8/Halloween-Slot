@@ -1,7 +1,7 @@
 {
   "name": "the-hollow-hour",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "THE HOLLOW HOUR — an original cinematic time-horror cluster-pays slot prototype (demo credits only).",
   "scripts": {
@@ -12,9 +12,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "simulate": "tsx scripts/simulate.ts"
+    "simulate": "tsx scripts/simulate.ts",
+    "books": "tsx scripts/export-books.ts",
+    "books:verify": "tsx scripts/verify-books.ts"
   },
   "dependencies": {
+    "@fontsource/cinzel": "^5.2.6",
+    "@fontsource/cormorant-garamond": "^5.2.6",
     "@react-three/fiber": "^8.17.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -22,7 +26,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.18.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.169.0",

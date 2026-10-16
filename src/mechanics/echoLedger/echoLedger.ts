@@ -1,9 +1,10 @@
 import type { Age, PayingSymbolId, SymbolId } from '../../config/types';
 import { neighbors } from '../../engine/board/board';
 import type { SpinContext } from '../../engine/context';
+import { weightedPick } from '../../engine/rng/rng';
 import { isTemporalTarget } from '../threeAges/ages';
 
-export type EchoReason = 'HOLLOW_FORMED' | 'CLUSTER_WON' | 'AGED_CLUSTER_WON';
+export type EchoReason = 'HOLLOW_FORMED' | 'CLUSTER_WON' | 'AGED_CLUSTER_WON' | 'HOUR_REMNANT';
 export type EchoStatus = 'ACTIVE' | 'CONSUMED' | 'EXPIRED' | 'EVICTED';
 
 /**
@@ -67,10 +68,13 @@ export class EchoLedger {
     return expired.map((e) => e.id);
   }
 
-  /** Entries that may be projected during spin `spinSeq`: active, unexpired, created in an EARLIER spin. Newest first. */
-  eligible(spinSeq: number): EchoEntry[] {
+  /**
+   * Entries that may be projected at (spinSeq, cascadeIndex): active, unexpired, and created
+   * strictly EARLIER — in an earlier spin, or in an earlier cascade of the same spin. Newest first.
+   */
+  eligible(spinSeq: number, cascadeIndex = 0): EchoEntry[] {
     return this.active
-      .filter((e) => e.status === 'ACTIVE' && e.spinSeq < spinSeq && spinSeq <= e.expiresAfterSpinSeq)
+      .filter((e) => e.status === 'ACTIVE' && (e.spinSeq < spinSeq || (e.spinSeq === spinSeq && e.cascadeIndex < cascadeIndex)) && spinSeq <= e.expiresAfterSpinSeq)
       .sort((a, b) => b.spinSeq - a.spinSeq || b.age - a.age || (a.id < b.id ? 1 : -1));
   }
 
@@ -100,6 +104,34 @@ export class EchoLedger {
     ctx.stats.echoesRecorded++;
     ctx.emit('ECHO_RECORDED', { entry: { ...entry } });
     return entry;
+  }
+
+  /**
+   * "Remnants of the Hour": entries drawn at round start from the round's own RNG (stateless).
+   * They count as created before the round's first spin and do not use the per-spin quota.
+   */
+  seedRemnants(ctx: SpinContext): EchoEntry[] {
+    const cfg = ctx.cfg;
+    const count = weightedPick(ctx.rng, Object.fromEntries(cfg.roundStart.remnantCount.map((e) => [String(e.value), e.weight])));
+    const symbolWeights = Object.fromEntries(Object.entries(cfg.weights.refill).filter(([s]) => cfg.symbols[s as SymbolId].ageable)) as Record<SymbolId, number>;
+    const [a0, a1, a2] = cfg.roundStart.remnantAgeWeights;
+    const out: EchoEntry[] = [];
+    for (let i = 0; i < Number(count); i++) {
+      const symbol = weightedPick(ctx.rng, symbolWeights) as PayingSymbolId;
+      const age = Number(weightedPick(ctx.rng, { 0: a0, 1: a1, 2: a2 })) as Age;
+      const position = ctx.rng.int(ctx.board.cells.length);
+      const entry: EchoEntry = {
+        id: `E${++this.counter}`, roundId: ctx.roundId, boardId: `${ctx.roundId}:remnant`, spinIndex: ctx.spinIndex, cascadeIndex: -1,
+        spinSeq: ctx.spinSeq - 1, symbol, age, position, flags: { frozen: false }, reason: 'HOUR_REMNANT',
+        expiresAfterSpinSeq: ctx.spinSeq - 1 + this.ttlSpins, status: 'ACTIVE',
+      };
+      this.active.push(entry);
+      while (this.active.length > this.maxEntries) this.retire(this.active.shift()!, 'EVICTED');
+      ctx.stats.echoesRecorded++;
+      ctx.emit('ECHO_RECORDED', { entry: { ...entry } });
+      out.push(entry);
+    }
+    return out;
   }
 
   /** Round-scope reset (stateless profile). */
@@ -137,7 +169,7 @@ export function projectEchoes(ctx: SpinContext, count: number): number {
   if (count <= 0) return 0;
   const targeted = new Set<number>();
   let projected = 0;
-  for (const entry of ctx.echo.eligible(ctx.spinSeq)) {
+  for (const entry of ctx.echo.eligible(ctx.spinSeq, ctx.cascadeIndex)) {
     if (projected >= count) break;
     const candidates = [entry.position, ...neighbors(ctx.board, entry.position)];
     const target = candidates.find((p) => !targeted.has(p) && isTemporalTarget(ctx.board.cells[p]));

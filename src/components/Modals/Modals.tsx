@@ -4,6 +4,7 @@ import type { GameConfig } from '../../config/types';
 import { clockmakerOptions } from '../../mechanics/clockmakerChoice/clockmakerChoice';
 import { BONUS_STAGES } from '../../mechanics/lastSecond/lastSecond';
 import { formatCredits } from '../../utils/format';
+import PUBLISHED from '../../config/publishedMath.json';
 import type { Settings, Speed } from '../../app/useGame';
 import { SymbolTile } from '../Symbol/SymbolTile';
 
@@ -50,10 +51,12 @@ export function SettingsModal({ settings, setSettings, onClose, onExport }: { se
   );
 }
 
-export function RulesModal({ cfg, onClose }: { cfg: GameConfig; onClose: () => void }) {
+export function RulesModal({ cfg, onClose, showRtp = true }: { cfg: GameConfig; onClose: () => void; showRtp?: boolean }) {
   const sizes = cfg.paytable.SKULL.map((_, i) => cfg.clusters.minSize + i);
   const d = cfg.debt;
   const [a, b] = clockmakerOptions(cfg);
+  const roundScope = cfg.persistence.paradoxDebt === 'ROUND';
+  const hm = cfg.bonus.hourMultiplier;
   return (
     <Modal title="How The Hollow Hour Works" onClose={onClose} testId="rules-modal">
       <section>
@@ -84,11 +87,11 @@ export function RulesModal({ cfg, onClose }: { cfg: GameConfig; onClose: () => v
       </section>
       <section>
         <h3>Paradox Debt</h3>
-        <p>Stable &lt; {d.thresholds.UNSTABLE} ≤ Unstable &lt; {d.thresholds.CRITICAL} ≤ Critical &lt; {d.thresholds.DISCHARGE} = Discharge. Gains: Hollow +{d.gains.HOLLOW_FORMED}, wild collapse +{d.gains.WILD_COLLAPSE}, Echo +{d.gains.ECHO_PROJECTED}, Split +{d.gains.PARADOX_SPLIT}, Clockmaker +{d.gains.CLOCKMAKER}, Stage IV +{d.gains.COLLAPSE_STAGE}. The state at the start of a spin raises corruption chance and split size. At {d.thresholds.DISCHARGE} the meter discharges after the cascades: it resets to 0, a {d.discharge.regionSize}×{d.discharge.regionSize} region ages one step and {d.discharge.echoProjections} Echo returns, then cascades resume. The meter persists between rounds and never depends on your balance or results.</p>
+        <p>Stable &lt; {d.thresholds.UNSTABLE} ≤ Unstable &lt; {d.thresholds.CRITICAL} ≤ Critical &lt; {d.thresholds.DISCHARGE} = Discharge. Gains: Hollow +{d.gains.HOLLOW_FORMED}, wild collapse +{d.gains.WILD_COLLAPSE}, Echo +{d.gains.ECHO_PROJECTED}, Split +{d.gains.PARADOX_SPLIT}, Clockmaker +{d.gains.CLOCKMAKER}, Stage IV +{d.gains.COLLAPSE_STAGE}. The state at the start of a spin raises corruption chance and split size. At {d.thresholds.DISCHARGE} the meter discharges after the cascades: it resets to 0, a {d.discharge.regionSize}×{d.discharge.regionSize} region ages one step and {d.discharge.echoProjections} Echo returns, then cascades resume. {roundScope ? ' Each round starts with its own Paradox Debt (part of the round outcome) and nothing carries over between rounds.' : ' The meter persists between rounds.'} It never depends on your balance or results.</p>
       </section>
       <section>
         <h3>Clockmaker&rsquo;s Choice</h3>
-        <p>When the Clockmaker lands on the opening board you choose, before the board is evaluated: <strong>{a.title}</strong> — {a.summary} <strong>{b.title}</strong> — {b.summary} Afterwards the Clockmaker becomes a Chrono Wild.</p>
+        <p>When the Clockmaker lands on the opening board {cfg.clockmaker.selection === 'ENGINE' ? 'he chooses one of two paths for you (the path is part of the round outcome)' : 'you choose'}, before the board is evaluated: <strong>{a.title}</strong> — {a.summary} <strong>{b.title}</strong> — {b.summary} Afterwards the Clockmaker becomes a Chrono Wild.</p>
       </section>
       <section>
         <h3>The Last Second</h3>
@@ -96,6 +99,7 @@ export function RulesModal({ cfg, onClose }: { cfg: GameConfig; onClose: () => v
         <ol>
           {BONUS_STAGES.map((s, i) => <li key={s.stage}><strong>{s.title}</strong> (wins ×{cfg.bonus.stageMultipliers[i]}): {s.text}</li>)}
         </ol>
+        <p><strong>Hour Multiplier:</strong> starts at ×{hm.start} and applies to every bonus win together with the stage multiplier. It grows by +{hm.perCollapse} for each symbol that collapses into a Chrono Wild (except the Stage IV collapse){hm.perHollow ? ` and +${hm.perHollow} for each symbol that turns Hollow` : ''}, and a Paradox Discharge during the bonus multiplies it by {hm.dischargeFactor} (maximum ×{hm.max}). It lasts for the whole bonus.</p>
         <p>Frozen symbols ({cfg.bonus.frozenCells}) never move, cannot be corrupted, and age instead of being removed when they win. No Tickets or Clockmaker appear in the bonus, so it cannot retrigger.</p>
       </section>
       <section>
@@ -113,11 +117,12 @@ export function RulesModal({ cfg, onClose }: { cfg: GameConfig; onClose: () => v
             </tbody>
           </table>
         </div>
-        <p>Maximum win per round: {cfg.maxWinX.toLocaleString()}× stake ({formatCredits(cfg.bets[cfg.bets.length - 1] * cfg.maxWinX, cfg)} at the highest stake). When it is reached the round ends.</p>
+        <p>Maximum win per round: <strong>{cfg.maxWinX.toLocaleString()}× stake</strong> ({formatCredits(cfg.bets[cfg.bets.length - 1] * cfg.maxWinX, cfg)} at the highest stake). When it is reached the round ends.</p>
+        {showRtp && <p data-testid="rules-rtp">Theoretical return to player (RTP): <strong>{PUBLISHED.rtp.toFixed(2)}%</strong>, computed from the published outcome table ({PUBLISHED.books.toLocaleString()} rounds). The {cfg.maxWinX.toLocaleString()}× maximum win occurs about once every {PUBLISHED.maxWinOneIn.toLocaleString()} rounds.</p>}
       </section>
       <section>
         <h3>About this prototype</h3>
-        <p className="muted">Demo credits only — no deposits, cashouts or real money. Outcomes come from a seeded development PRNG, which is not a certified gaming RNG. Return-to-player figures in the docs are simulation estimates, not certified values. Malfunction voids all pays and plays.</p>
+        <p className="muted">Every round is independent of previous rounds. In the local demo, outcomes come from a seeded development PRNG (not a certified gaming RNG) and demo credits only. On a platform build, the platform selects each round from the published outcome table and the game only displays it. Malfunction voids all pays and plays.</p>
       </section>
     </Modal>
   );

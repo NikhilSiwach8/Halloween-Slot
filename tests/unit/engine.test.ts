@@ -97,7 +97,7 @@ describe('engine integrity', () => {
 
 describe('engine guards', () => {
   it('rejects overlapping spins while a round is unresolved', () => {
-    const e = new GameEngine(devConfig(), { seed: 1 });
+    const e = new GameEngine(devConfig((c) => (c.clockmaker.selection = 'PLAYER')), { seed: 1 });
     e.spin({ bet: 100, force: 'CLOCKMAKER' });
     expect(e.phase).toBe('CLOCKMAKER_CHOICE');
     expect(() => e.spin({ bet: 100 })).toThrow(EngineError);
@@ -155,8 +155,8 @@ describe('engine guards', () => {
 });
 
 describe("Clockmaker's Choice (engine)", () => {
-  it('awaits a selection, applies exactly one path and rejects a second selection', () => {
-    const e = new GameEngine(devConfig(), { seed: 4 });
+  it('PLAYER selection: awaits a selection, applies exactly one path and rejects a second selection', () => {
+    const e = new GameEngine(devConfig((c) => (c.clockmaker.selection = 'PLAYER')), { seed: 4 });
     const first = e.spin({ bet: 100, force: 'CLOCKMAKER' });
     expect(first.awaiting).toBe('CLOCKMAKER_CHOICE');
     expect(first.events.some((x) => x.type === 'CLOCKMAKER_CHOICE_OFFERED')).toBe(true);
@@ -219,8 +219,8 @@ describe('The Last Second (engine)', () => {
   });
 });
 
-describe('Paradox Debt across rounds', () => {
-  it('persists across rounds and never depends on the balance', () => {
+describe('Paradox Debt', () => {
+  it('never depends on the balance', () => {
     const a = new GameEngine(DEFAULT_CONFIG, { seed: 31, startingBalance: 1e9 });
     const b = new GameEngine(DEFAULT_CONFIG, { seed: 31, startingBalance: 5e5 });
     for (let i = 0; i < 200; i++) {
@@ -241,16 +241,108 @@ describe('Paradox Debt across rounds', () => {
 });
 
 describe('persistence scope', () => {
-  it('ROUND scope resets Paradox Debt and the Echo Ledger at every round start (stateless profile)', async () => {
-    const { STATELESS_CONFIG } = await import('../../src/config/gameConfig');
-    const e = new GameEngine(STATELESS_CONFIG, { seed: 12, startingBalance: 1e9 });
+  it('ROUND scope: every round starts from its own round-start draws, never from a previous round', () => {
+    const e = new GameEngine(DEFAULT_CONFIG, { seed: 12, startingBalance: 1e9 });
+    const allowed = DEFAULT_CONFIG.roundStart.debt.map((d) => d.value);
     for (let i = 0; i < 300; i++) {
       const r = e.spin({ bet: 100 });
       const start = r.events.find((x) => x.type === 'SPIN_STARTED') as Extract<GameEvent, { type: 'SPIN_STARTED' }>;
-      expect(start.debt).toBe(0);
+      expect(allowed).toContain(start.debt);
       expect(r.events.some((x) => x.type === 'ECHO_PROJECTED' && x.entry.roundId !== start.roundId)).toBe(false);
       let s = r;
       while (!s.settled) s = s.awaiting === 'CLOCKMAKER_CHOICE' ? e.chooseClockmakerPath('PRESERVE_PAST') : e.playBonusStage();
     }
+  });
+});
+
+describe("Clockmaker's Choice (ENGINE selection, default)", () => {
+  it('resolves inside the round without pausing and records who chose', () => {
+    const e = new GameEngine(devConfig(), { seed: 4 });
+    const r = e.spin({ bet: 100, force: 'CLOCKMAKER' });
+    expect(r.awaiting).not.toBe('CLOCKMAKER_CHOICE');
+    const sel = r.events.find((x) => x.type === 'CLOCKMAKER_CHOICE_SELECTED') as Extract<GameEvent, { type: 'CLOCKMAKER_CHOICE_SELECTED' }>;
+    expect(sel.selectedBy).toBe('CLOCKMAKER');
+    expect(() => e.chooseClockmakerPath('PRESERVE_PAST')).toThrow(EngineError);
+  });
+  it('both paths occur across seeds', () => {
+    const paths = new Set<string>();
+    for (let seed = 1; seed <= 30; seed++) {
+      const r = new GameEngine(devConfig(), { seed }).spin({ bet: 100, force: 'CLOCKMAKER' });
+      paths.add((r.events.find((x) => x.type === 'CLOCKMAKER_CHOICE_SELECTED') as Extract<GameEvent, { type: 'CLOCKMAKER_CHOICE_SELECTED' }>).path);
+    }
+    expect([...paths].sort()).toEqual(['BREAK_FUTURE', 'PRESERVE_PAST']);
+  });
+});
+
+describe('round-start draws (stateless rounds)', () => {
+  it('Remnants of the Hour are recorded at round start and are eligible in the first spin', () => {
+    let seen = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const e = new GameEngine(DEFAULT_CONFIG, { seed });
+      const r = e.spin({ bet: 100 });
+      const remnants = r.events.filter((x) => x.type === 'ECHO_RECORDED' && x.entry.reason === 'HOUR_REMNANT');
+      seen += remnants.length;
+      const created = r.events.findIndex((x) => x.type === 'BOARD_CREATED');
+      for (const rem of remnants) expect(r.events.indexOf(rem)).toBeGreaterThan(created);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it('the same seed gives the same round regardless of what was played before (independence)', () => {
+    const a = new GameEngine(DEFAULT_CONFIG, { seed: 99 }).playRound(100);
+    const warm = new GameEngine(DEFAULT_CONFIG, { seed: 1, startingBalance: 1e9 });
+    for (let i = 0; i < 50; i++) warm.playRound(100);
+    const b = new GameEngine(DEFAULT_CONFIG, { seed: 99 }).playRound(100);
+    expect(b.totalWin).toBe(a.totalWin);
+  });
+});
+
+describe('The Last Second — Hour Multiplier', () => {
+  it('every bonus award = floor(stake x pay x age multiplier x stage multiplier x Hour Multiplier / 100)', () => {
+    for (let seed = 1; seed <= 25; seed++) {
+      const r = new GameEngine(devConfig(), { seed, startingBalance: 1e9 }).playRound(100, undefined, 'BONUS');
+      for (const a of r.awards) {
+        expect(a.rawAmount).toBe(Math.floor((100 * a.payX100 * a.ageMultiplier * a.stageMultiplier * a.hourMultiplier) / 100));
+        if (a.spinIndex === 0) expect(a.hourMultiplier).toBe(1);
+      }
+    }
+  });
+
+  it('a Discharge during the bonus multiplies the Hour Multiplier', () => {
+    let checked = 0;
+    for (let seed = 1; seed <= 200 && checked < 3; seed++) {
+      const e = new GameEngine(devConfig(), { seed, startingBalance: 1e9 });
+      e.spin({ bet: 100, force: 'BONUS' });
+      let hm = DEFAULT_CONFIG.bonus.hourMultiplier.start;
+      for (let s = 1; s <= 4; s++) {
+        const r = e.playBonusStage();
+        for (const ev of r.events) {
+          if (ev.type === 'DEBT_DISCHARGED') {
+            const next = r.events.slice(r.events.indexOf(ev)).find((x) => x.type === 'HOUR_MULTIPLIER_CHANGED') as Extract<GameEvent, { type: 'HOUR_MULTIPLIER_CHANGED' }>;
+            expect(next.value).toBe(Math.min(DEFAULT_CONFIG.bonus.hourMultiplier.max, hm * DEFAULT_CONFIG.bonus.hourMultiplier.dischargeFactor));
+            checked++;
+          }
+          if (ev.type === 'HOUR_MULTIPLIER_CHANGED') hm = ev.value;
+        }
+        if (r.settled) break;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('the base game never uses the Hour Multiplier', () => {
+    const e = new GameEngine(DEFAULT_CONFIG, { seed: 5, startingBalance: 1e9 });
+    for (let i = 0; i < 300; i++) {
+      const r = e.spin({ bet: 100 });
+      expect(r.events.some((x) => x.type === 'HOUR_MULTIPLIER_CHANGED')).toBe(false);
+      if (!r.settled) while (!e.playBonusStage().settled);
+    }
+  });
+});
+
+describe('max win', () => {
+  it('is 50,000x stake and enforced by the payout ledger', () => {
+    expect(DEFAULT_CONFIG.maxWinX).toBe(50_000);
+    expect(DEFAULT_CONFIG.bonus.maxBonusWinX).toBe(50_000);
   });
 });

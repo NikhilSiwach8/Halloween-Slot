@@ -1,0 +1,19 @@
+
+=== the-hollow-hour | seed 101 | policy ALTERNATE | 1,000,000 rounds | bet 100 units ===
+RTP (observed)        94.131%  ±1.847% (95% CI 92.28% – 95.98%)
+Hit frequency         29.93%   zero-win 70.07%
+Avg win on hit        3.145x   avg payout/round 0.9413x
+Last Second           0.289% (1 in 346)  avg bonus 100.01x
+Clockmaker's Choice   1.798%  paths {"PRESERVE_PAST":9081,"BREAK_FUTURE":8897}
+Paradox Split         1.50% of rounds (0.0151/round)
+Echo activations      1.74% of rounds (0.0300 projected, 1.5845 recorded /round)
+Debt Discharge        0.175% of rounds
+Max observed win      1880.75x   (configured cap 50000x, cap hits 0, cascade-limit hits 0)
+Contribution          base 69.32% | bonus 30.68% | age-multiplier uplift 28.86% | post-temporal-effect wins 31.06% | clockmaker rounds 3.97%
+Age transitions       ->Fractured 949709  ->Hollow 29703  ->Wild 12952
+Ages in wins          Original 2033317  Fractured 68786  Hollow 9057
+Win distribution      0x:70.067%  (0,1x):0.000%  [1,2x):18.002%  [2,5x):9.433%  [5,10x):1.927%  [10,25x):0.372%  [25,50x):0.049%  [50,100x):0.058%  [100,500x):0.086%  [500,1000x):0.006%  [1000x,cap):0.001%
+Cascade distribution  0:70.07%  1:23.88%  2:4.81%  3:0.94%  4:0.21%  5:0.06%  6:0.02%  7:0.01%  8:0.00%  9:0.00%  10+:0.00%
+Runtime               43.0s (23231 rounds/s)
+
+Note: simulated estimates from a development PRNG. Not a certified RTP, volatility rating or RNG.

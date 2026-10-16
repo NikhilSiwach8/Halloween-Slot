@@ -8,7 +8,7 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { DEFAULT_CONFIG, STATELESS_CONFIG } from '../src/config/gameConfig';
+import { DEFAULT_CONFIG, SESSION_CONFIG } from '../src/config/gameConfig';
 import { runSimulation, type ChoicePolicy, type SimulationReport } from '../src/simulation/simulator';
 
 function arg(name: string, fallback: string): string {
@@ -22,7 +22,7 @@ const policies = arg('policy', 'ALTERNATE').split(',') as ChoicePolicy[];
 const bet = Number(arg('bet', String(DEFAULT_CONFIG.defaultBet)));
 const jsonOut = arg('json', '');
 const profile = arg('profile', 'default');
-const cfg = profile === 'stateless' ? STATELESS_CONFIG : DEFAULT_CONFIG;
+const cfg = profile === 'session' ? SESSION_CONFIG : DEFAULT_CONFIG;
 
 const pct = (v: number, d = 2) => `${(v * 100).toFixed(d)}%`;
 const reports: SimulationReport[] = [];

@@ -2,7 +2,7 @@ import type { DebtState, GameConfig } from '../../config/types';
 import { idx } from '../../engine/board/board';
 import type { SpinContext } from '../../engine/context';
 import { projectEchoes } from '../echoLedger/echoLedger';
-import { applyAgeSteps, isTemporalTarget } from '../threeAges/ages';
+import { applyAgeSteps, growHourMultiplier, isTemporalTarget } from '../threeAges/ages';
 
 export function debtStateOf(cfg: GameConfig, value: number): DebtState {
   const t = cfg.debt.thresholds;
@@ -78,6 +78,7 @@ export function resolveDischargeIfDue(ctx: SpinContext): boolean {
   ctx.temporalEffectThisSpin = true;
   ctx.emit('DEBT_DISCHARGED', { valueBefore, region });
   ctx.debt.reset(ctx, 'DISCHARGE');
+  if (ctx.bonus) growHourMultiplier(ctx, ctx.bonus.hourMultiplier * (ctx.cfg.bonus.hourMultiplier.dischargeFactor - 1), 'DISCHARGE');
   const eligible = region.filter((i) => isTemporalTarget(ctx.board.cells[i]));
   ctx.emit('TIME_CORRUPTION_APPLIED', { cascadeIndex: ctx.cascadeIndex, source: 'DISCHARGE_REGION', eligible, affected: eligible, chance: 1 });
   applyAgeSteps(ctx, eligible, 'DISCHARGE');

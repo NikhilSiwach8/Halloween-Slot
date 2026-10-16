@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_CONFIG, createDevConfig } from '../config/gameConfig';
 import type { ForceOption } from '../engine/GameEngine';
-import { LocalDemoAdapter } from '../platform/PlatformAdapter';
+import { LocalDemoAdapter, type PlatformAdapter } from '../platform/PlatformAdapter';
+import { StakeRgsAdapter } from '../platform/StakeRgsAdapter';
 import { Background } from '../rendering/Background';
 import { GameBoard } from '../components/GameBoard/GameBoard';
 import { HUD } from '../components/HUD/HUD';
@@ -27,8 +28,23 @@ const FORCES: { force: ForceOption; label: string }[] = [
   { force: 'DISCHARGE', label: 'Full debt' },
 ];
 
+/** Chooses the platform: Stake RGS when the URL carries sessionID + rgs_url, otherwise the local demo. */
 export function App() {
-  const adapter = useMemo(() => new LocalDemoAdapter(DEV ? createDevConfig(DEFAULT_CONFIG) : DEFAULT_CONFIG, SEED), []);
+  const adapter = useMemo<PlatformAdapter>(
+    () => StakeRgsAdapter.fromUrl(DEFAULT_CONFIG, window.location.search) ?? new LocalDemoAdapter(DEV ? createDevConfig(DEFAULT_CONFIG) : DEFAULT_CONFIG, SEED),
+    [],
+  );
+  const [ready, setReady] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+  useEffect(() => {
+    adapter.init().then(() => setReady(true), (e) => setInitError(e instanceof Error ? e.message : String(e)));
+  }, [adapter]);
+  if (initError) return <div className="boot boot-error" role="alert">Unable to start the game: {initError}</div>;
+  if (!ready) return <div className="boot" aria-live="polite">The clock is winding…</div>;
+  return <Game adapter={adapter} />;
+}
+
+function Game({ adapter }: { adapter: PlatformAdapter }) {
   useEffect(() => {
     // Read-only debugging hook (session export) for development and browser tests.
     (window as unknown as { __hollowHour?: unknown }).__hollowHour = { exportSession: () => adapter.exportSession(), getState: () => adapter.getState() };
@@ -41,13 +57,13 @@ export function App() {
   const { cfg, display, settings } = game;
   const [panel, setPanel] = useState<'none' | 'rules' | 'settings' | 'ledger'>('none');
 
-  const awaitingChoice = display.awaiting === 'CLOCKMAKER_CHOICE' && !display.busy;
+  const awaitingChoice = display.awaiting === 'CLOCKMAKER_CHOICE' && !display.busy && !display.clockmakerReveal;
   const awaitingStage = display.awaiting === 'BONUS_STAGE';
   const inBonus = awaitingStage || display.mode === 'BONUS';
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || panel !== 'none') return;
+      if (e.code !== 'Space' || panel !== 'none' || adapter.flags.disabledSpacebar) return;
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
       e.preventDefault();
@@ -57,7 +73,7 @@ export function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [panel, display.busy, awaitingStage, game]);
+  }, [panel, display.busy, awaitingStage, game, adapter]);
 
   const exportSession = () => {
     const blob = new Blob([JSON.stringify(adapter.exportSession(), null, 2)], { type: 'application/json' });
@@ -92,7 +108,7 @@ export function App() {
           <ParadoxMeter value={display.debt} state={display.debtState} cfg={cfg} />
           <EchoLedgerButton count={display.echoes.length} onOpen={() => setPanel('ledger')} />
           <div className="feature-state" data-testid="feature-state">
-            {adapter.getState().splitPrimedCells > 0 && <span className="chip violet">Next split primed +{adapter.getState().splitPrimedCells}</span>}
+            {!display.busy && adapter.getState().splitPrimedCells > 0 && <span className="chip violet">Next split primed +{adapter.getState().splitPrimedCells}</span>}
             {display.debtState !== 'STABLE' && <span className="chip crimson">{display.debtState === 'UNSTABLE' ? `Corruption +${Math.round(cfg.corruption.debtStateBonus.UNSTABLE * 100)}%` : `Corruption +${Math.round(cfg.corruption.debtStateBonus.CRITICAL * 100)}% · Split +${cfg.split.criticalBonusCells}`}</span>}
             {inBonus && <span className="chip gold">The Last Second · Stage {Math.max(1, display.bonusStage)}</span>}
           </div>
@@ -112,7 +128,7 @@ export function App() {
           </div>
           <GameBoard display={display} cfg={cfg} />
           {inBonus && (
-            <LastSecondPanel cfg={cfg} stage={display.bonusStage} awaitingStage={awaitingStage && !display.busy} busy={display.busy} bonusWin={display.bonusWin} onPlay={() => void game.playBonusStage()} />
+            <LastSecondPanel cfg={cfg} hourMultiplier={display.hourMultiplier} stage={display.bonusStage} awaitingStage={awaitingStage && !display.busy} busy={display.busy} bonusWin={display.bonusWin} onPlay={() => void game.playBonusStage()} />
           )}
           {game.error && <div className="error" role="alert">{game.error} <button className="text-button" onClick={() => game.setError(null)}>dismiss</button></div>}
         </section>
@@ -130,11 +146,13 @@ export function App() {
         onToggleMute={() => game.setSettings({ muted: !settings.muted })}
         onOpenRules={() => setPanel('rules')}
         onOpenSettings={() => setPanel('settings')}
+        balanceNote={adapter.demoCreditsOnly ? 'demo credits' : cfg.currency.code ?? ''}
       />
 
       {awaitingChoice && <ClockmakerChoice cfg={cfg} echoesAvailable={adapter.getState().echoes.length} onChoose={(p) => void game.choose(p)} />}
+      {display.clockmakerReveal && <ClockmakerChoice cfg={cfg} echoesAvailable={display.echoes.length} onChoose={() => {}} revealed={display.clockmakerReveal.path} />}
       {panel === 'ledger' && <EchoLedgerPanel active={display.echoes} recent={display.recentEchoes} cfg={cfg} onClose={() => setPanel('none')} />}
-      {panel === 'rules' && <RulesModal cfg={cfg} onClose={() => setPanel('none')} />}
+      {panel === 'rules' && <RulesModal cfg={cfg} showRtp={adapter.flags.displayRTP !== false} onClose={() => setPanel('none')} />}
       {panel === 'settings' && <SettingsModal settings={settings} setSettings={game.setSettings} onClose={() => setPanel('none')} onExport={exportSession} />}
 
       {DEV && (

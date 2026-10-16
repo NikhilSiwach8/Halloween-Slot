@@ -43,6 +43,8 @@ export interface Award {
   payX100: number;
   ageMultiplier: number;
   stageMultiplier: number;
+  /** The Last Second Hour Multiplier (1 outside the bonus). */
+  hourMultiplier: number;
   /** Uncapped amount. */
   rawAmount: number;
   /** Amount actually credited after cap validation. */

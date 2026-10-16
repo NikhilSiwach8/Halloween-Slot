@@ -1,5 +1,5 @@
 import { SYMBOLS } from '../config/symbols';
-import type { Age, DebtState, GameConfig, SymbolId } from '../config/types';
+import type { Age, ClockmakerPath, DebtState, GameConfig, SymbolId } from '../config/types';
 import type { BoardSnapshot } from '../engine/board/board';
 import type { Awaiting, EngineSnapshot } from '../engine/GameEngine';
 import type { GameEvent } from '../engine/events/events';
@@ -39,6 +39,7 @@ export interface DisplayState {
   mode: 'BASE' | 'BONUS';
   bonusStage: number;
   stageMultiplier: number;
+  hourMultiplier: number;
   bonusWin: number;
   split: { present: BoardSnapshot; hollow: BoardSnapshot; selected: number[]; merged: boolean } | null;
   echoes: EchoEntry[];
@@ -46,6 +47,8 @@ export interface DisplayState {
   echoFlash: { key: number; entry: EchoEntry; position: number } | null;
   awaiting: Awaiting;
   clockmakerPositions: number[];
+  /** Engine-selected Clockmaker's Choice being revealed (path null until the pick is shown). */
+  clockmakerReveal: { path: ClockmakerPath | null } | null;
   feed: { key: number; text: string; tone: Banner['tone'] }[];
   busy: boolean;
 }
@@ -72,9 +75,9 @@ export function initialDisplay(snap: EngineSnapshot, cfg: GameConfig): DisplaySt
   return {
     uiPhase: snap.phase, board: snap.board ?? attractBoard(cfg), attract: !snap.board, marks: {}, banner: null, floatWin: null, spinWin: 0, roundWin: 0,
     lastRoundWin: snap.lastRound?.totalWin ?? null, lastRoundId: snap.lastRound?.roundId ?? null, balance: snap.balance,
-    stake: cfg.defaultBet, debt: snap.debt, debtState: snap.debtState, mode: 'BASE', bonusStage: 0, stageMultiplier: 1, bonusWin: 0,
+    stake: cfg.defaultBet, debt: snap.debt, debtState: snap.debtState, mode: 'BASE', bonusStage: 0, stageMultiplier: 1, hourMultiplier: 1, bonusWin: 0,
     split: null, echoes: snap.echoes, recentEchoes: snap.recentEchoes, echoFlash: null, awaiting: snap.awaiting,
-    clockmakerPositions: [], feed: [], busy: false,
+    clockmakerPositions: [], clockmakerReveal: null, feed: [], busy: false,
   };
 }
 
@@ -88,31 +91,34 @@ const feed = (d: DisplayState, text: string, tone: Banner['tone'] = 'gold') => [
 
 const KEEPS_SPLIT = new Set<GameEvent['type']>(['PARADOX_SPLIT_STARTED', 'PARADOX_SPLIT_RESOLVED', 'SYMBOL_AGE_CHANGED', 'PARADOX_DEBT_UPDATED', 'ECHO_RECORDED']);
 const CLEARS_ECHO = new Set<GameEvent['type']>(['CLUSTER_DETECTED', 'GRAVITY_APPLIED', 'PARADOX_SPLIT_STARTED', 'ROUND_SETTLED', 'BONUS_STAGE_CHANGED']);
+const KEEPS_REVEAL = new Set<GameEvent['type']>(['CLOCKMAKER_CHOICE_OFFERED', 'CLOCKMAKER_CHOICE_SELECTED', 'PARADOX_DEBT_UPDATED', 'ECHO_RECORDED']);
 
 /** Pure reducer: engine event -> display state. The UI never computes outcomes itself. */
 export function reduceEvent(prev: DisplayState, ev: GameEvent, cfg: GameConfig): DisplayState {
   let d = prev;
   if (d.split?.merged && !KEEPS_SPLIT.has(ev.type)) d = { ...d, split: null };
   if (d.echoFlash && CLEARS_ECHO.has(ev.type)) d = { ...d, echoFlash: null };
+  if (d.clockmakerReveal && !KEEPS_REVEAL.has(ev.type)) d = { ...d, clockmakerReveal: null };
   switch (ev.type) {
     case 'SPIN_STARTED':
       return {
         ...d, uiPhase: ev.mode === 'BASE' ? 'SPINNING' : 'BONUS_PLAYING', balance: ev.balance, stake: ev.stake, debt: ev.debt, debtState: ev.debtState,
         spinWin: 0, roundWin: ev.mode === 'BASE' ? 0 : d.roundWin, marks: {}, banner: null, split: null, echoFlash: null, floatWin: null,
         mode: ev.mode, bonusStage: ev.mode === 'BASE' ? 0 : ev.spinIndex, clockmakerPositions: [],
-        ...(ev.mode === 'BASE' ? { bonusWin: 0, stageMultiplier: 1 } : {}),
+        ...(ev.mode === 'BASE' ? { bonusWin: 0, stageMultiplier: 1, hourMultiplier: 1 } : {}),
       };
     case 'BOARD_CREATED':
       return { ...d, uiPhase: d.mode === 'BASE' ? 'SPINNING' : 'BONUS_PLAYING', board: ev.board, attract: false, marks: marksFor(ev.board.map((_, i) => i), 'new') };
     case 'CLOCKMAKER_CHOICE_OFFERED':
       return {
         ...d, uiPhase: 'CLOCKMAKER_CHOICE', clockmakerPositions: ev.positions, marks: marksFor(ev.positions, 'clockmaker'),
-        banner: { key: nextKey(), title: 'The Clockmaker Appears', text: 'Two paths. Choose one.', tone: 'gold' },
+        clockmakerReveal: cfg.clockmaker.selection === 'ENGINE' ? { path: null } : null,
+        banner: { key: nextKey(), title: 'The Clockmaker Appears', text: cfg.clockmaker.selection === 'ENGINE' ? 'He weighs two paths\u2026' : 'Two paths. Choose one.', tone: 'gold' },
         feed: feed(d, 'The Clockmaker offers a choice', 'gold'),
       };
     case 'CLOCKMAKER_CHOICE_SELECTED':
       return {
-        ...d, uiPhase: 'TEMPORAL_EFFECT', clockmakerPositions: [],
+        ...d, uiPhase: 'TEMPORAL_EFFECT', clockmakerPositions: [], clockmakerReveal: ev.selectedBy === 'CLOCKMAKER' ? { path: ev.path } : null,
         banner: { key: nextKey(), title: ev.path === 'PRESERVE_PAST' ? 'Preserve the Past' : 'Break the Future', tone: ev.path === 'PRESERVE_PAST' ? 'blue' : 'violet' },
         feed: feed(d, `Clockmaker's Choice: ${ev.path === 'PRESERVE_PAST' ? 'Preserve the Past' : 'Break the Future'}`, 'gold'),
       };
@@ -193,7 +199,7 @@ export function reduceEvent(prev: DisplayState, ev: GameEvent, cfg: GameConfig):
     case 'BONUS_STAGE_CHANGED': {
       const s = BONUS_STAGES[ev.stage - 1];
       return {
-        ...d, uiPhase: 'BONUS_PLAYING', bonusStage: ev.stage, stageMultiplier: ev.multiplier,
+        ...d, uiPhase: 'BONUS_PLAYING', bonusStage: ev.stage, stageMultiplier: ev.multiplier, hourMultiplier: ev.hourMultiplier,
         banner: { key: nextKey(), title: s.title, text: `${s.text}${ev.multiplier > 1 ? ` Wins ×${ev.multiplier}.` : ''}`, tone: 'crimson' },
         feed: feed(d, s.title, 'crimson'),
       };
@@ -203,6 +209,8 @@ export function reduceEvent(prev: DisplayState, ev: GameEvent, cfg: GameConfig):
         ...d, uiPhase: 'BONUS_RESOLVING', bonusWin: ev.bonusWin,
         banner: { key: nextKey(), title: 'Time Resumes', text: `The Last Second paid ${formatCredits(ev.bonusWin, cfg)}`, tone: 'gold' },
       };
+    case 'HOUR_MULTIPLIER_CHANGED':
+      return { ...d, hourMultiplier: ev.value, feed: feed(d, `Hour Multiplier ×${ev.value}`, 'gold') };
     case 'ROUND_SETTLED':
       return { ...d, uiPhase: 'ROUND_SETTLING', balance: ev.balance, roundWin: ev.totalWin, lastRoundWin: ev.totalWin, lastRoundId: ev.roundId, mode: 'BASE', split: null };
   }
@@ -216,8 +224,8 @@ export function cellName(i: number, cfg: GameConfig) {
 export function eventDuration(ev: GameEvent): number {
   switch (ev.type) {
     case 'BOARD_CREATED': return 650;
-    case 'CLOCKMAKER_CHOICE_OFFERED': return 900;
-    case 'CLOCKMAKER_CHOICE_SELECTED': return 700;
+    case 'CLOCKMAKER_CHOICE_OFFERED': return 1400;
+    case 'CLOCKMAKER_CHOICE_SELECTED': return ev.selectedBy === 'CLOCKMAKER' ? 1800 : 700;
     case 'CLUSTER_DETECTED': return 650;
     case 'WIN_RECORDED': return 320;
     case 'SYMBOL_REMOVED': return 420;
@@ -231,6 +239,7 @@ export function eventDuration(ev: GameEvent): number {
     case 'WIN_CAP_REACHED': return 1200;
     case 'BONUS_TRIGGERED': return 1800;
     case 'BONUS_STAGE_CHANGED': return 1400;
+    case 'HOUR_MULTIPLIER_CHANGED': return 450;
     case 'BONUS_COMPLETED': return 1800;
     case 'ROUND_SETTLED': return 300;
     case 'PARADOX_DEBT_UPDATED': return ev.state !== ev.prevState ? 300 : 60;

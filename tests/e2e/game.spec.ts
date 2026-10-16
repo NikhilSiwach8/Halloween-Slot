@@ -8,12 +8,16 @@ const awaitingSpin = async (page: Page) => {
   await expect(page.getByTestId('app')).toHaveAttribute('data-awaiting', 'SPIN', { timeout: 45_000 });
   await idle(page);
 };
-const actions = (page: Page) => page.evaluate(() => (window as unknown as { __hollowHour: { exportSession(): { actions: unknown[] } } }).__hollowHour.exportSession().actions.length);
+const actions = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __hollowHour: { exportSession(): { rounds: { actions: unknown[] }[] } } }).__hollowHour.exportSession().rounds.reduce((n, r) => n + r.actions.length, 0));
 
 test.describe('The Hollow Hour', () => {
   test('loads with a visible 5x5 grid and no console errors (3D background on)', async ({ page }) => {
     const errors: string[] = [];
+    const external: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    page.on('request', (r) => !r.url().startsWith('http://localhost:4173') && !r.url().startsWith('data:') && external.push(r.url()));
     await page.goto('/?seed=1');
     await expect(page.getByRole('heading', { name: 'The Hollow Hour' })).toBeVisible();
     const board = page.getByTestId('board');
@@ -23,6 +27,7 @@ test.describe('The Hollow Hour', () => {
     await expect(page.getByTestId('dev-panel')).toHaveCount(0); // forced triggers absent in ordinary play
     await page.waitForTimeout(1500);
     expect(errors).toEqual([]);
+    expect(external).toEqual([]); // static build: no external fonts, scripts or assets
   });
 
   test('a demo spin completes and the balance reconciles', async ({ page }) => {
@@ -76,23 +81,25 @@ test.describe('The Hollow Hour', () => {
     await page.getByTestId('echo-ledger-toggle').click();
     const panel = page.getByTestId('echo-ledger-panel');
     await expect(panel).toBeVisible();
-    await expect(panel.locator('.echo-row').first()).toContainText('won in a cluster');
-    await expect(panel).toContainText('Hourglass'); // the forced Hourglass cluster left an echo
+    await expect(panel.locator('.echo-row').first()).toContainText(/won in a cluster|remnant of the last hour|turned Hollow/);
+    await expect(panel).toContainText('Recently consumed / expired');
     await panel.getByRole('button', { name: 'Close Echo Ledger' }).click();
     await expect(panel).toHaveCount(0);
   });
 
-  test("Clockmaker's Choice accepts exactly one selection", async ({ page }) => {
+  test("Clockmaker's Choice is revealed as part of the round (no player input changes the outcome)", async ({ page }) => {
     await page.goto('/?seed=8&bg=0&dev=1&speed=fast');
     await page.getByTestId('dev-force-CLOCKMAKER').click();
-    const modal = page.getByTestId('clockmaker-choice');
+    const modal = page.getByTestId('clockmaker-reveal');
     await expect(modal).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('app')).toHaveAttribute('data-awaiting', 'CLOCKMAKER_CHOICE');
-    await page.getByTestId('choice-BREAK_FUTURE').click();
-    await expect(modal).toHaveCount(0);
+    await expect(modal.locator('.choice-card.picked')).toHaveCount(1, { timeout: 15_000 });
+    await expect(modal.getByTestId('choice-PRESERVE_PAST')).toBeDisabled();
     await awaitingSpin(page);
-    await expect(page.getByTestId('feed')).toContainText('Break the Future');
-    expect(await actions(page)).toBe(2); // spin + one choice
+    await expect(modal).toHaveCount(0);
+    await expect(page.getByTestId('feed')).toContainText("Clockmaker's Choice");
+    const session = await page.evaluate(() => (window as unknown as { __hollowHour: { exportSession(): { rounds: { actions: unknown[] }[] } } }).__hollowHour.exportSession());
+    expect(session.rounds).toHaveLength(1);
+    expect(session.rounds[0].actions).toHaveLength(1); // only the spin
   });
 
   test('The Last Second can be entered (dev trigger) and played through four stages', async ({ page }) => {
@@ -101,6 +108,7 @@ test.describe('The Hollow Hour', () => {
     for (let stage = 1; stage <= 4; stage++) {
       const btn = page.getByTestId('bonus-stage-button');
       await expect(btn).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('hour-multiplier')).toContainText('×');
       await btn.click();
       // stage 4 settles the round, after which the bonus panel closes
       if (stage < 4) await expect(page.getByTestId('bonus-panel')).toHaveAttribute('data-stage', String(stage), { timeout: 20_000 });
@@ -140,5 +148,7 @@ test.describe('The Hollow Hour', () => {
     await expect(page.getByTestId('spin-button')).toBeInViewport();
     await page.getByTestId('rules-button').click();
     await expect(page.getByTestId('rules-modal')).toContainText('Paradox Split');
+    await expect(page.getByTestId('rules-rtp')).toContainText('96.00%');
+    await expect(page.getByTestId('rules-modal')).toContainText('50,000× stake');
   });
 });

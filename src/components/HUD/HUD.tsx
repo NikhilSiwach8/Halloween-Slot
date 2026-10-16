@@ -14,16 +14,17 @@ export interface HUDProps {
   onToggleMute: () => void;
   onOpenRules: () => void;
   onOpenSettings: () => void;
+  balanceNote: string;
 }
 
-export function HUD({ cfg, display, bet, setBet, canSpin, onSpin, onSkip, muted, onToggleMute, onOpenRules, onOpenSettings }: HUDProps) {
+export function HUD({ cfg, display, bet, setBet, canSpin, onSpin, onSkip, muted, onToggleMute, onOpenRules, onOpenSettings, balanceNote }: HUDProps) {
   const i = cfg.bets.indexOf(bet);
   const locked = display.busy || display.awaiting !== 'SPIN';
   return (
     <div className="hud">
       <div className="hud-stats">
         <div className="stat" data-testid="balance">
-          <span className="stat-label">Balance <small>(demo credits)</small></span>
+          <span className="stat-label">Balance {balanceNote && <small>({balanceNote})</small>}</span>
           <span className="stat-value">{formatCredits(display.balance, cfg)}</span>
         </div>
         <div className="stat" data-testid="spin-win">

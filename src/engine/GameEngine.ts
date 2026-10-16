@@ -12,7 +12,7 @@ import { findClusters } from './clusters/clusters';
 import { emptyStats, type RoundStats, type SessionScope, type SpinContext } from './context';
 import type { EventPayloads, EventType, GameEvent } from './events/events';
 import { PayoutLedger, SettlementError, ageMultiplier, clusterAward, payFor, type Award } from './payouts/payouts';
-import { SeededRng, type Rng } from './rng/rng';
+import { SeededRng, weightedPick, type Rng } from './rng/rng';
 import { PhaseMachine, type GamePhase } from './state/stateMachine';
 
 /** Development-only forced triggers. Rejected unless config.dev.allowForcing is true. */
@@ -81,6 +81,7 @@ interface ActiveRound {
   bonusStage: number;
   baseWin: number;
   pendingClockmaker: { positions: number[]; ctx: SpinContext } | null;
+  bonus: { hourMultiplier: number } | null;
   /** Frozen cells carried between bonus stages (by index). */
   frozen: (Cell | null)[];
 }
@@ -92,6 +93,19 @@ export interface EngineOptions {
   startingBalance?: number;
   /** Inject an alternative RNG (e.g. a platform-provided source). */
   rng?: Rng;
+  /**
+   * Which weight table The Last Second draws from. 'bonus' in normal play; 'wincapBonus' only
+   * when generating / replaying max-win candidate books (recorded in the book itself).
+   */
+  bonusWeightSet?: 'bonus' | 'wincapBonus';
+  /** Round number of the first round played by this engine (round ids are R<n>). */
+  firstRoundNumber?: number;
+}
+
+/** The opening board of a round with this seed, without playing it (book-generation seed search). */
+export function peekOpeningBoard(cfg: GameConfig, seed: number): SymbolId[] {
+  let u = 0;
+  return fillBoard(new SeededRng(seed), { nextUid: () => ++u }, cfg.grid.cols, cfg.grid.rows, cfg.weights.initial).cells.map((c) => c!.sym);
 }
 
 const EVENT_LOG_LIMIT = 4000;
@@ -139,12 +153,15 @@ export class GameEngine {
   readonly eventLog: GameEvent[] = [];
   readonly actions: EngineAction[] = [];
   readonly seed: number;
+  private readonly bonusWeights: GameConfig['weights']['bonus'];
 
   constructor(cfg: GameConfig, opts: EngineOptions) {
     const errors = validateConfig(cfg);
     if (errors.length) throw new EngineError('INVALID_CONFIG', errors.join('; '));
     this.cfg = cfg;
     this.seed = opts.seed;
+    this.bonusWeights = cfg.weights[opts.bonusWeightSet ?? 'bonus'];
+    this.roundCounter = (opts.firstRoundNumber ?? 1) - 1;
     this.rng = opts.rng ?? new SeededRng(opts.seed);
     this.recordEvents = opts.recordEvents ?? true;
     this.balanceUnits = opts.startingBalance ?? cfg.currency.startingBalance;
@@ -199,24 +216,40 @@ export class GameEngine {
       const roundId = `R${++this.roundCounter}`;
       this.round = {
         roundId, stake: req.bet, payouts: new PayoutLedger(roundId, req.bet, Math.min(this.cfg.maxWinX, this.cfg.bonus.maxBonusWinX)), stats: emptyStats(),
-        bonusTriggered: false, bonusStage: 0, baseWin: 0, pendingClockmaker: null, frozen: [],
+        bonusTriggered: false, bonusStage: 0, baseWin: 0, pendingClockmaker: null, frozen: [], bonus: null,
       };
-      if (this.cfg.persistence.paradoxDebt === 'ROUND') this.debt.forceValue(0);
+      // RNG draw order of a round (fixed; book playback and seed search rely on it):
+      //   1. the 25 opening-board cells   2. starting Paradox Debt   3. Remnants of the Hour   4. everything else
+      const board = fillBoard(this.rng, this, this.cfg.grid.cols, this.cfg.grid.rows, this.cfg.weights.initial);
       if (this.cfg.persistence.echoLedger === 'ROUND') this.echo.clear();
+      if (this.cfg.persistence.paradoxDebt === 'ROUND') {
+        this.debt.forceValue(Number(weightedPick(this.rng, Object.fromEntries(this.cfg.roundStart.debt.map((e) => [String(e.value), e.weight])))));
+      }
       if (req.force === 'DISCHARGE') this.debt.forceValue(this.cfg.debt.thresholds.DISCHARGE);
+      if (req.force) this.applyForcedBoard(board, req.force);
       const ctx = this.startSpin('BASE', 0, this.cfg.weights.refill);
-      ctx.board = fillBoard(this.rng, this, this.cfg.grid.cols, this.cfg.grid.rows, this.cfg.weights.initial);
-      if (req.force) this.applyForcedBoard(ctx.board, req.force);
+      ctx.board = board;
       this.board = ctx.board;
       const tickets = countSymbol(ctx.board, 'TICKET');
       const clockmakers: number[] = [];
       ctx.board.cells.forEach((c, i) => c?.sym === 'CLOCKMAKER' && clockmakers.push(i));
       ctx.emit('BOARD_CREATED', { board: ctx.snap(), tickets, clockmakers: clockmakers.length, forced: req.force ?? null });
+      if (this.cfg.persistence.echoLedger === 'ROUND') this.echo.seedRemnants(ctx);
       this.round.bonusTriggered = tickets >= this.cfg.bonus.triggerTickets;
       if (clockmakers.length) {
+        ctx.emit('CLOCKMAKER_CHOICE_OFFERED', { positions: clockmakers, echoesAvailable: this.echo.eligible(ctx.spinSeq).length });
+        if (this.cfg.clockmaker.selection === 'ENGINE') {
+          // Resolved inside the round (book-compatible): the Clockmaker picks the path.
+          const path = weightedPick(this.rng, this.cfg.clockmaker.engineWeights);
+          this.machine.go('EVALUATING');
+          this.machine.go('TEMPORAL_EFFECT');
+          applyClockmakerChoice(ctx, path, clockmakers, 'CLOCKMAKER');
+          this.machine.go('EVALUATING');
+          this.finishBaseSpin(ctx);
+          return;
+        }
         this.machine.go('CLOCKMAKER_CHOICE');
         this.round.pendingClockmaker = { positions: clockmakers, ctx };
-        ctx.emit('CLOCKMAKER_CHOICE_OFFERED', { positions: clockmakers, echoesAvailable: this.echo.eligible(ctx.spinSeq).length });
         return;
       }
       this.machine.go('EVALUATING');
@@ -251,12 +284,13 @@ export class GameEngine {
       const stage = (round.bonusStage + 1) as 1 | 2 | 3 | 4;
       round.bonusStage = stage;
       const def = BONUS_STAGES[stage - 1];
-      const ctx = this.startSpin('BONUS', stage, this.cfg.weights.bonus);
+      const ctx = this.startSpin('BONUS', stage, this.bonusWeights);
       ctx.stageMultiplier = stageMultiplier(this.cfg, stage);
-      ctx.board = fillBoard(this.rng, this, this.cfg.grid.cols, this.cfg.grid.rows, this.cfg.weights.bonus, round.frozen);
+      ctx.bonus = round.bonus ?? (round.bonus = { hourMultiplier: this.cfg.bonus.hourMultiplier.start });
+      ctx.board = fillBoard(this.rng, this, this.cfg.grid.cols, this.cfg.grid.rows, this.bonusWeights, round.frozen);
       this.board = ctx.board;
       ctx.emit('BOARD_CREATED', { board: ctx.snap(), tickets: 0, clockmakers: 0, forced: null });
-      ctx.emit('BONUS_STAGE_CHANGED', { stage, name: def.name, multiplier: ctx.stageMultiplier, frozen: this.frozenIndices(ctx.board) });
+      ctx.emit('BONUS_STAGE_CHANGED', { stage, name: def.name, multiplier: ctx.stageMultiplier, hourMultiplier: ctx.bonus.hourMultiplier, frozen: this.frozenIndices(ctx.board) });
       this.machine.go('TEMPORAL_EFFECT');
       applyStageEffect(ctx, stage);
       this.machine.go('EVALUATING');
@@ -327,7 +361,7 @@ export class GameEngine {
     const ctx: SpinContext = {
       cfg: this.cfg, rng: this.rng, uids: this, board: { cols: this.cfg.grid.cols, rows: this.cfg.grid.rows, cells: [] },
       roundId: round.roundId, spinIndex, spinSeq: this.spinSeq, cascadeIndex: 0, mode, stageMultiplier: 1, refillWeights: refill,
-      debtStateAtStart: this.debt.state, payouts: round.payouts, echo: this.echo, debt: this.debt, session: this.session,
+      debtStateAtStart: this.debt.state, payouts: round.payouts, echo: this.echo, debt: this.debt, session: this.session, bonus: null,
       stats: round.stats, spinWin: 0, splitsThisSpin: 0, dischargesThisSpin: 0, echoEntriesThisSpin: 0, temporalEffectThisSpin: false,
       emit,
       snap: () => (this.recordEvents ? snapshot(ctx.board) : []),
@@ -397,12 +431,13 @@ export class GameEngine {
       for (const cl of clusters) {
         const { multiplier, ages } = ageMultiplier(cfg, ctx.board, cl);
         const pay = payFor(cfg, cl.symbol, cl.positions.length);
-        const raw = clusterAward(ctx.payouts.stake, pay, multiplier, ctx.stageMultiplier);
+        const hour = ctx.bonus?.hourMultiplier ?? 1;
+        const raw = clusterAward(ctx.payouts.stake, pay, multiplier, ctx.stageMultiplier * hour);
         ctx.emit('CLUSTER_DETECTED', { cascadeIndex: ctx.cascadeIndex, symbol: cl.symbol, positions: cl.positions, ages, multiplier });
         const award = ctx.payouts.record({
           awardId: ctx.payouts.nextAwardId(), spinIndex: ctx.spinIndex, cascadeIndex: ctx.cascadeIndex, source: 'CLUSTER',
           symbol: cl.symbol, positions: cl.positions, clusterSize: cl.positions.length, payX100: pay,
-          ageMultiplier: multiplier, stageMultiplier: ctx.stageMultiplier, rawAmount: raw,
+          ageMultiplier: multiplier, stageMultiplier: ctx.stageMultiplier, hourMultiplier: hour, rawAmount: raw,
         });
         ctx.spinWin += award.amount;
         ctx.stats.clusters++;
@@ -470,6 +505,7 @@ export class GameEngine {
     const round = this.round!;
     this.machine.go('ROUND_SETTLING');
     if (this.settledRoundIds.has(round.roundId)) throw new SettlementError(`round ${round.roundId} already settled`);
+    if (round.bonus) round.stats.maxHourMultiplier = round.bonus.hourMultiplier;
     const total = round.payouts.settle();
     this.settledRoundIds.add(round.roundId);
     if (this.settledRoundIds.size > 10_000) this.settledRoundIds.delete(this.settledRoundIds.values().next().value as string);

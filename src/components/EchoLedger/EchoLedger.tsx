@@ -9,6 +9,7 @@ const REASON: Record<EchoEntry['reason'], string> = {
   HOLLOW_FORMED: 'turned Hollow',
   CLUSTER_WON: 'won in a cluster',
   AGED_CLUSTER_WON: 'won while aged',
+  HOUR_REMNANT: 'remnant of the last hour, aimed',
 };
 
 export function EchoLedgerButton({ count, onOpen }: { count: number; onOpen: () => void }) {

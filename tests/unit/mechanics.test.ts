@@ -157,6 +157,15 @@ describe('Echo Ledger', () => {
     expect(echo.recent().filter((e) => e.status === 'EVICTED')).toHaveLength(2);
   });
 
+  it('in-round: an entry from an earlier cascade of the same spin is eligible, the current cascade is not', () => {
+    const echo = new EchoLedger(12, 10);
+    const rec = makeCtx(BOARD, { echo, spinSeq: 3 });
+    rec.cascadeIndex = 1;
+    echo.record(rec, 0, 'RAVEN', 0, 'CLUSTER_WON');
+    expect(echo.eligible(3, 1)).toHaveLength(0);
+    expect(echo.eligible(3, 2)).toHaveLength(1);
+  });
+
   it('newest eligible entries are selected first', () => {
     const echo = new EchoLedger(12, 10);
     echo.record(makeCtx(BOARD, { echo, spinSeq: 1 }), 0, 'WATCH', 0, 'CLUSTER_WON');

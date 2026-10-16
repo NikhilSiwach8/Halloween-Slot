@@ -1,0 +1,10 @@
+{
+  "rtp": 96,
+  "maxWinX": 50000,
+  "maxWinOneIn": 5000025,
+  "hitRate": 29.82,
+  "bonusOneIn": 339,
+  "books": 270420,
+  "configVersion": "0.2.0",
+  "generatedAt": "2026-10-16T23:17:58.404Z"
+}

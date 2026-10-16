@@ -23,6 +23,8 @@ export interface RoundStats {
   agesInWins: [number, number, number];
   /** Award units attributable to the Three Ages multiplier (amount - amount/multiplier). */
   ageUplift: number;
+  /** Highest Hour Multiplier reached in the round (1 if no bonus). */
+  maxHourMultiplier: number;
   /** Award units won in a spin after a temporal feature (echo / split / discharge / clockmaker) fired in it. */
   postTemporalWins: number;
   cascadeLimitHit: boolean;
@@ -33,7 +35,7 @@ export function emptyStats(): RoundStats {
   return {
     winningCascades: 0, clusters: 0, echoesProjected: 0, echoesRecorded: 0, splits: 0, discharges: 0,
     clockmaker: null, bonus: false, toFractured: 0, toHollow: 0, collapsesToWild: 0,
-    agesInWins: [0, 0, 0], ageUplift: 0, postTemporalWins: 0, cascadeLimitHit: false, capped: false,
+    agesInWins: [0, 0, 0], ageUplift: 0, maxHourMultiplier: 1, postTemporalWins: 0, cascadeLimitHit: false, capped: false,
   };
 }
 
@@ -62,6 +64,8 @@ export interface SpinContext {
   echo: EchoLedger;
   debt: ParadoxDebt;
   session: SessionScope;
+  /** Bonus-wide state (The Last Second); null in the base game. */
+  bonus: { hourMultiplier: number } | null;
   stats: RoundStats;
   spinWin: number;
   splitsThisSpin: number;

@@ -33,8 +33,8 @@ export function clockmakerOptions(cfg: GameConfig): ClockmakerOption[] {
  * second selection). Both paths change gameplay; neither is claimed to be better.
  * After the path resolves, every Clockmaker on the board becomes a Chrono Wild.
  */
-export function applyClockmakerChoice(ctx: SpinContext, path: ClockmakerPath, clockmakerPositions: number[]): void {
-  ctx.emit('CLOCKMAKER_CHOICE_SELECTED', { path, board: ctx.snap() });
+export function applyClockmakerChoice(ctx: SpinContext, path: ClockmakerPath, clockmakerPositions: number[], selectedBy: 'PLAYER' | 'CLOCKMAKER' = 'PLAYER'): void {
+  ctx.emit('CLOCKMAKER_CHOICE_SELECTED', { path, selectedBy, board: ctx.snap() });
   ctx.stats.clockmaker = path;
   ctx.temporalEffectThisSpin = true;
   if (path === 'PRESERVE_PAST') {

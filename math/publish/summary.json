@@ -1,0 +1,35 @@
+{
+  "game": "the-hollow-hour",
+  "configVersion": "0.2.0",
+  "generatedAt": "2026-10-16T23:17:58.404Z",
+  "baseSeed": 20261016,
+  "mode": "base",
+  "cost": 1,
+  "books": 270420,
+  "booksByCriteria": {
+    "zero": 175428,
+    "basegame": 73845,
+    "freegame": 20727,
+    "bigwin": 400,
+    "wincap": 20
+  },
+  "distinctPayouts": 2505,
+  "rtp": 0.95999999999998,
+  "targetRtp": 0.96,
+  "hitRate": 0.298221386223,
+  "criteriaProbability": {
+    "zero": 0.70168530106,
+    "basegame": 0.295368761297,
+    "freegame": 0.002944737642,
+    "bigwin": 9.99999e-7,
+    "wincap": 1.99999e-7
+  },
+  "maxWinX": 50000,
+  "maxWinProbability": 1.99999e-7,
+  "maxWinOneIn": 5000025,
+  "bonusOneIn": 339,
+  "tiltLambda": -0.0015072100993866288,
+  "wincapAttempts": 117732,
+  "replayVerified": 2807,
+  "runtimeSeconds": 420
+}

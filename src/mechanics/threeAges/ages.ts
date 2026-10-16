@@ -81,6 +81,12 @@ export function applyAgeSteps(
     }
   }
   if (debtGain) ctx.debt.add(ctx, `AGE_CHANGES:${cause}`, debtGain);
+  const hm = ctx.cfg.bonus.hourMultiplier;
+  growHourMultiplier(
+    ctx,
+    changes.filter((c) => c.kind === 'ADVANCE' && c.to.age === 2).length * hm.perHollow + changes.filter((c) => c.kind === 'COLLAPSE_TO_WILD').length * hm.perCollapse,
+    cause,
+  );
   return changes;
 }
 
@@ -115,5 +121,17 @@ export function collapseToWild(ctx: SpinContext, indices: readonly number[], cau
   ctx.emit('SYMBOL_AGE_CHANGED', { changes, board: ctx.snap() });
   ctx.stats.collapsesToWild += changes.length;
   ctx.debt.add(ctx, `AGE_CHANGES:${cause}`, changes.length * ctx.cfg.debt.gains.WILD_COLLAPSE);
+  // The Stage IV collapse is a fixed stage rule and does not feed the Hour Multiplier.
+  if (cause !== 'COLLAPSE_STAGE') growHourMultiplier(ctx, changes.length * ctx.cfg.bonus.hourMultiplier.perCollapse, cause);
   return changes;
+}
+
+/** The Hour Multiplier only exists inside The Last Second (ctx.bonus is null in the base game). */
+export function growHourMultiplier(ctx: SpinContext, delta: number, cause: string): void {
+  if (!ctx.bonus || delta <= 0) return;
+  const before = ctx.bonus.hourMultiplier;
+  ctx.bonus.hourMultiplier = Math.min(ctx.cfg.bonus.hourMultiplier.max, before + delta);
+  if (ctx.bonus.hourMultiplier !== before) {
+    ctx.emit('HOUR_MULTIPLIER_CHANGED', { value: ctx.bonus.hourMultiplier, delta: ctx.bonus.hourMultiplier - before, reason: cause });
+  }
 }

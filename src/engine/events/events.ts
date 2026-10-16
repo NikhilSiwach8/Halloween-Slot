@@ -32,7 +32,8 @@ export interface EventPayloads {
   SPIN_STARTED: { roundId: string; spinIndex: number; spinSeq: number; mode: 'BASE' | 'BONUS'; stake: number; balance: number; debt: number; debtState: DebtState };
   BOARD_CREATED: { board: BoardSnapshot; tickets: number; clockmakers: number; forced: string | null };
   CLOCKMAKER_CHOICE_OFFERED: { positions: number[]; echoesAvailable: number };
-  CLOCKMAKER_CHOICE_SELECTED: { path: ClockmakerPath; board: BoardSnapshot };
+  CLOCKMAKER_CHOICE_SELECTED: { path: ClockmakerPath; selectedBy: 'PLAYER' | 'CLOCKMAKER'; board: BoardSnapshot };
+  HOUR_MULTIPLIER_CHANGED: { value: number; delta: number; reason: string };
   CLUSTER_DETECTED: { cascadeIndex: number; symbol: PayingSymbolId; positions: number[]; ages: Record<Age, number>; multiplier: number };
   WIN_RECORDED: { award: Award; spinWin: number; roundWin: number };
   SYMBOL_REMOVED: { cascadeIndex: number; positions: number[]; frozenRetained: number[]; board: BoardSnapshot };
@@ -49,7 +50,7 @@ export interface EventPayloads {
   CASCADE_LIMIT_REACHED: { limit: number };
   WIN_CAP_REACHED: { cap: number };
   BONUS_TRIGGERED: { tickets: number };
-  BONUS_STAGE_CHANGED: { stage: 1 | 2 | 3 | 4; name: BonusStageName; multiplier: number; frozen: number[] };
+  BONUS_STAGE_CHANGED: { stage: 1 | 2 | 3 | 4; name: BonusStageName; multiplier: number; hourMultiplier: number; frozen: number[] };
   BONUS_COMPLETED: { bonusWin: number };
   ROUND_SETTLED: { roundId: string; stake: number; totalWin: number; baseWin: number; bonusWin: number; balance: number; capped: boolean; awards: number };
 }

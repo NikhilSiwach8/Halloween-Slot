@@ -231,7 +231,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .ls-stages li.done { opacity: 0.55; }
 .ls-roman { font-family: var(--font-display); font-size: 16px; color: var(--brass); }
 .ls-mult { color: var(--emerald); }
-.ls-win { text-align: center; font-size: 14px; color: var(--silver); }
+.ls-win { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 24px; text-align: center; font-size: 14px; color: var(--silver); }
 .ls-win strong { color: var(--brass); font-size: 18px; margin-left: 6px; }
 .ls-play {
   display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px; border-radius: 10px; border: 1px solid var(--crimson);

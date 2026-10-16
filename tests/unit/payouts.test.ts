@@ -6,7 +6,7 @@ import { PayoutLedger, SettlementError, ageMultiplier, clusterAward, payFor } fr
 import { grid } from './helpers';
 
 const award = (ledger: PayoutLedger, raw: number, id = ledger.nextAwardId()) =>
-  ledger.record({ awardId: id, spinIndex: 0, cascadeIndex: 0, source: 'CLUSTER', symbol: 'L_COG', positions: [0], clusterSize: 5, payX100: 100, ageMultiplier: 1, stageMultiplier: 1, rawAmount: raw });
+  ledger.record({ awardId: id, spinIndex: 0, cascadeIndex: 0, source: 'CLUSTER', symbol: 'L_COG', positions: [0], clusterSize: 5, payX100: 100, ageMultiplier: 1, stageMultiplier: 1, hourMultiplier: 1, rawAmount: raw });
 
 describe('paytable and multipliers', () => {
   it('looks up pay by cluster size and clamps to the last tier', () => {

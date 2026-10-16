@@ -5,7 +5,7 @@ import { formatCredits } from '../../utils/format';
 const ROMAN = ['I', 'II', 'III', 'IV'];
 
 /** Stage tracker + the player's control to begin each stage of The Last Second. */
-export function LastSecondPanel({ cfg, stage, awaitingStage, busy, bonusWin, onPlay }: { cfg: GameConfig; stage: number; awaitingStage: boolean; busy: boolean; bonusWin: number; onPlay: () => void }) {
+export function LastSecondPanel({ cfg, stage, hourMultiplier, awaitingStage, busy, bonusWin, onPlay }: { cfg: GameConfig; stage: number; hourMultiplier: number; awaitingStage: boolean; busy: boolean; bonusWin: number; onPlay: () => void }) {
   const next = BONUS_STAGES[stage] ?? null;
   return (
     <div className="last-second" data-testid="bonus-panel" data-stage={stage}>
@@ -19,7 +19,10 @@ export function LastSecondPanel({ cfg, stage, awaitingStage, busy, bonusWin, onP
           </li>
         ))}
       </ol>
-      <div className="ls-win">Bonus win <strong data-testid="bonus-win">{formatCredits(bonusWin, cfg)}</strong></div>
+      <div className="ls-win">
+        <span className="ls-hour" data-testid="hour-multiplier" title="Grows when symbols collapse into Chrono Wilds; a Paradox Discharge multiplies it">Hour Multiplier <strong>×{hourMultiplier}</strong></span>
+        <span>Bonus win <strong data-testid="bonus-win">{formatCredits(bonusWin, cfg)}</strong></span>
+      </div>
       {awaitingStage && next && (
         <button className="ls-play" onClick={onPlay} disabled={busy} data-testid="bonus-stage-button">
           Begin {next.title}

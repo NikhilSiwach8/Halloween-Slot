@@ -43,7 +43,11 @@ export interface GameConfig {
   id: string;
   version: string;
   grid: { cols: number; rows: number };
-  currency: { unitsPerCredit: number; startingBalance: number };
+  /**
+   * Money is integer units. `unitsPerCredit` units = 1 displayed unit (100 in the demo;
+   * 1,000,000 when amounts come from Stake Engine, which uses 6 implied decimals).
+   */
+  currency: { unitsPerCredit: number; startingBalance: number; code?: string; symbol?: string; symbolAfter?: boolean; decimals?: number };
   /** Permitted stakes in integer units. */
   bets: number[];
   defaultBet: number;
@@ -55,6 +59,12 @@ export interface GameConfig {
     refill: WeightTable;
     /** Boards and refills inside The Last Second. */
     bonus: WeightTable;
+    /**
+     * Alternative bonus weight set used only to generate max-win candidate books (the analogue of
+     * a dedicated win-cap reel set in the Stake Math SDK). A book records which set produced it;
+     * its probability comes from the published lookup table, not from how it was found.
+     */
+    wincapBonus: WeightTable;
   };
   clusters: {
     minSize: number;
@@ -124,6 +134,12 @@ export interface GameConfig {
     discharge: { regionSize: number; echoProjections: number; maxPerSpin: number };
   };
   clockmaker: {
+    /**
+     * Who picks the path. ENGINE = drawn from `engineWeights` inside the round (required for
+     * book-based platforms where the whole round is precomputed); PLAYER = interactive pause.
+     */
+    selection: 'PLAYER' | 'ENGINE';
+    engineWeights: Record<ClockmakerPath, number>;
     preservePast: { echoProjections: number; fallbackFractureCells: number };
     breakFuture: { advanceCells: number; primeSplitCells: number };
   };
@@ -137,6 +153,13 @@ export interface GameConfig {
     stageMultipliers: [number, number, number, number];
     /** Total award cap for the whole round including the bonus, as a multiple of stake (cannot exceed maxWinX). */
     maxBonusWinX: number;
+    /**
+     * The Hour Multiplier: a bonus-wide multiplier that starts at `start` and grows each time a
+     * symbol turns Hollow (+perHollow) or collapses into a Chrono Wild (+perCollapse) during
+     * The Last Second, up to `max`. A Paradox Discharge during the bonus multiplies it by
+     * `dischargeFactor` (also capped at `max`). Bonus awards = cluster award x stage multiplier x Hour Multiplier.
+     */
+    hourMultiplier: { start: number; perHollow: number; perCollapse: number; max: number; dischargeFactor: number };
   };
   /**
    * Scope of the cross-spin systems. SESSION = persists across rounds (the standalone
@@ -144,6 +167,18 @@ export interface GameConfig {
    * independent of previous ones (required by stateless platforms such as Stake Engine).
    */
   persistence: { paradoxDebt: 'SESSION' | 'ROUND'; echoLedger: 'SESSION' | 'ROUND' };
+  /**
+   * Round-start draws (used with ROUND persistence so the systems are live inside one round).
+   * Drawn from the round's own RNG stream immediately after the opening board.
+   */
+  roundStart: {
+    /** Starting Paradox Debt: weighted table of values. */
+    debt: { value: number; weight: number }[];
+    /** "Remnants of the Hour": number of echo entries seeded into the ledger, weighted. */
+    remnantCount: { value: number; weight: number }[];
+    /** Age weights [Original, Fractured, Hollow] of a remnant. */
+    remnantAgeWeights: [number, number, number];
+  };
   /** Total round award cap, as a multiple of stake. */
   maxWinX: number;
   dev: { allowForcing: boolean };

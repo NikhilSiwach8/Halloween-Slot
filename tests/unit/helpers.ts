@@ -56,7 +56,7 @@ export function makeCtx(
     cfg, rng: opts.rng ?? new SeededRng(1), uids, board, roundId: 'R1', spinIndex: 0, spinSeq: opts.spinSeq ?? 1, cascadeIndex: 0,
     mode: opts.mode ?? 'BASE', stageMultiplier: 1, refillWeights: cfg.weights.refill, debtStateAtStart: opts.debtState ?? 'STABLE',
     payouts: new PayoutLedger('R1', 100, cfg.maxWinX), echo: opts.echo ?? new EchoLedger(cfg.echo.maxEntries, cfg.echo.ttlSpins),
-    debt: opts.debt ?? new ParadoxDebt(cfg), session: { splitPrimedCells: 0 }, stats: emptyStats(), spinWin: 0,
+    debt: opts.debt ?? new ParadoxDebt(cfg), session: { splitPrimedCells: 0 }, bonus: null, stats: emptyStats(), spinWin: 0,
     splitsThisSpin: 0, dischargesThisSpin: 0, echoEntriesThisSpin: 0, temporalEffectThisSpin: false,
     emit: (type, payload) => events.push({ type, payload }),
     snap: () => snapshot(board),

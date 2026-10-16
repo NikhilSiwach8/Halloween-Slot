@@ -24,13 +24,15 @@ src/
 │   ├── clockmakerChoice/ path definitions + resolution
 │   └── lastSecond/      stage table + stage effects
 ├── simulation/      runSimulation() — headless statistics
-├── platform/        PlatformAdapter interface + LocalDemoAdapter
+├── math/            books.ts — book generation, criteria weighting, lookup-table statistics
+├── platform/        PlatformAdapter, LocalDemoAdapter (fresh engine per round), StakeRgsAdapter (book replay + verification)
 ├── app/             React shell: useGame (event player), presentation reducer, styles
 ├── components/      GameBoard, Symbol, HUD, EchoLedger, ParadoxMeter, ClockmakerChoice, LastSecond, Modals
 ├── rendering/       3D clocktower (React Three Fiber, lazy-loaded), asset manifest
 ├── audio/           Web Audio manager with replaceable synthesized cues
 └── utils/
 scripts/simulate.ts  CLI simulator
+scripts/export-books.ts / verify-books.ts   Stake publication files (math/publish/) and their independent check
 tests/unit           Vitest: engine + mechanics (no React)
 tests/e2e            Playwright: desktop + Pixel 7 viewport
 ```
@@ -76,14 +78,21 @@ tests/e2e            Playwright: desktop + Pixel 7 viewport
      this.
    - Settings → *Export session log* downloads the seed and action list.
 
-7. **Platform boundary.**
+7. **Stateless rounds and books.**
+   - With ROUND persistence, a round depends only on (config version, seed, bonus weight set).
+   - The RNG draw order is fixed: opening board, starting debt, remnants, then everything
+     else.
+   - That makes every round a reproducible "book". The RGS picks the book; the client
+     replays it with the same engine and checks the payout.
+
+8. **Platform boundary.**
    - The UI talks only to `PlatformAdapter`, whose methods are async.
    - `LocalDemoAdapter` wraps the engine. A platform adapter can replace it without UI
      changes, apart from the gaps listed in STAKE_ENGINE_INTEGRATION.md.
    - There are no wallets, deposits or cashouts anywhere. `demoCreditsOnly: true` is part
      of the interface.
 
-8. **Persistence.** Only user settings (volume, mute, reduced motion, speed) are written to
+9. **Persistence.** Only user settings (volume, mute, reduced motion, speed) are written to
    `localStorage`. Balance and game state are in-memory and reset on reload.
 
 ## Rendering
