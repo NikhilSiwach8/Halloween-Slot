@@ -102,6 +102,12 @@ export class EchoLedger {
     return entry;
   }
 
+  /** Round-scope reset (stateless profile). */
+  clear() {
+    this.active = [];
+    this.history = [];
+  }
+
   consume(entry: EchoEntry, by: EchoEntry['consumedBy']) {
     if (entry.status !== 'ACTIVE') throw new Error(`echo ${entry.id} is ${entry.status} and cannot be consumed`);
     entry.consumedBy = by;

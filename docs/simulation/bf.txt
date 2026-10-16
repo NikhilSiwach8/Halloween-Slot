@@ -1,0 +1,20 @@
+
+=== seed 404 | policy BREAK_FUTURE | 500,000 rounds | bet 100 units ===
+RTP (observed)        96.874%  ±1.905% (95% CI 94.97% – 98.78%)
+Hit frequency         29.95%   zero-win 70.05%
+Avg win on hit        3.235x   avg payout/round 0.9687x
+Last Second           0.349% (1 in 286)  avg bonus 87.36x
+Clockmaker's Choice   1.763%  paths {"PRESERVE_PAST":0,"BREAK_FUTURE":8817}
+Paradox Split         1.55% of rounds (0.0156/round)
+Echo activations      1.84% of rounds (0.0384 projected, 0.4504 recorded /round)
+Debt Discharge        0.772% of rounds
+Max observed win      612.50x   (configured cap 5000x, cap hits 0, cascade-limit hits 0)
+Contribution          base 68.51% | bonus 31.49% | age-multiplier uplift 32.48% | post-temporal-effect wins 33.69% | clockmaker rounds 4.22%
+Age transitions       ->Fractured 554358  ->Hollow 25310  ->Wild 8556
+Ages in wins          Original 1014449  Fractured 41725  Hollow 5790
+Win distribution      0x:70.052%  (0,1x):0.000%  [1,2x):17.928%  [2,5x):9.298%  [5,10x):2.011%  [10,25x):0.407%  [25,50x):0.071%  [50,100x):0.118%  [100,500x):0.114%  [500,1000x):0.001%  [1000x,cap):0.000%
+Cascade distribution  0:70.05%  1:23.88%  2:4.73%  3:0.97%  4:0.23%  5:0.08%  6:0.03%  7:0.01%  8:0.01%  9:0.00%  10+:0.00%
+Runtime               22.5s (22239 rounds/s)
+
+Note: simulated estimates from a development PRNG. Not a certified RTP, volatility rating or RNG.
+Wrote simulation-output/bf.json

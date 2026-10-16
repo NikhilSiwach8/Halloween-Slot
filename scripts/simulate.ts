@@ -8,7 +8,7 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { DEFAULT_CONFIG } from '../src/config/gameConfig';
+import { DEFAULT_CONFIG, STATELESS_CONFIG } from '../src/config/gameConfig';
 import { runSimulation, type ChoicePolicy, type SimulationReport } from '../src/simulation/simulator';
 
 function arg(name: string, fallback: string): string {
@@ -21,15 +21,17 @@ const seeds = arg('seeds', '1,2,3').split(',').map(Number);
 const policies = arg('policy', 'ALTERNATE').split(',') as ChoicePolicy[];
 const bet = Number(arg('bet', String(DEFAULT_CONFIG.defaultBet)));
 const jsonOut = arg('json', '');
+const profile = arg('profile', 'default');
+const cfg = profile === 'stateless' ? STATELESS_CONFIG : DEFAULT_CONFIG;
 
 const pct = (v: number, d = 2) => `${(v * 100).toFixed(d)}%`;
 const reports: SimulationReport[] = [];
 
 for (const policy of policies) {
   for (const seed of seeds) {
-    const r = runSimulation({ cfg: DEFAULT_CONFIG, seed, rounds, bet, policy });
+    const r = runSimulation({ cfg, seed, rounds, bet, policy });
     reports.push(r);
-    console.log(`\n=== seed ${seed} | policy ${policy} | ${rounds.toLocaleString()} rounds | bet ${bet} units ===`);
+    console.log(`\n=== ${cfg.id} | seed ${seed} | policy ${policy} | ${rounds.toLocaleString()} rounds | bet ${bet} units ===`);
     console.log(`RTP (observed)        ${pct(r.rtp, 3)}  ±${pct(1.96 * r.rtpStdError, 3)} (95% CI ${pct(r.rtp95[0])} – ${pct(r.rtp95[1])})`);
     console.log(`Hit frequency         ${pct(r.hitFrequency)}   zero-win ${pct(r.zeroWinFrequency)}`);
     console.log(`Avg win on hit        ${r.avgWinOnHitX.toFixed(3)}x   avg payout/round ${r.avgPayoutPerRoundX.toFixed(4)}x`);
@@ -57,6 +59,6 @@ console.log('\nNote: simulated estimates from a development PRNG. Not a certifie
 
 if (jsonOut) {
   mkdirSync(dirname(jsonOut), { recursive: true });
-  writeFileSync(jsonOut, JSON.stringify({ config: { id: DEFAULT_CONFIG.id, version: DEFAULT_CONFIG.version }, generatedAt: new Date().toISOString(), reports }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ config: { id: cfg.id, version: cfg.version }, generatedAt: new Date().toISOString(), reports }, null, 2));
   console.log(`Wrote ${jsonOut}`);
 }

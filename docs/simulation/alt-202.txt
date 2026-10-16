@@ -1,0 +1,20 @@
+
+=== seed 202 | policy ALTERNATE | 1,000,000 rounds | bet 100 units ===
+RTP (observed)        95.471%  ±1.316% (95% CI 94.15% – 96.79%)
+Hit frequency         29.86%   zero-win 70.14%
+Avg win on hit        3.198x   avg payout/round 0.9547x
+Last Second           0.351% (1 in 285)  avg bonus 83.45x
+Clockmaker's Choice   1.803%  paths {"PRESERVE_PAST":9014,"BREAK_FUTURE":9014}
+Paradox Split         1.56% of rounds (0.0157/round)
+Echo activations      2.62% of rounds (0.0553 projected, 0.4492 recorded /round)
+Debt Discharge        0.862% of rounds
+Max observed win      740.75x   (configured cap 5000x, cap hits 0, cascade-limit hits 0)
+Contribution          base 69.33% | bonus 30.67% | age-multiplier uplift 31.72% | post-temporal-effect wins 32.37% | clockmaker rounds 4.29%
+Age transitions       ->Fractured 1068633  ->Hollow 49285  ->Wild 17612
+Ages in wins          Original 2031162  Fractured 81756  Hollow 11945
+Win distribution      0x:70.143%  (0,1x):0.000%  [1,2x):17.845%  [2,5x):9.296%  [5,10x):2.007%  [10,25x):0.407%  [25,50x):0.076%  [50,100x):0.124%  [100,500x):0.101%  [500,1000x):0.001%  [1000x,cap):0.000%
+Cascade distribution  0:70.14%  1:23.73%  2:4.79%  3:0.97%  4:0.24%  5:0.08%  6:0.04%  7:0.01%  8:0.01%  9:0.00%  10+:0.00%
+Runtime               36.8s (27156 rounds/s)
+
+Note: simulated estimates from a development PRNG. Not a certified RTP, volatility rating or RNG.
+Wrote simulation-output/alt-202.json

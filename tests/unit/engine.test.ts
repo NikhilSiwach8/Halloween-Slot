@@ -239,3 +239,18 @@ describe('Paradox Debt across rounds', () => {
     expect(dIdx).toBeLessThan(settledIdx);
   });
 });
+
+describe('persistence scope', () => {
+  it('ROUND scope resets Paradox Debt and the Echo Ledger at every round start (stateless profile)', async () => {
+    const { STATELESS_CONFIG } = await import('../../src/config/gameConfig');
+    const e = new GameEngine(STATELESS_CONFIG, { seed: 12, startingBalance: 1e9 });
+    for (let i = 0; i < 300; i++) {
+      const r = e.spin({ bet: 100 });
+      const start = r.events.find((x) => x.type === 'SPIN_STARTED') as Extract<GameEvent, { type: 'SPIN_STARTED' }>;
+      expect(start.debt).toBe(0);
+      expect(r.events.some((x) => x.type === 'ECHO_PROJECTED' && x.entry.roundId !== start.roundId)).toBe(false);
+      let s = r;
+      while (!s.settled) s = s.awaiting === 'CLOCKMAKER_CHOICE' ? e.chooseClockmakerPath('PRESERVE_PAST') : e.playBonusStage();
+    }
+  });
+});

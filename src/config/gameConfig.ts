@@ -75,8 +75,20 @@ export const DEFAULT_CONFIG: GameConfig = {
     stageMultipliers: [1, 2, 3, 5],
     maxBonusWinX: 5000,
   },
+  persistence: { paradoxDebt: 'SESSION', echoLedger: 'SESSION' },
   maxWinX: 5000,
   dev: { allowForcing: false },
+};
+
+/**
+ * Stateless profile: identical rules, but Paradox Debt and the Echo Ledger reset at the
+ * start of every round, so no round depends on a previous one. Candidate basis for a
+ * platform (book-based) build — it has its own simulated RTP; see docs/MATH_MODEL.md.
+ */
+export const STATELESS_CONFIG: GameConfig = {
+  ...DEFAULT_CONFIG,
+  id: 'the-hollow-hour-stateless',
+  persistence: { paradoxDebt: 'ROUND', echoLedger: 'ROUND' },
 };
 
 /** Development configuration: identical math, but dev-only forced triggers are permitted. */

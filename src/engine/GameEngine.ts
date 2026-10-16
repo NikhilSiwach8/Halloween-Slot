@@ -201,6 +201,8 @@ export class GameEngine {
         roundId, stake: req.bet, payouts: new PayoutLedger(roundId, req.bet, Math.min(this.cfg.maxWinX, this.cfg.bonus.maxBonusWinX)), stats: emptyStats(),
         bonusTriggered: false, bonusStage: 0, baseWin: 0, pendingClockmaker: null, frozen: [],
       };
+      if (this.cfg.persistence.paradoxDebt === 'ROUND') this.debt.forceValue(0);
+      if (this.cfg.persistence.echoLedger === 'ROUND') this.echo.clear();
       if (req.force === 'DISCHARGE') this.debt.forceValue(this.cfg.debt.thresholds.DISCHARGE);
       const ctx = this.startSpin('BASE', 0, this.cfg.weights.refill);
       ctx.board = fillBoard(this.rng, this, this.cfg.grid.cols, this.cfg.grid.rows, this.cfg.weights.initial);

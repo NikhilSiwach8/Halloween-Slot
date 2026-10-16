@@ -1,0 +1,20 @@
+
+=== the-hollow-hour-stateless | seed 505 | policy ALTERNATE | 1,000,000 rounds | bet 100 units ===
+RTP (observed)        90.056%  ±1.216% (95% CI 88.84% – 91.27%)
+Hit frequency         29.80%   zero-win 70.20%
+Avg win on hit        3.022x   avg payout/round 0.9006x
+Last Second           0.351% (1 in 285)  avg bonus 74.63x
+Clockmaker's Choice   1.811%  paths {"PRESERVE_PAST":9056,"BREAK_FUTURE":9056}
+Paradox Split         1.56% of rounds (0.0157/round)
+Echo activations      0.26% of rounds (0.0070 projected, 0.4333 recorded /round)
+Debt Discharge        0.003% of rounds
+Max observed win      668.00x   (configured cap 5000x, cap hits 0, cascade-limit hits 0)
+Contribution          base 70.90% | bonus 29.10% | age-multiplier uplift 28.03% | post-temporal-effect wins 25.98% | clockmaker rounds 3.95%
+Age transitions       ->Fractured 900951  ->Hollow 27209  ->Wild 14495
+Ages in wins          Original 2033190  Fractured 67354  Hollow 10031
+Win distribution      0x:70.200%  (0,1x):0.000%  [1,2x):17.977%  [2,5x):9.379%  [5,10x):1.830%  [10,25x):0.331%  [25,50x):0.084%  [50,100x):0.111%  [100,500x):0.087%  [500,1000x):0.001%  [1000x,cap):0.000%
+Cascade distribution  0:70.20%  1:23.75%  2:4.75%  3:0.96%  4:0.23%  5:0.07%  6:0.03%  7:0.01%  8:0.00%  9:0.00%  10+:0.00%
+Runtime               30.2s (33072 rounds/s)
+
+Note: simulated estimates from a development PRNG. Not a certified RTP, volatility rating or RNG.
+Wrote simulation-output/stateless-505.json

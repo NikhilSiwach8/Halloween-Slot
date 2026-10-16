@@ -138,6 +138,12 @@ export interface GameConfig {
     /** Total award cap for the whole round including the bonus, as a multiple of stake (cannot exceed maxWinX). */
     maxBonusWinX: number;
   };
+  /**
+   * Scope of the cross-spin systems. SESSION = persists across rounds (the standalone
+   * prototype default). ROUND = reset at the start of every round, making every round
+   * independent of previous ones (required by stateless platforms such as Stake Engine).
+   */
+  persistence: { paradoxDebt: 'SESSION' | 'ROUND'; echoLedger: 'SESSION' | 'ROUND' };
   /** Total round award cap, as a multiple of stake. */
   maxWinX: number;
   dev: { allowForcing: boolean };
