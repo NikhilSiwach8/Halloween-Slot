@@ -6,6 +6,7 @@ import { Reels } from '../components/Reels';
 import { Character, Icon, Logo, ReelFrame, RollingAmount, SignalPanel, Svg } from '../components/Cabinet';
 import { SymbolDefs } from '../components/SymbolArt';
 import { OverlayView } from '../components/Overlays';
+import { Splash, splashSkipped } from '../components/Splash';
 import { RulesModal } from '../components/Rules';
 import { StationMenu } from '../components/StationMenu';
 import { audio } from './audio';
@@ -54,6 +55,8 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   }, []);
   useEffect(() => audio.setMood(view.bonus?.type ?? 'base'), [view.bonus?.type]);
   const [panel, setPanel] = useState<'none' | 'rules' | 'menu'>('none');
+  // Title screen, except in bet replay (reviewers and shared links go straight to the round).
+  const [splash, setSplash] = useState(() => !session.replay && !splashSkipped());
   const [muted, setMuted] = useState(audio.muted);
   const replay = session.replay;
   const money = (units: number) => formatMoney(session.currency, units);
@@ -70,7 +73,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || panel !== 'none' || session.flags.disabledSpacebar) return;
+      if (e.code !== 'Space' || panel !== 'none' || splash || session.flags.disabledSpacebar) return;
       if ((e.target as HTMLElement)?.tagName === 'BUTTON') return;
       e.preventDefault();
       onSpin();
@@ -93,7 +96,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   const spinLabel = view.busy ? 'SKIP' : replay ? (g.replayed ? 'PLAY AGAIN' : 'PLAY') : 'SPIN';
 
   return (
-    <div ref={rootRef} className={`app ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''} ${view.spinning ? 'is-spinning' : ''}`}>
+    <div ref={rootRef} className={`app ${splash ? 'splash-on' : ''} ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''} ${view.spinning ? 'is-spinning' : ''}`}>
       <Background mood={view.bonus?.type ?? 'base'} reducedMotion={REDUCED_MOTION} surge={view.overlay?.kind === 'bigWin' ? -view.spinId : view.spinWinX100 >= 500 ? view.spinId : 0} />
       <SymbolDefs />
       <div className="scanlines" aria-hidden="true" />
@@ -195,6 +198,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
       </footer>
       <p className="disclaimer">{session.demo ? 'Demo · demo credits only · not real money' : replay ? 'Bet replay · no bets are placed' : 'Winnings are settled by the game server.'}</p>
 
+      {splash ? <Splash cfg={cfg} onContinue={() => setSplash(false)} /> : null}
       {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={g.bet} onContinue={g.advance} /> : null}
       {panel === 'rules' ? <RulesModal cfg={cfg} showRtp={session.flags.displayRTP !== false} onClose={() => setPanel('none')} /> : null}
       {panel === 'menu' ? (

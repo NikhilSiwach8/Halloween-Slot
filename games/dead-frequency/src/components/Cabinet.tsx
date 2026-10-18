@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { BonusType, GameConfig } from '../config/types';
 import { SYMBOL_IMAGES } from './assets';
 
@@ -68,21 +68,24 @@ export function RollingAmount({ value, format, testId }: { value: number; format
 }
 
 /* ----------------------------------------------------------------- logo */
-export function Logo() {
+export function Logo({ className = 'logo' }: { className?: string }) {
+  // Unique gradient ids per instance: two logos may be on the page (the game's and the title
+  // screen's), and a url(#id) that resolves into a display:none copy would paint nothing.
+  const id = useId().replace(/:/g, '');
   return (
-    <div className="logo" aria-label="Dead Frequency" role="img">
+    <div className={className} aria-label="Dead Frequency" role="img">
       <svg viewBox="0 0 360 150" aria-hidden="true">
         <defs>
-          <linearGradient id="logo-fill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#fff4e2" />
             <stop offset="0.55" stopColor="#e6c8a0" />
             <stop offset="1" stopColor="#8a2a33" />
           </linearGradient>
-          <linearGradient id="logo-red" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`${id}-red`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#ff6b7a" />
             <stop offset="1" stopColor="#7a0d1c" />
           </linearGradient>
-          <filter id="logo-glow" x="-20%" y="-40%" width="140%" height="180%">
+          <filter id={`${id}-glow`} x="-20%" y="-40%" width="140%" height="180%">
             <feGaussianBlur stdDeviation="4" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
@@ -94,9 +97,9 @@ export function Logo() {
           <path className="logo-wave w1" d="M10 4a18 18 0 0 0 0 20M34 4a18 18 0 0 1 0 20" stroke="#ff3b4f" strokeWidth="3" fill="none" strokeLinecap="round" />
           <path className="logo-wave w2" d="M2 -4a30 30 0 0 0 0 36M42 -4a30 30 0 0 1 0 36" stroke="#ff3b4f" strokeWidth="3" fill="none" strokeLinecap="round" />
         </g>
-        <g filter="url(#logo-glow)">
-          <text x="210" y="66" textAnchor="middle" className="logo-word1" fill="url(#logo-fill)" stroke="#2b0a10" strokeWidth="3" paintOrder="stroke">DEAD</text>
-          <text x="210" y="122" textAnchor="middle" className="logo-word2" fill="url(#logo-red)" stroke="#1a0508" strokeWidth="3" paintOrder="stroke">FREQUENCY</text>
+        <g filter={`url(#${id}-glow)`}>
+          <text x="210" y="66" textAnchor="middle" className="logo-word1" fill={`url(#${id}-fill)`} stroke="#2b0a10" strokeWidth="3" paintOrder="stroke">DEAD</text>
+          <text x="210" y="122" textAnchor="middle" className="logo-word2" fill={`url(#${id}-red)`} stroke="#1a0508" strokeWidth="3" paintOrder="stroke">FREQUENCY</text>
         </g>
         <path d="M96 80h228" stroke="#c9a45e" strokeWidth="2" opacity="0.7" />
         <circle cx="96" cy="80" r="3" fill="#c9a45e" />

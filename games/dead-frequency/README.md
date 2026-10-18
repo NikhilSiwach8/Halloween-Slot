@@ -46,6 +46,11 @@ in a radio-console frame with a multiplier plaque and an LED ticker. The control
 Balance / Win, the Bet with ˄ ˅, Double Chance (2×), the round Spin button and the Buy (tower) button.
 Portrait screens stack the parts; the mini-player moves the controls into a column beside the reels.
 
+**Title screen.** After loading, the game opens on a title screen: the logo, three vintage radio
+cabinets advertising Static & Retune / On Air wilds, the Antenna bonuses and Mystery Bonus, and the
+max win (numbers read from the game config), and "Click to continue" (any click or key). It is not
+shown in bet replay, and the player can tick "Don't show again" (kept in the browser).
+
 **Presentation.** Reels scroll downward and stop left to right with a bounce. A small reel engine
 (Reels.tsx) moves them with transforms only, one animation loop for all six reels; each stop eases
 out from exactly the cruise speed, so there is no jolt. Once two Antennas
@@ -68,7 +73,7 @@ games/dead-frequency/
                    socialText.ts (Stake.us wording), styles.css
   src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
   src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
-  src/components/  Reels (scrolling reels, staggered stops, tease, win pop-up), BigWin (tier celebration), Cabinet (logo, reel frame,
+  src/components/  Reels (scrolling reels, staggered stops, tease, win pop-up), BigWin (tier celebration), Splash (title screen), Cabinet (logo, reel frame,
                    Signal Panel, Night Host, icons, rolling win meter), SymbolArt (image + SVG fallback),
                    assets.ts, Background (animated canvas scene), Overlays (incl. the "Signal
                    Intercepted" bonus intro), StationMenu, Rules
