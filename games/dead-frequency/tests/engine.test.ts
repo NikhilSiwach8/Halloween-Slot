@@ -66,13 +66,13 @@ describe('ways evaluation', () => {
 
   it('applies the global multiplier and clamps to the 6-reel pay', () => {
     const b = boardFromRows(rows(`
-      DOLL DOLL DOLL DOLL DOLL DOLL
+      WIDOW WIDOW WIDOW WIDOW WIDOW WIDOW
       VALVE MIC VALVE MIC VALVE MIC
       VALVE MIC VALVE MIC VALVE MIC
       VALVE MIC VALVE MIC VALVE MIC`));
-    const doll = evaluateWays(cfg, b, 7).wins.find((w) => w.symbol === 'DOLL')!;
-    expect(doll.length).toBe(6);
-    expect(doll.winX100).toBe(cfg.paytable.DOLL[3] * 7);
+    const widow = evaluateWays(cfg, b, 7).wins.find((w) => w.symbol === 'WIDOW')!;
+    expect(widow.length).toBe(6);
+    expect(widow.winX100).toBe(cfg.paytable.WIDOW[3] * 7);
   });
 });
 

@@ -94,25 +94,26 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
 | Jurisdiction flags: `disabledSpacebar`, `disabledBuyFeature` (hides Feature Spins and Bonus Buy), `disabledTurbo`, `displayRTP` | Done |
 | Static build, no requests to other origins, clean console | Verified in Chromium |
 | Error messages for `ERR_IPB`, `ERR_IS`, `ERR_VAL` and others | Done |
+| `mode` sent to `/wallet/play`: the spelling the RGS lists in authenticate `config.betModes` (matched case-insensitively); upper-case `index.json` name if it lists none | Done; unit-tested with object and array forms |
+| **Social mode** (`social=true` or the RGS `socialCasino` flag): Stake's restricted-phrase list applied to all visible text, `aria-label` and `title` | Done; browser scan of 8 screens incl. full rules found 0 restricted phrases |
+| **Viewports** desktop 1200×675, laptop 1024×576, popout L 800×450, popout S 400×225, mobile 425×812 / 375×667 / 320×568 | All fit without scrolling, board never distorted (square cells); popouts use a landscape layout with controls on the right |
+| Audio: synthesized in code (no sample files), ambient bed with moods per bonus, mute remembered | Done |
 
 ## Open items before submission
 
-1. **Content risk: the Doll symbol.** Stake's rules **(skill)** forbid "artistic depictions of
-   children or child-like characters in any gambling context". The Doll art is a porcelain doll of
-   a young girl, and Possession uses her face in its intro. Replace it with a non-child-like design
-   (for example an empty antique doll's dress, a ventriloquist dummy of an adult, or a cracked
-   mannequin head) before submitting.
-2. **`mode` string case.** `/wallet/play` sends the `index.json` name in upper case (`BASE`,
-   `DEAD_AIR`, …), following the RGS doc example (`"mode": "BASE"` with `index.json` name `base`).
-   Replay maps either case back. Confirm on the dashboard's test session.
-3. **Social casino (Stake.us) wording.** The game's text is not yet swapped for social mode
-   ("bet" → "play", "buy" → "play", "Bonus Buy" → "get bonus"…). This is only needed for Stake.us.
-4. **Final audio.** Sounds are synthesized placeholders. Assets must be unique to the game.
-5. **Mini-player / popout and the full device list** **(skill)**: only 1280×800 and 390×844 were
-   tested.
-6. **Run on Stake:** upload, then play every mode in a dashboard test session and replay the ids in
-   `replay-examples.json`.
-7. **Math is frozen after approval.** Bump `version` in `src/config/gameConfig.ts` whenever the
+1. **Widow artwork.** The Doll (a young girl) was removed because of Stake's rule against
+   child-like characters **(skill)**. The symbol is now **The Widow**, an adult caller, with the
+   same slot and pays. It uses a built-in drawing until painted art matching the other symbols
+   arrives; see [ART_PROMPTS.md](ART_PROMPTS.md). The doll image is no longer in the build.
+2. **Confirm `mode` on a test session.** If the RGS lists its modes in `config.betModes`, the
+   client uses that exact spelling. If it lists none, the client sends `BASE`, `DEAD_AIR`, …. Play
+   one round of every mode on the dashboard to confirm.
+3. **Audio is code-synthesized.** It is original and unique to this game, which is what Stake
+   asks for, but it is not studio audio. Professional sound design would raise the quality
+   rating.
+4. **Run on Stake:** upload, then play every mode in a dashboard test session, at least once with
+   `social=true` and once in the mini-player, and replay the ids in `replay-examples.json`.
+5. **Math is frozen after approval.** Bump `version` in `src/config/gameConfig.ts` whenever the
    math changes, then regenerate. Books carry the version, and the client rejects a mismatch.
 
 ## Regenerate

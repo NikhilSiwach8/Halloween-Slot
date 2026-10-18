@@ -11,7 +11,7 @@ import type { BoardProfile, GameConfig, ModeId } from './types';
 
 const BASE_SYMBOLS: BoardProfile['symbolWeights'] = {
   VALVE: 140, CASSETTE: 140, MIC: 120, HEADPHONES: 120,
-  RADIO: 60, DOLL: 50, PRIEST: 40, HOST: 30,
+  RADIO: 60, WIDOW: 50, PRIEST: 40, HOST: 30,
   WILD: 12,
 };
 
@@ -68,12 +68,12 @@ export const DEFAULT_CONFIG: GameConfig = {
     MIC:        [ 4,   8,  15,  30],
     HEADPHONES: [ 4,   8,  15,  30],
     RADIO:      [ 5,  12,  25,  50],
-    DOLL:       [ 8,  15,  40,  80],
+    WIDOW:       [ 8,  15,  40,  80],
     PRIEST:     [10,  25,  50, 125],
     HOST:       [15,  50, 125, 250],
   },
   minWayLength: 3,
-  staticReveal: { VALVE: 20, CASSETTE: 20, MIC: 18, HEADPHONES: 18, RADIO: 12, DOLL: 10, PRIEST: 8, HOST: 6 },
+  staticReveal: { VALVE: 20, CASSETTE: 20, MIC: 18, HEADPHONES: 18, RADIO: 12, WIDOW: 10, PRIEST: 8, HOST: 6 },
   retune: { enabled: true },
   profiles: {
     base,

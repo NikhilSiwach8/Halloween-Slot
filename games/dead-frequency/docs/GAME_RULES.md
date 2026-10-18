@@ -19,7 +19,7 @@ All numbers below come from `src/config/gameConfig.ts`; the engine reads every v
 |---|---|---|---|---|
 | The Night Host | 0.15x | 0.50x | 1.25x | 2.50x |
 | The Priest | 0.10x | 0.25x | 0.50x | 1.25x |
-| The Doll | 0.08x | 0.15x | 0.40x | 0.80x |
+| The Widow | 0.08x | 0.15x | 0.40x | 0.80x |
 | Old Radio | 0.05x | 0.12x | 0.25x | 0.50x |
 | Headphones | 0.04x | 0.08x | 0.15x | 0.30x |
 | Microphone | 0.04x | 0.08x | 0.15x | 0.30x |

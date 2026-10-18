@@ -30,16 +30,18 @@ stake-upload/
 3. **Test session.** Open the game from the dashboard. It reads `sessionID` and `rgs_url` from the
    URL. Play every mode: Base, Double Chance (toggle), Static Storm and Haunted Wilds
    (Feature Spins menu), and the three bonus buys.
-4. **Replay.** For each mode, open the replay link for the ids in `replay-examples.json`:
+4. **Social mode and mini-player.** Open the game once with `social=true` (Stake.us wording) and
+   once in the popout / mini-player.
+5. **Replay.** For each mode, open the replay link for the ids in `replay-examples.json`:
    `?replay=true&game=<game>&version=<version>&mode=<MODE>&event=<id>&rgs_url=<rgs>&currency=USD&amount=1000000`.
    Reviewers ask for a loss, a normal win, a big win, the max win and (Base / Double Chance) a
    bonus trigger per mode.
-5. **Submit.** Rules, RTP, max win per mode and the disclaimer are in the in-game rules (the ?
+6. **Submit.** Rules, RTP, max win per mode and the disclaimer are in the in-game rules (the ?
    button).
 
 ## Modes
 
-| Mode | `mode` sent to /wallet/play | Cost | RTP | Max win | Max win odds |
+| Mode | `mode` sent to /wallet/play \* | Cost | RTP | Max win | Max win odds |
 |---|---|---|---|---|---|
 | Base | `BASE` | 1x | 96.00% | 50,000x | 1 in 8,000,000 |
 | Double Chance | `DOUBLE_CHANCE` | 1.5x | 96.00% | 50,000x | 1 in 6,000,000 |
@@ -49,12 +51,15 @@ stake-upload/
 | Buy Possession | `POSSESSION` | 160x | 96.00% | 50,000x | 1 in 2,000,000 |
 | Buy Dead Air | `DEAD_AIR` | 275x | 96.00% | 50,000x | 1 in 20,000 |
 
+\* If the RGS lists its modes in authenticate (`config.betModes`), the game sends that exact
+spelling instead (for example `dead_air`).
+
 ## Before you submit
 
-Read **[../docs/STAKE_ENGINE.md](../docs/STAKE_ENGINE.md), "Open items before submission"**.
-In particular:
-- **The Doll symbol** risks Stake's rule against child-like characters. Replace that art.
-- **Audio** is still placeholder.
+Read **[../docs/STAKE_ENGINE.md](../docs/STAKE_ENGINE.md), "Open items before submission"**:
+- **Widow artwork.** The Doll is gone. The Widow uses a built-in drawing until painted art arrives
+  (prompt in `../docs/ART_PROMPTS.md`); add it and rebuild the frontend.
+- **Test session.** Confirm one round of every mode, then test `social=true` and the mini-player.
 
 ## Regenerating
 

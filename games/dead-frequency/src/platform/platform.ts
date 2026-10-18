@@ -88,8 +88,13 @@ const currencyFor = (code: string): Currency => {
 
 const normaliseUrl = (u: string) => (/^https?:\/\//.test(u) ? u : `https://${u}`).replace(/\/$/, '');
 
-/** `mode` as sent to /wallet/play: the index.json name in upper case (the RGS docs use "BASE"). */
-export const rgsModeName = (mode: ModeId) => STAKE_MODE_NAME[mode].toUpperCase();
+/**
+ * `mode` as sent to /wallet/play. If the RGS lists its modes (authenticate `config.betModes`),
+ * the listed spelling is used, matched case-insensitively against the index.json name. Otherwise
+ * the index.json name in upper case, as in the RGS docs' example ("BASE").
+ */
+export const rgsModeName = (mode: ModeId, listed: string[] = []) =>
+  listed.find((m) => m.toLowerCase() === STAKE_MODE_NAME[mode]) ?? STAKE_MODE_NAME[mode].toUpperCase();
 export const modeFromRgsName = (name: string): ModeId | null =>
   (Object.entries(STAKE_MODE_NAME).find(([, v]) => v.toLowerCase() === name.toLowerCase())?.[0] as ModeId | undefined) ?? null;
 
@@ -113,6 +118,8 @@ interface RgsBalance { amount: number; currency: string }
  */
 export class StakePlatform implements Platform {
   private active = false;
+  /** Mode names as the RGS spells them (from authenticate `config.betModes`). */
+  private listedModes: string[] = [];
   constructor(private readonly cfg: GameConfig, private readonly sessionID: string, private readonly rgsUrl: string, private readonly lang: string) {}
 
   static fromUrl(cfg: GameConfig, search: string): StakePlatform | null {
@@ -134,11 +141,12 @@ export class StakePlatform implements Platform {
     const r = await this.post<{
       balance: RgsBalance;
       round: { active?: boolean; payoutMultiplier?: number } | null;
-      config: { betLevels: number[]; defaultBetLevel: number; minBet: number; maxBet: number; stepBet: number; jurisdiction?: Record<string, unknown> };
+      config: { betLevels: number[]; defaultBetLevel: number; minBet: number; maxBet: number; stepBet: number; betModes?: unknown; jurisdiction?: Record<string, unknown> };
     }>('/wallet/authenticate', { language: this.lang });
     // Wins are bet × payoutMultiplier / 100: bet levels divisible by 100 keep every payout exact.
     const bets = r.config.betLevels.filter((b) => b >= r.config.minBet && b <= r.config.maxBet && b % r.config.stepBet === 0);
     if (!bets.length) throw new PlatformError('No usable bet levels for this session.');
+    this.listedModes = listedModeNames(r.config.betModes);
     let balance = r.balance.amount;
     // An unfinished round is settled on load; its outcome is already fixed by the RGS.
     if (r.round && r.round.active !== false && (r.round.payoutMultiplier ?? 0) > 0) balance = (await this.post<{ balance: RgsBalance }>('/wallet/end-round', {})).balance.amount;
@@ -154,7 +162,7 @@ export class StakePlatform implements Platform {
   }
 
   async play(mode: ModeId, bet: number) {
-    const r = await this.post<{ balance: RgsBalance; round: { payoutMultiplier?: number; active?: boolean; state: unknown } }>('/wallet/play', { amount: bet, mode: rgsModeName(mode) });
+    const r = await this.post<{ balance: RgsBalance; round: { payoutMultiplier?: number; active?: boolean; state: unknown } }>('/wallet/play', { amount: bet, mode: rgsModeName(mode, this.listedModes) });
     const round = decodeRound(this.cfg, r.round.state);
     if (round.mode !== mode) throw new PlatformError('The server returned a round for a different mode. Please reload.');
     if (!payoutMatches(round, r.round.payoutMultiplier)) throw new PlatformError('Round verification failed. Please reload.');
@@ -211,6 +219,13 @@ export class ReplayPlatform implements Platform {
   async endRound() {
     return 0;
   }
+}
+
+/** Mode names from `config.betModes`: an object keyed by mode, or an array of names / { name } objects. */
+export function listedModeNames(betModes: unknown): string[] {
+  if (Array.isArray(betModes)) return betModes.flatMap((m) => (typeof m === 'string' ? [m] : typeof m?.name === 'string' ? [m.name] : typeof m?.mode === 'string' ? [m.mode] : []));
+  if (betModes && typeof betModes === 'object') return Object.keys(betModes);
+  return [];
 }
 
 function rgsMessage(code: unknown, status: number): string {

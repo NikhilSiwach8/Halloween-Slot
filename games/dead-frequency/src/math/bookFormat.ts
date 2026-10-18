@@ -15,7 +15,7 @@ import type { BonusResult, RoundResult, SpinResult } from '../engine/round';
 import { evaluateWays } from '../engine/ways';
 
 const CODE: Record<SymbolId, string> = {
-  VALVE: 'v', CASSETTE: 'c', MIC: 'm', HEADPHONES: 'h', RADIO: 'R', DOLL: 'D', PRIEST: 'P', HOST: 'N',
+  VALVE: 'v', CASSETTE: 'c', MIC: 'm', HEADPHONES: 'h', RADIO: 'R', WIDOW: 'D', PRIEST: 'P', HOST: 'N',
   WILD: 'W', STATIC: 'S', ANTENNA: 'A', TAPE: 'T',
 };
 const SYMBOL = Object.fromEntries(Object.entries(CODE).map(([k, v]) => [v, k])) as Record<string, SymbolId>;

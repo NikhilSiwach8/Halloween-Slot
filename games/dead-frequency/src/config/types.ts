@@ -10,7 +10,7 @@
  */
 
 export type LowSymbolId = 'VALVE' | 'CASSETTE' | 'MIC' | 'HEADPHONES';
-export type HighSymbolId = 'RADIO' | 'DOLL' | 'PRIEST' | 'HOST';
+export type HighSymbolId = 'RADIO' | 'WIDOW' | 'PRIEST' | 'HOST';
 export type PayingSymbolId = LowSymbolId | HighSymbolId;
 /** WILD = "On Air", STATIC = mystery, ANTENNA = scatter, TAPE = Mystery Bonus. */
 export type SpecialSymbolId = 'WILD' | 'STATIC' | 'ANTENNA' | 'TAPE';

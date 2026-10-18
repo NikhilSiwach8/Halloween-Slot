@@ -47,7 +47,8 @@ games/dead-frequency/
   src/config/      gameConfig.ts (all math), types.ts, symbols.ts, publishedMath.json (written by df:books)
   src/engine/      rng.ts, board.ts (board draws), ways.ts (evaluation), round.ts (spins, bonuses, mystery, cap)
   src/simulation/  simulator.ts (whole-round simulation)
-  src/app/         App.tsx, useGame.ts (round playback), audio.ts (synth placeholders), styles.css
+  src/app/         App.tsx, useGame.ts (round playback), audio.ts (synthesized sound design),
+                   socialText.ts (Stake.us wording), styles.css
   src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
   src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
   src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Background (animated canvas scene),
@@ -56,7 +57,7 @@ games/dead-frequency/
   scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts, art/
   stake-upload/    the Stake Engine upload: math/, frontend/, replay-examples.json
   tests/           engine.test.ts, stake.test.ts
-  docs/            GAME_RULES.md, MATH_MODEL.md
+  docs/            GAME_RULES.md, MATH_MODEL.md, STAKE_ENGINE.md, ART_PROMPTS.md
 ```
 
 The engine is pure TypeScript with no UI dependencies. `playRound(cfg, mode, rng)` returns the
@@ -71,20 +72,19 @@ result back, so the player's clicks (for example "Play the tape") never change a
 
 ## Known limitations
 
-- **Placeholder audio.** Sounds are synthesized. The symbol art is final-style artwork in
-  `public/assets/symbols/` (512×512 WebP, cut from the symbol sheet with
-  `scripts/art/slice_symbol_sheet.py`). The hand-built SVGs remain as a fallback.
+- **Interim Widow art.** The Widow (which replaced the Doll) uses a built-in drawing until
+  painted art arrives; the prompt is in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
+- **Code-synthesized audio.** Sound is generated live with the Web Audio API: original, but not
+  studio-recorded.
 - **Local demo RNG.** The local demo uses a development PRNG with demo credits. On Stake, the RGS
   picks every outcome from the published books.
 - **Not yet run on Stake Engine.** It has only been tested against a mock RGS that serves the real
   books.
-- **Doll symbol.** The art may break Stake's rule against child-like characters. Replace it before
-  submitting (see docs/STAKE_ENGINE.md).
-- **Missing features.** There is no autoplay, no social-casino (Stake.us) wording, no
-  localisation, and no Playwright tests in the repo for this game.
+- **Missing features.** There is no autoplay, no languages other than English, and no Playwright
+  tests in the repo for this game.
 
 ## Next steps
 
-1. Replace the Doll art and the placeholder audio.
-2. Upload `stake-upload/` and test every mode and the replay ids on the dashboard.
-3. Add social-casino wording for Stake.us.
+1. Add the Widow artwork (docs/ART_PROMPTS.md).
+2. Upload `stake-upload/` and test every mode, social mode, the mini-player and the replay ids on
+   the dashboard.

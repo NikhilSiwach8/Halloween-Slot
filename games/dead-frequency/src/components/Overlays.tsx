@@ -19,8 +19,8 @@ const SOURCE = {
   BUY: 'You paid for this broadcast. There are no refunds.',
 } as const;
 
-/** The face that lunges out of the static when each bonus starts. */
-const FACE: Record<BonusType, SymbolId> = { NIGHT_SHIFT: 'PRIEST', POSSESSION: 'DOLL', DEAD_AIR: 'HOST' };
+/** The face that lunges out of the static when each bonus starts (Possession: the face in the Static). */
+const FACE: Record<BonusType, SymbolId> = { NIGHT_SHIFT: 'PRIEST', POSSESSION: 'STATIC', DEAD_AIR: 'HOST' };
 
 /**
  * Bonus start: a ~2.6s "signal intercepted" sequence (static burst, flickering alert, a face

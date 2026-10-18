@@ -5,7 +5,7 @@ transparent 512x512 WebP symbols.
     pip install numpy pillow scipy
     python3 games/dead-frequency/scripts/art/slice_symbol_sheet.py SHEET.webp games/dead-frequency/public/assets/symbols
 
-Grid order (rows top to bottom): valve cassette mic headphones / radio doll priest host /
+Grid order (rows top to bottom): valve cassette mic headphones / radio widow priest host /
 wild static antenna tape.
 """
 import sys
@@ -43,7 +43,7 @@ alpha[ring & neutral] = np.minimum(alpha[ring & neutral], fade[ring & neutral])
 fg = ndi.binary_opening(alpha > 0, iterations=2)
 lab2, n = ndi.label(fg)
 sizes = ndi.sum(fg, lab2, range(1, n + 1))
-names = [['VALVE', 'CASSETTE', 'MIC', 'HEADPHONES'], ['RADIO', 'DOLL', 'PRIEST', 'HOST'], ['WILD', 'STATIC', 'ANTENNA', 'TAPE']]
+names = [['VALVE', 'CASSETTE', 'MIC', 'HEADPHONES'], ['RADIO', 'WIDOW', 'PRIEST', 'HOST'], ['WILD', 'STATIC', 'ANTENNA', 'TAPE']]
 boxes = {}
 for i, objs in enumerate(ndi.find_objects(lab2), start=1):
     if sizes[i - 1] < 400:

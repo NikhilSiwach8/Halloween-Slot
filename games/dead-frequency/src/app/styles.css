@@ -182,7 +182,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* Keep the whole machine on screen on short, wide viewports. */
 @media (min-width: 721px) {
-  .reels { width: min(100%, calc((100vh - 250px) * 1.42)); margin: 0 auto; }
+  .reels { width: min(100%, calc((100vh - 272px) * 1.42)); margin: 0 auto; }
 }
 
 /* Image symbols (public/assets/symbols). The wild's multiplier badge is an SVG overlay. */
@@ -342,3 +342,83 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 }
 .rtp th { text-align: right; padding: 4px 6px; font-size: 12px; color: var(--dim); }
 .rtp th:first-child { text-align: left; }
+
+/* ------------------------------------------------------------ small portrait phones (e.g. 320×568) */
+@media (max-width: 720px) and (max-height: 640px) {
+  .topbar { padding-top: 6px; }
+  .brand p { display: none; }
+  .bonus-bar { min-height: 0; padding: 4px 8px; font-size: 12px; }
+  .ticker { min-height: 0; padding: 4px 8px; font-size: 12px; }
+  .stage { gap: 6px; }
+  .controls { gap: 6px; padding: 6px 16px; }
+  .readout, .bet { padding: 4px 8px; }
+  .toggle, .menu-btn { padding: 4px; }
+  .toggle small, .menu-btn small { display: none; }
+  .spin { min-height: 52px; }
+  .disclaimer { margin-bottom: 4px; }
+}
+
+/*
+ * Landscape compact: short, wide windows such as the Stake mini-player (popout L 800×450,
+ * popout S 400×225). The reels fill the left, sized by the height so the board is never
+ * distorted; the header buttons and all controls stack in a column on the right.
+ */
+@media (max-height: 560px) and (min-aspect-ratio: 5/4) {
+  .app {
+    display: grid; height: 100vh; overflow: hidden; align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) clamp(150px, 30vw, 270px);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .topbar { grid-column: 2; grid-row: 1; width: auto; padding: 6px 8px 0 0; gap: 6px; }
+  .brand h1 { font-size: clamp(11px, 2.2vw, 18px); letter-spacing: 0.12em; }
+  .brand p { display: none; }
+  .icon-btn { width: 30px; height: 30px; font-size: 14px; flex: none; }
+  .stage { grid-column: 1; grid-row: 1 / span 2; width: auto; min-height: 0; padding: 6px; gap: 4px; justify-content: center; }
+  .stage .reels { width: min(100%, calc((100vh - 64px) * 1.45)); margin: 0 auto; padding: 5px; gap: 3px; border-radius: 10px; }
+  .stage .reel { gap: 3px; }
+  .cell { border-radius: 6px; }
+  .bonus-bar { min-height: 0; padding: 2px 6px; font-size: 11px; gap: 2px 10px; }
+  .bonus-bar.quiet { display: none; }
+  .ticker { min-height: 0; padding: 2px 6px; font-size: 11px; }
+  .controls, .controls.no-menu, .controls.replay-controls {
+    grid-column: 2; grid-row: 2; width: auto; max-width: none; align-self: center;
+    grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 8px 6px 0;
+  }
+  .controls .bet, .controls .spin { grid-column: 1 / -1; }
+  .readout, .bet { padding: 3px 6px; border-radius: 8px; }
+  .readout label, .bet label { font-size: 9px; }
+  .readout output { font-size: 13px; }
+  .bet-row button { width: 22px; height: 22px; }
+  .toggle, .menu-btn { padding: 3px; font-size: 11px; border-radius: 8px; }
+  .toggle small, .menu-btn small { display: none; }
+  .spin { min-height: 36px; font-size: 16px; border-radius: 10px; }
+  .spin small { font-size: 9px; }
+  .disclaimer, .error-bar { grid-column: 1 / -1; }
+  .disclaimer { display: none; }
+  .error-bar { position: fixed; top: 6px; left: 6px; width: auto; max-width: 70vw; margin: 0; z-index: 15; font-size: 12px; }
+  .overlay-card { padding: 12px 14px; max-height: calc(100vh - 16px); }
+  .overlay-card h2 { font-size: 18px; margin: 2px 0 6px; }
+  .overlay-card p { margin: 4px 0; font-size: 13px; }
+  .overlay-art { width: 64px; height: 64px; }
+  .intercept-card { padding: 10px 12px; }
+  .glitch { font-size: clamp(22px, 6vw, 40px); }
+}
+
+/* Popout S and anything as small: drop the remaining decoration. */
+@media (max-height: 300px) and (min-aspect-ratio: 5/4) {
+  .intercept { padding: 6px; }
+  .intercept-card, .overlay-card { max-height: calc(100vh - 12px); overflow: auto; padding: 8px 10px; }
+  .intercept-card p:not(.eyebrow):not(.spins), .overlay-card .small { display: none; }
+  .intercept-card .spins { font-size: 16px; }
+  .intercept-card .eyebrow { font-size: 10px; }
+  .glitch { font-size: 22px; margin: 2px 0 4px; }
+  .primary { margin-top: 6px; padding: 6px 18px; }
+  .overlay-art { width: 44px; height: 44px; }
+  .brand { display: none; }
+  .topbar { justify-content: flex-end; padding-top: 4px; }
+  .ticker, .bonus-bar { display: none; }
+  .stage .reels { width: min(100%, calc((100vh - 16px) * 1.45)); }
+  .readout output { font-size: 12px; }
+  .spin { min-height: 32px; font-size: 14px; }
+  .spin small { display: none; }
+}

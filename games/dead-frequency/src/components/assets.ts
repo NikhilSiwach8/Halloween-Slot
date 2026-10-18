@@ -13,7 +13,8 @@ export const SYMBOL_IMAGES: Partial<Record<SymbolId, string>> = {
   MIC: file('mic'),
   HEADPHONES: file('headphones'),
   RADIO: file('radio'),
-  DOLL: file('doll'),
+  // WIDOW: file('widow'),  <- add once the Widow artwork is in public/assets/symbols/widow.webp.
+  //                          Until then the built-in SVG is used.
   PRIEST: file('priest'),
   HOST: file('host'),
   WILD: file('wild'),

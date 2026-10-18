@@ -4,7 +4,7 @@ import { BookFormatError, decodeRound, encodeRound } from '../src/math/bookForma
 import { STAKE_MODE_NAME, assignWeights, generateMode, lookupStats, modeMaxWinX, stakePlans } from '../src/math/books';
 import { SeededRng } from '../src/engine/rng';
 import { playRound } from '../src/engine/round';
-import { ReplayPlatform, StakePlatform, modeFromRgsName, payoutMatches, rgsModeName } from '../src/platform/platform';
+import { ReplayPlatform, StakePlatform, listedModeNames, modeFromRgsName, payoutMatches, rgsModeName } from '../src/platform/platform';
 
 const cfg = DEFAULT_CONFIG;
 
@@ -134,6 +134,27 @@ describe('RGS client', () => {
     expect(session.replay).toEqual({ mode: 'BUY_DEAD_AIR', bet: 2_000_000 });
     expect(session.currency.symbol).toBe('€');
     expect((await p.play()).round.winX100).toBe(round.winX100);
+  });
+
+  it('sends mode names exactly as the RGS lists them in betModes', async () => {
+    expect(listedModeNames({ base: {}, dead_air: {} })).toEqual(['base', 'dead_air']);
+    expect(listedModeNames(['BASE', { name: 'Dead_Air' }])).toEqual(['BASE', 'Dead_Air']);
+    expect(listedModeNames(undefined)).toEqual([]);
+    expect(rgsModeName('BUY_DEAD_AIR', ['base', 'dead_air'])).toBe('dead_air');
+    expect(rgsModeName('BUY_DEAD_AIR', [])).toBe('DEAD_AIR');
+    const round = playRound(cfg, 'BUY_DEAD_AIR', new SeededRng(2));
+    const sent: string[] = [];
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+      if (url.endsWith('/wallet/play')) {
+        sent.push(JSON.parse(String(init.body)).mode);
+        return json({ balance: { amount: 1, currency: 'USD' }, round: { payoutMultiplier: round.winX100, active: true, state: encodeRound(cfg, round) } });
+      }
+      return json({ balance: { amount: 1e9, currency: 'USD' }, round: null, config: { betLevels: [1_000_000], defaultBetLevel: 1_000_000, minBet: 1, maxBet: 1e9, stepBet: 1, betModes: { base: {}, dead_air: {} } } });
+    });
+    const p = StakePlatform.fromUrl(cfg, '?sessionID=x&rgs_url=r.example')!;
+    await p.init();
+    await p.play('BUY_DEAD_AIR', 1_000_000);
+    expect(sent).toEqual(['dead_air']);
   });
 
   it('names modes as index.json does and accepts either payout representation', () => {

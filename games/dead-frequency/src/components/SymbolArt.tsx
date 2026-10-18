@@ -49,16 +49,22 @@ const ART: Record<SymbolId, ReactElement> = {
       <path d="M70 44 l4 -5" stroke="#2a1c12" strokeWidth="2" />
     </g>
   ),
-  DOLL: (
+  WIDOW: (
     <g>
-      <circle cx="50" cy="46" r="30" fill="#efe0cf" stroke="#a94458" strokeWidth="3" />
-      <path d="M22 40 Q30 12 50 14 Q72 12 78 40 Q66 26 50 28 Q34 26 22 40 Z" fill="#3a1f1a" />
-      <circle cx="39" cy="46" r="7" fill="#0b0d14" />
-      <circle cx="61" cy="46" r="7" fill="#0b0d14" />
-      <circle cx="41" cy="44" r="2" fill="#fff" />
-      <path d="M40 64 Q50 60 60 64" fill="none" stroke="#a94458" strokeWidth="3" />
-      <path d="M58 30 L54 42 L60 50" fill="none" stroke="#6b5f57" strokeWidth="1.5" />
-      <path d="M39 53 v12" stroke="#5b0f1c" strokeWidth="2" opacity="0.8" />
+      {/* An adult widow in mourning, veiled, calling the station on an old telephone. */}
+      <path d="M14 96 Q16 64 50 60 Q84 64 86 96 Z" fill="#120d12" />
+      <path d="M44 60 h12 l-2 8 h-8 Z" fill="#2a1d24" />
+      <ellipse cx="50" cy="40" rx="15" ry="19" fill="#bdb1a8" />
+      <path d="M40 38 q4 -3 8 0 M52 38 q4 -3 8 0" stroke="#1a1014" strokeWidth="2.5" fill="none" />
+      <path d="M44 52 q6 3 12 0" stroke="#5b0f1c" strokeWidth="2" fill="none" />
+      <path d="M41 42 v6 M59 42 v6" stroke="#5b4b45" strokeWidth="1" opacity="0.7" />
+      <path d="M22 70 Q26 14 50 12 Q74 14 78 70 Q66 40 50 36 Q34 40 22 70 Z" fill="#0b0709" opacity="0.92" />
+      <path d="M30 24 Q50 4 70 24 L66 30 Q50 18 34 30 Z" fill="#1d1418" />
+      <path d="M32 30 Q50 20 68 30 L64 62 Q50 70 36 62 Z" fill="#3a2a33" opacity="0.35" />
+      <path d="M33 34 L67 34 M34 42 L66 42 M35 50 L65 50 M33 34 L39 62 M44 31 L45 66 M56 31 L55 66 M67 34 L61 62" stroke="#0b0709" strokeWidth="0.8" opacity="0.6" />
+      <path d="M66 54 q10 -4 12 6 q1 6 -6 7 l-4 -2 q4 -2 3 -5 q-1 -3 -5 -2 Z" fill="#2b2b2f" stroke="#9aa3ad" strokeWidth="1" />
+      <path d="M72 66 q2 10 -6 18" stroke="#9aa3ad" strokeWidth="1.2" fill="none" strokeDasharray="2 2" />
+      <circle cx="62" cy="74" r="3" fill="#a94458" opacity="0.8" />
     </g>
   ),
   PRIEST: (

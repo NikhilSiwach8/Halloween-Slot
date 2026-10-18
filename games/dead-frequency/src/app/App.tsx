@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { DEFAULT_CONFIG, roundCost } from '../config/gameConfig';
 import type { ModeId } from '../config/types';
 import { Background, noiseDataUrl } from '../components/Background';
@@ -10,11 +10,14 @@ import { StationMenu } from '../components/StationMenu';
 import { audio } from './audio';
 import { formatMoney } from './format';
 import { useGame } from './useGame';
+import { useSocialText } from './socialText';
 import { DemoPlatform, ReplayPlatform, StakePlatform, type Platform, type PlatformSession } from '../platform/platform';
 
 const cfg = DEFAULT_CONFIG;
 const params = new URLSearchParams(window.location.search);
 const REDUCED_MOTION = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Stake.us: `social=true` (or the RGS socialCasino flag) switches to social-casino wording. */
+const SOCIAL_PARAM = params.get('social') === 'true';
 const SEED = params.has('seed') ? Number(params.get('seed')) >>> 0 : crypto.getRandomValues(new Uint32Array(1))[0] >>> 0;
 
 /** Replay link -> bet replay; sessionID + rgs_url -> Stake RGS; otherwise the local demo. */
@@ -36,8 +39,21 @@ export function App() {
 function Game({ platform, session }: { platform: Platform; session: PlatformSession }) {
   const g = useGame(cfg, platform, session);
   const { view } = g;
+  const rootRef = useRef<HTMLDivElement>(null);
+  useSocialText(rootRef, SOCIAL_PARAM || !!session.flags.socialCasino);
+  // Ambience starts on the first gesture (browser autoplay rules) and follows the bonus mood.
+  useEffect(() => {
+    const start = () => audio.resume();
+    window.addEventListener('pointerdown', start, { once: true });
+    window.addEventListener('keydown', start, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+    };
+  }, []);
+  useEffect(() => audio.setMood(view.bonus?.type ?? 'base'), [view.bonus?.type]);
   const [panel, setPanel] = useState<'none' | 'rules' | 'menu'>('none');
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(audio.muted);
   const replay = session.replay;
   const money = (units: number) => formatMoney(session.currency, units);
   const spinMode: ModeId = replay?.mode ?? g.featureMode ?? (g.doubleChance ? 'DOUBLE_CHANCE' : 'BASE');
@@ -67,7 +83,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   const bonusDef = view.bonus ? cfg.bonuses[view.bonus.type] : null;
 
   return (
-    <div className={`app ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''}`}>
+    <div ref={rootRef} className={`app ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''}`}>
       <Background mood={view.bonus?.type ?? 'base'} reducedMotion={REDUCED_MOTION} />
       <SymbolDefs />
       <div className="scanlines" aria-hidden="true" />
