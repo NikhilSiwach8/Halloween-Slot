@@ -1,0 +1,10 @@
+NIGHT_SHIFT  mean 76.42x ±0.29  max win 1 in — bonuses
+POSSESSION   mean 153.44x ±0.70  max win 1 in — bonuses
+DEAD_AIR     mean 264.06x ±1.26  max win 1 in 20833 bonuses
+BASE             RTP 95.821% ±0.282%  (spin+mystery cash 44.98%, antenna bonuses 48.41%, mystery bonuses 2.42%)
+DOUBLE_CHANCE    RTP 95.755% ±0.241%  (spin+mystery cash 29.92%, antenna bonuses 64.22%, mystery bonuses 1.62%)
+STATIC_STORM     RTP 95.611% ±0.374%  (spin+mystery cash 95.61%, antenna bonuses 0.00%, mystery bonuses 0.00%)
+HAUNTED_WILDS    RTP 96.315% ±0.295%  (spin+mystery cash 96.31%, antenna bonuses 0.00%, mystery bonuses 0.00%)
+BUY_NIGHT_SHIFT  RTP 95.519% ±0.361%
+BUY_POSSESSION   RTP 95.899% ±0.435%
+BUY_DEAD_AIR     RTP 96.023% ±0.460%

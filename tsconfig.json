@@ -15,5 +15,5 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests", "scripts", "vite.config.ts", "playwright.config.ts"]
+  "include": ["src", "tests", "scripts", "games", "vite.config.ts", "playwright.config.ts"]
 }

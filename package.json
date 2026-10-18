@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "THE HOLLOW HOUR — an original cinematic time-horror cluster-pays slot prototype (demo credits only).",
+  "description": "THE HOLLOW HOUR \u2014 an original cinematic time-horror cluster-pays slot prototype (demo credits only).",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -14,7 +14,12 @@
     "test:e2e": "playwright test",
     "simulate": "tsx scripts/simulate.ts",
     "books": "tsx scripts/export-books.ts",
-    "books:verify": "tsx scripts/verify-books.ts"
+    "books:verify": "tsx scripts/verify-books.ts",
+    "df:dev": "vite --config games/dead-frequency/vite.config.ts",
+    "df:build": "tsc -b && vite build --config games/dead-frequency/vite.config.ts",
+    "df:test": "vitest run --config games/dead-frequency/vite.config.ts",
+    "df:simulate": "tsx games/dead-frequency/scripts/simulate.ts",
+    "df:rtp": "tsx games/dead-frequency/scripts/rtp.ts"
   },
   "dependencies": {
     "@fontsource/cinzel": "^5.2.6",

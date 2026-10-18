@@ -1,0 +1,79 @@
+
+=== BASE | cost 1x | seed 101 | 2,000,000 rounds | 14.7s ===
+RTP            100.070% ±4.052% (95%)
+Hit frequency  35.45%   max observed 17292.81x   cap hits 0
+Bonus rounds   0.550% (1 in 182)   Mystery 0.195% (1 in 513)
+  NIGHT_SHIFT      8903  avg 79.45x
+  POSSESSION       1675  avg 151.45x
+  DEAD_AIR          430  avg 320.37x
+Retune         29.45% of spins
+Contribution   spin 43.5%  mystery cash 1.6%  bonus 54.9%
+Distribution   0x:64.548%  (0,1x):27.972%  [1,5x):5.310%  [5,20x):1.565%  [20,100x):0.479%  [100,500x):0.106%  [500,2000x):0.018%  [2000,10000x):0.002%  [10000x,cap):0.000%  cap:0.000%
+
+=== DOUBLE_CHANCE | cost 1.5x | seed 101 | 2,000,000 rounds | 15.5s ===
+RTP            97.565% ±3.393% (95%)
+Hit frequency  35.73%   max observed 17292.81x   cap hits 0
+Bonus rounds   1.045% (1 in 96)   Mystery 0.191% (1 in 525)
+  NIGHT_SHIFT     16906  avg 77.01x
+  POSSESSION       3200  avg 158.23x
+  DEAD_AIR          793  avg 288.54x
+Retune         30.80% of spins
+Contribution   spin 29.4%  mystery cash 1.0%  bonus 69.6%
+Distribution   0x:64.272%  (0,1x):27.816%  [1,5x):5.345%  [5,20x):1.697%  [20,100x):0.645%  [100,500x):0.189%  [500,2000x):0.033%  [2000,10000x):0.003%  [10000x,cap):0.000%  cap:0.000%
+
+=== STATIC_STORM | cost 8x | seed 101 | 2,000,000 rounds | 17.4s ===
+RTP            96.101% ±0.660% (95%)
+Hit frequency  41.26%   max observed 7680.00x   cap hits 0
+Bonus rounds   0.000% (—)   Mystery 0.000% (—)
+  NIGHT_SHIFT         0  avg —
+  POSSESSION          0  avg —
+  DEAD_AIR            0  avg —
+Retune         77.05% of spins
+Contribution   spin 100.0%  mystery cash 0.0%  bonus 0.0%
+Distribution   0x:58.736%  (0,1x):14.212%  [1,5x):11.236%  [5,20x):8.216%  [20,100x):5.700%  [100,500x):1.835%  [500,2000x):0.065%  [2000,10000x):0.002%  [10000x,cap):0.000%  cap:0.000%
+
+=== HAUNTED_WILDS | cost 12x | seed 101 | 2,000,000 rounds | 13.8s ===
+RTP            96.532% ±0.513% (95%)
+Hit frequency  63.83%   max observed 6240.00x   cap hits 0
+Bonus rounds   0.000% (—)   Mystery 0.000% (—)
+  NIGHT_SHIFT         0  avg —
+  POSSESSION          0  avg —
+  DEAD_AIR            0  avg —
+Retune         24.12% of spins
+Contribution   spin 100.0%  mystery cash 0.0%  bonus 0.0%
+Distribution   0x:36.166%  (0,1x):16.703%  [1,5x):18.163%  [5,20x):15.772%  [20,100x):11.034%  [100,500x):2.059%  [500,2000x):0.100%  [2000,10000x):0.004%  [10000x,cap):0.000%  cap:0.000%
+
+=== BUY_NIGHT_SHIFT | cost 80x | seed 101 | 2,000,000 rounds | 148.2s ===
+RTP            96.141% ±0.372% (95%)
+Hit frequency  99.49%   max observed 50000.00x   cap hits 1
+Bonus rounds   100.000% (1 in 1)   Mystery 0.000% (—)
+  NIGHT_SHIFT   2000000  avg 76.91x
+  POSSESSION          0  avg —
+  DEAD_AIR            0  avg —
+Retune         56.25% of spins
+Contribution   spin 0.0%  mystery cash 0.0%  bonus 100.0%
+Distribution   0x:0.510%  (0,1x):1.937%  [1,5x):12.215%  [5,20x):30.811%  [20,100x):36.660%  [100,500x):15.471%  [500,2000x):2.238%  [2000,10000x):0.157%  [10000x,cap):0.002%  cap:0.000%
+
+=== BUY_POSSESSION | cost 160x | seed 101 | 2,000,000 rounds | 168.9s ===
+RTP            96.357% ±0.439% (95%)
+Hit frequency  99.65%   max observed 50000.00x   cap hits 1
+Bonus rounds   100.000% (1 in 1)   Mystery 0.000% (—)
+  NIGHT_SHIFT         0  avg —
+  POSSESSION    2000000  avg 154.17x
+  DEAD_AIR            0  avg —
+Retune         60.63% of spins
+Contribution   spin 0.0%  mystery cash 0.0%  bonus 100.0%
+Distribution   0x:0.352%  (0,1x):6.077%  [1,5x):16.055%  [5,20x):21.424%  [20,100x):29.486%  [100,500x):19.933%  [500,2000x):5.599%  [2000,10000x):1.045%  [10000x,cap):0.028%  cap:0.000%
+
+=== BUY_DEAD_AIR | cost 275x | seed 101 | 2,000,000 rounds | 189.7s ===
+RTP            95.524% ±0.454% (95%)
+Hit frequency  99.84%   max observed 50000.00x   cap hits 87
+Bonus rounds   100.000% (1 in 1)   Mystery 0.000% (—)
+  NIGHT_SHIFT         0  avg —
+  POSSESSION          0  avg —
+  DEAD_AIR      2000000  avg 262.69x
+Retune         67.13% of spins
+Contribution   spin 0.0%  mystery cash 0.0%  bonus 100.0%
+Distribution   0x:0.162%  (0,1x):1.563%  [1,5x):7.798%  [5,20x):16.920%  [20,100x):30.808%  [100,500x):30.866%  [500,2000x):10.112%  [2000,10000x):1.641%  [10000x,cap):0.127%  cap:0.004%
+
+wrote /tmp/claude-0/-home-user-Halloween-Slot/3b2f1f66-2e6e-5e80-acd2-9247ad8e7afa/scratchpad/sim-final.json

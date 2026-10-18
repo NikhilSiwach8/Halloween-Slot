@@ -1,0 +1,12 @@
+{
+  "method": "composed estimate, 6M spins + 2M of each bonus, seed 2026 (npm run df:rtp)",
+  "modes": {
+    "BASE": 95.82,
+    "DOUBLE_CHANCE": 95.76,
+    "STATIC_STORM": 95.61,
+    "HAUNTED_WILDS": 96.32,
+    "BUY_NIGHT_SHIFT": 95.52,
+    "BUY_POSSESSION": 95.9,
+    "BUY_DEAD_AIR": 96.02
+  }
+}

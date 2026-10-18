@@ -1,5 +1,10 @@
 # The Hollow Hour
 
+> **This repository holds two games.** This README covers *The Hollow Hour*.
+> **[Dead Frequency](games/dead-frequency/README.md)** is a second horror slot set at a haunted
+> radio station: 6×4 ways, 50,000× max win, Static & Retune mystery symbols, three bonuses, a
+> Mystery Bonus, Double Chance, Feature Spins and Bonus Buy. Run it with `npm run df:dev`.
+
 *"Time Is a Prize. Eternity Is the Price."*
 
 An original cinematic time-horror slot prototype. It is a 5×5 cluster-pays game with

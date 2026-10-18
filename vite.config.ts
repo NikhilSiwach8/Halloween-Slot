@@ -9,7 +9,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 900,
   },
   test: {
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', 'games/*/tests/**/*.test.ts'],
     environment: 'node',
     globals: true,
   },
