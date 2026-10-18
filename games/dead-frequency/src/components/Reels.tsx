@@ -218,3 +218,29 @@ export function Reels({ cfg, view, turbo }: { cfg: GameConfig; view: View; turbo
     </div>
   );
 }
+
+/**
+ * The channel strip on the bezel under the screen: CH1–CH6, one LED per reel. Each LED blinks as
+ * its reel stops (same timing as the reel) and stays lit while that reel is part of a win.
+ */
+export function ChannelStrip({ cfg, view, turbo }: { cfg: GameConfig; view: View; turbo: boolean }) {
+  const { spinning, spinId, winCells } = view;
+  const board = view.board ?? idle;
+  const stops = spinning || spinId === 0 ? null : reelStops(board, turbo);
+  const motion = reelMotion(turbo);
+  const winReels = new Set([...winCells].map((k) => Number(k.split(',')[0])));
+  return (
+    <div className="channels" aria-hidden="true">
+      {Array.from({ length: cfg.reels }, (_, r) => (
+        <div className={`channel ${winReels.has(r) ? 'on' : ''} ${stops?.tease[r] ? 'tease' : ''}`} key={r}>
+          <i
+            className="led"
+            key={`${spinId}`}
+            style={{ '--stop': `${stops ? motion.baseMs + stops.delays[r] + motion.hitMs : 0}ms` } as CSSProperties}
+          />
+          <span>CH{r + 1}</span>
+        </div>
+      ))}
+    </div>
+  );
+}

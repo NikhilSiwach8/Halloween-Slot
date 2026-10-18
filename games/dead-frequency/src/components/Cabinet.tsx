@@ -110,21 +110,138 @@ export function Logo({ className = 'logo' }: { className?: string }) {
 }
 
 /* ---------------------------------------------------------- reel frame */
+export type ScopeState = 'idle' | 'spin' | 'win';
+
 /**
- * The broadcast-console frame around the reels: iron and brass with rivets, an LED plaque on top
- * (multiplier on the left, scrolling station ticker on the right), frequency-scale pillars, and a
- * glowing vacuum tube at each lower corner.
+ * A small oscilloscope: a phosphor trace with persistence. A slow sine with stray glitches while
+ * idle, dense noise while the reels spin, a tall pulsing wave on a win. Redraws at ~30 fps and
+ * only while the tab is visible; the canvas is tiny, so it costs next to nothing.
  */
-export function ReelFrame({ multiplier, ticker, onAir, children }: { multiplier: number; ticker: string; onAir: boolean; children: ReactNode }) {
+export function Scope({ state }: { state: ScopeState }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  useEffect(() => {
+    const c = ref.current!;
+    const ctx = c.getContext('2d')!;
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let raf = 0;
+    let last = 0;
+    let t = 0;
+    let amp = 0.25;
+    // The trace colour follows the bonus (CSS --phos). Reading computed style forces a style
+    // recalculation, so it is read twice a second, never per frame.
+    let color = '#6dffbf';
+    let colorAt = -1e9;
+    // Size from a ResizeObserver (reading clientWidth per frame would force layout); 0 = hidden.
+    let boxW = 0;
+    let boxH = 0;
+    const ro = new ResizeObserver(([e]) => {
+      boxW = Math.round(e.contentRect.width);
+      boxH = Math.round(e.contentRect.height);
+    });
+    ro.observe(c);
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (now - last < 33 || document.hidden || !boxW) return;
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      t += dt;
+      // Resize the backing store only when the box changes (assigning width reallocates it).
+      const W = boxW * 2;
+      const H = Math.max(1, boxH * 2);
+      if (c.width !== W) c.width = W;
+      if (c.height !== H) c.height = H;
+      const st = stateRef.current;
+      const target = st === 'win' ? 0.85 : st === 'spin' ? 0.55 : 0.22;
+      amp += (target - amp) * Math.min(1, dt * 6);
+      if (now - colorAt > 500) {
+        color = getComputedStyle(c).color || color;
+        colorAt = now;
+      }
+      ctx.clearRect(0, 0, W, H);
+      // graticule
+      ctx.strokeStyle = 'rgba(120, 255, 200, 0.08)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= W; x += W / 8) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+      // trace: two passes, a wide soft glow and a thin bright core
+      const glitch = st === 'idle' && Math.sin(t * 0.7) > 0.97;
+      const y = (x: number) => {
+        const u = x / W;
+        let v = Math.sin(u * Math.PI * 4 + t * 5) * amp;
+        if (st === 'spin') v += (Math.random() - 0.5) * amp * 1.2;
+        if (st === 'win') v *= 0.75 + 0.25 * Math.sin(t * 9) + 0.3 * Math.sin(u * Math.PI * 13 - t * 11);
+        if (glitch) v += (Math.random() - 0.5) * 0.6;
+        return H / 2 - v * (H / 2) * 0.9;
+      };
+      for (const [w, a] of [[5, 0.25], [1.6, 1]] as const) {
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = a;
+        ctx.lineWidth = w;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 3) (x ? ctx.lineTo(x, y(x)) : ctx.moveTo(x, y(x)));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      if (reduce) cancelAnimationFrame(raf);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, []);
+  return <canvas ref={ref} className="scope" aria-hidden="true" />;
+}
+
+/** Brass art-deco corner ornament (drawn once, mirrored for the other corners). */
+function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
   return (
-    <div className="frame">
+    <svg className={`corner ${pos}`} viewBox="0 0 60 60" aria-hidden="true">
+      <path d="M2 58V14Q2 2 14 2h44" fill="none" stroke="url(#brass-grad)" strokeWidth="4" />
+      <path d="M10 58V20q0-10 10-10h38" fill="none" stroke="url(#brass-grad)" strokeWidth="1.5" opacity="0.8" />
+      <path d="M2 30h8M30 2v8" stroke="url(#brass-grad)" strokeWidth="2" />
+      <circle cx="17" cy="17" r="4" fill="url(#brass-grad)" />
+      <circle cx="17" cy="17" r="1.6" fill="#ff3b4f" className="corner-gem" />
+    </svg>
+  );
+}
+
+/**
+ * The reel cabinet: a 1970s broadcast monitor in walnut and brass. Header: nixie-tube multiplier,
+ * a live oscilloscope with the ON AIR lamp, and a VFD ticker. Body: a VU meter, the reels behind
+ * curved CRT glass (scanlines, rolling refresh band, glare, phosphor tint per bonus), and a speaker
+ * grille with a glowing valve. `footer` sits on the bezel under the screen (the channel strip).
+ */
+export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }: {
+  multiplier: number;
+  ticker: string;
+  onAir: boolean;
+  scope: ScopeState;
+  footer?: ReactNode;
+  children: ReactNode;
+}) {
+  const digits = String(multiplier).split('');
+  return (
+    <div className={`frame vu-${scope}`}>
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+        <defs>
+          <linearGradient id="brass-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#fbe3a0" />
+            <stop offset="0.45" stopColor="#b8893f" />
+            <stop offset="1" stopColor="#5a3e14" />
+          </linearGradient>
+        </defs>
+      </svg>
       <div className="frame-top">
-        <div className={`plaque-mult ${multiplier > 1 ? 'hot' : ''}`} aria-label={`Multiplier x${multiplier}`}>
-          <span>x</span>{multiplier}
+        <div className={`nixie ${multiplier > 1 ? 'hot' : ''}`} aria-label={`Multiplier x${multiplier}`} role="img">
+          <span className="nixie-tube x"><b>x</b></span>
+          {digits.map((d, i) => <span className="nixie-tube" key={`${i}-${d}`}><b>{d}</b></span>)}
         </div>
         <div className="crown" aria-hidden="true">
-          <Svg size={34}>{Icon.tower}</Svg>
           <span className={`on-air-lamp ${onAir ? 'lit' : ''}`}>ON AIR</span>
+          <div className="scope-wrap"><Scope state={scope} /></div>
         </div>
         <div className="plaque-led" aria-live="polite">
           <span key={ticker}>{ticker}</span>
@@ -132,16 +249,26 @@ export function ReelFrame({ multiplier, ticker, onAir, children }: { multiplier:
       </div>
       <div className="frame-body">
         <div className="pillar left" aria-hidden="true">
-          {['108', '104', '100', '96', '92', '88'].map((f) => <span key={f}>{f}</span>)}
-          <div className="tube"><i /></div>
+          <div className="vu">
+            {Array.from({ length: 14 }, (_, i) => <i key={i} />)}
+            <div className="vu-cover" />
+          </div>
+          <span className="pillar-label">VU</span>
         </div>
-        <div className="frame-window">{children}</div>
+        <div className="frame-window">
+          {children}
+          <div className="crt" aria-hidden="true">
+            <i className="crt-lines" />
+            <div className="crt-band-clip"><i className="crt-roll" /></div>
+          </div>
+        </div>
         <div className="pillar right" aria-hidden="true">
-          {['MHz', '·', '·', '·', '·', 'FM'].map((f, i) => <span key={i}>{f}</span>)}
+          <div className="grille" />
           <div className="tube"><i /></div>
         </div>
       </div>
-      <i className="rivet tl" /><i className="rivet tr" /><i className="rivet bl" /><i className="rivet br" />
+      {footer ? <div className="frame-foot">{footer}</div> : null}
+      <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
     </div>
   );
 }

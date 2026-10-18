@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { DEFAULT_CONFIG, roundCost } from '../config/gameConfig';
 import type { ModeId } from '../config/types';
 import { Background, noiseDataUrl } from '../components/Background';
-import { Reels } from '../components/Reels';
+import { ChannelStrip, Reels } from '../components/Reels';
 import { Character, Icon, Logo, ReelFrame, RollingAmount, SignalPanel, Svg } from '../components/Cabinet';
 import { SymbolDefs } from '../components/SymbolArt';
 import { OverlayView } from '../components/Overlays';
@@ -114,7 +114,13 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
 
       <main className="stage">
         <SignalPanel cfg={cfg} antennas={view.antennas} spinning={view.spinning} bonus={view.bonus} />
-        <ReelFrame multiplier={view.bonus?.meter ?? 1} ticker={view.ticker} onAir={view.busy}>
+        <ReelFrame
+          multiplier={view.bonus?.meter ?? 1}
+          ticker={view.ticker}
+          onAir={view.busy}
+          scope={view.spinning ? 'spin' : view.spinWinX100 > 0 ? 'win' : view.busy ? 'spin' : 'idle'}
+          footer={<ChannelStrip cfg={cfg} view={view} turbo={turboOn} />}
+        >
           <Reels cfg={cfg} view={view} turbo={turboOn} />
         </ReelFrame>
         <Character excited={view.spinWinX100 >= 500 || view.overlay?.kind === 'bigWin'} />

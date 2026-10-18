@@ -51,6 +51,13 @@ cabinets advertising Static & Retune / On Air wilds, the Antenna bonuses and Mys
 max win (numbers read from the game config), and "Click to continue" (any click or key). It is not
 shown in bet replay, and the player can tick "Don't show again" (kept in the browser).
 
+**The board.** The reels sit in a 1970s broadcast monitor: a walnut cabinet with brass art-deco
+corners; a nixie-tube multiplier, a live oscilloscope and a VFD ticker on top; a VU meter and a
+speaker grille either side; the reels behind curved CRT glass (scanlines, a rolling refresh band,
+glare); and a channel strip (CH1–CH6) whose LEDs blink as each reel stops and light up for reels
+in a win. Tiles are smoky glass with a phosphor line in each symbol's colour. The screen's
+phosphor colour changes per bonus (green, violet, red), and winning tiles get a CRT scan sweep.
+
 **Presentation.** Reels scroll downward and stop left to right with a bounce. A small reel engine
 (Reels.tsx) moves them with transforms only, one animation loop for all six reels; each stop eases
 out from exactly the cruise speed, so there is no jolt. Once two Antennas
