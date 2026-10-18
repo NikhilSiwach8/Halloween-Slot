@@ -94,7 +94,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
 
   return (
     <div ref={rootRef} className={`app ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''} ${view.spinning ? 'is-spinning' : ''}`}>
-      <Background mood={view.bonus?.type ?? 'base'} reducedMotion={REDUCED_MOTION} />
+      <Background mood={view.bonus?.type ?? 'base'} reducedMotion={REDUCED_MOTION} surge={view.overlay?.kind === 'bigWin' ? -view.spinId : view.spinWinX100 >= 500 ? view.spinId : 0} />
       <SymbolDefs />
       <div className="scanlines" aria-hidden="true" />
       {view.bonusFx > 0 ? <div className="static-wipe" key={view.bonusFx} aria-hidden="true" style={{ '--noise': `url(${noiseDataUrl()})` } as CSSProperties} /> : null}

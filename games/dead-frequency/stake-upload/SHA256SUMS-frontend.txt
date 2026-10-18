@@ -2,8 +2,8 @@
 3658c0fd3974a994437f9e8734f16a9ab1787c92e62b84c43e3bec13acea3d47  ./assets/cinzel-latin-700-normal-DSxGOqh5.woff2
 f4d245ead288eed022417f58d875bd3827caeb9439df2309df18e25143354ec8  ./assets/cinzel-latin-ext-700-normal-BPIBBQU9.woff
 0dc1223538c731bd1f338f85211de25355115c9d23bb435e5c82d55769036bf5  ./assets/cinzel-latin-ext-700-normal-BhgFjnpQ.woff2
-f93f73bf127a58e0482fc803cb124a568b565d271433ad07a3fa7f973439523d  ./assets/index-4j7QzuY6.css
-e691c30758577c352be28fbd7e311ab9caaacff6e172e08aa2fd78b247273724  ./assets/index-DiXL7Nnl.js
+7c5e69263b11e98518b0f573742f521046300af18daab713525bfce19a69cca9  ./assets/index-CIldWzJB.css
+6b9658391a009d64a0912b30c86dcc4a2d7ab106261ccf1086f45612e15e96d6  ./assets/index-DUTqP6Ht.js
 0c2553399b27578d86508fe2ed3138c6d1343503da58468590f0b8613e809a1a  ./assets/symbols/antenna.webp
 509b3dc1b8c60d893bda0ee2a544121987570bb17fe33894355e903780e978ad  ./assets/symbols/cassette.webp
 47b0ce5c119789a238e45566fcc4846d0d7ca1f07ccd6286fc295a9884da6081  ./assets/symbols/headphones.webp
@@ -17,5 +17,5 @@ ad071068bcdc53488a14e201fad090b0b977d3f621efdf3d02c1203b0afa446a  ./assets/symbo
 53655451aaba92a41b6e94155796a46d79b972e46352b6acec3ef09d37bb5612  ./assets/symbols/widow.webp
 13103b7fe471696071c60d421b9af3c868a984882a11c3c5f5d90f26fae04c33  ./assets/symbols/wild.webp
 f32ba5faecd7c4c8c652e8c126d3f439c44fd15253cf8e16e0fd59d37c4881d5  ./favicon.svg
-41fec48a8af8ccde38759f413b4188f32010121141936b3d28c405f76acdd6d9  ./index.html
-6445d5b3df761bbc77973af791f00c1dfc13de7b598c823e81f967f5112a6ba7  dead-frequency-frontend.zip
+babe02e77f31afcc07f6f1d3db73c09516e0ee2d1c24840dc0a2150daea4557c  ./index.html
+fb1118207326757ef89d10c218d8e6091e9f52af80b259d6049deb8c5140f10a  dead-frequency-frontend.zip

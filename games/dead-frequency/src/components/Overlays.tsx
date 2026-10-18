@@ -6,6 +6,7 @@ import { formatMoney, formatX } from '../app/format';
 import { SYMBOL_IMAGES } from './assets';
 import { noiseDataUrl } from './Background';
 import { SymbolArt } from './SymbolArt';
+import { BigWin } from './BigWin';
 
 const BONUS_BLURB = {
   NIGHT_SHIFT: 'The Signal Meter climbs by 1 for every reel that shows Static. It never resets, and every win is multiplied by it.',
@@ -90,15 +91,7 @@ export function OverlayView({ cfg, currency, overlay, bet, onContinue }: { cfg: 
       );
       break;
     case 'bigWin':
-      button = 'Collect';
-      body = (
-        <>
-          <h2 className={`tier tier-${overlay.tier.toLowerCase()}`}>{overlay.tier === 'MAX' ? 'MAX WIN' : overlay.tier === 'MEGA' ? 'MEGA WIN' : 'BIG WIN'}</h2>
-          <p className="prize"><strong>{money(overlay.winX100)}</strong> · {formatX(overlay.winX100)}</p>
-          {overlay.tier === 'MAX' ? <p>{cfg.maxWinX.toLocaleString()}x reached. The round ends here.</p> : null}
-        </>
-      );
-      break;
+      return <BigWin overlay={overlay} money={money} onContinue={onContinue} />;
   }
   return (
     <div className="overlay" role="dialog" aria-modal="true">

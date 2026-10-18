@@ -46,6 +46,13 @@ in a radio-console frame with a multiplier plaque and an LED ticker. The control
 Balance / Win, the Bet with ˄ ˅, Double Chance (2×), the round Spin button and the Buy (tower) button.
 Portrait screens stack the parts; the mini-player moves the controls into a column beside the reels.
 
+**Presentation.** Reels scroll downward and stop left to right with a bounce. Once two Antennas
+are showing, every later reel spins on longer and glows red (the tease). Round wins of 10x, 50x,
+200x and 1,000x open the GOOD / MEGA / INSANE / EPIC WIN screen, and a capped round opens MAX WIN.
+The amount counts up and the title climbs through the tiers it passes; the button or Space skips
+the count, then collects. Behind it all, the background has a moon, storm clouds, lightning bolts,
+bats, and a power line with sparks, and it surges on every sizeable win.
+
 ## Layout
 
 ```
@@ -57,7 +64,7 @@ games/dead-frequency/
                    socialText.ts (Stake.us wording), styles.css
   src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
   src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
-  src/components/  Reels (spinning strips, staggered landing, win pop-up), Cabinet (logo, reel frame,
+  src/components/  Reels (scrolling reels, staggered stops, tease, win pop-up), BigWin (tier celebration), Cabinet (logo, reel frame,
                    Signal Panel, Night Host, icons, rolling win meter), SymbolArt (image + SVG fallback),
                    assets.ts, Background (animated canvas scene), Overlays (incl. the "Signal
                    Intercepted" bonus intro), StationMenu, Rules

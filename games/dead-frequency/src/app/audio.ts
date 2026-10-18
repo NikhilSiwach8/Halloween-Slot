@@ -318,12 +318,32 @@ class Audio {
   }
 
   /** One heavy thunk per reel as it lands, `stagger` seconds apart (matches the CSS landing). */
-  land(stagger: number) {
-    for (let r = 0; r < 6; r++) {
-      const d = r * stagger;
+  land(delays: number[]) {
+    delays.forEach((d, r) => {
       this.tone(96 - r * 4, 0.12, { gain: 0.16, glideTo: 50, delay: d });
       this.hiss(0.025, { freq: 2600, q: 3, gain: 0.035, delay: d });
-    }
+    });
+  }
+
+  /** A reel spinning on because a bonus is close: a rising, wavering whine with a heartbeat under it. */
+  tease(delay: number, dur: number) {
+    this.tone(220, dur, { type: 'sawtooth', gain: 0.025, glideTo: 440, delay, attack: dur * 0.6 });
+    this.tone(223, dur, { type: 'sawtooth', gain: 0.02, glideTo: 446, delay, attack: dur * 0.6 });
+    this.hiss(dur, { freq: 900, sweep: 4200, q: 2, gain: 0.04, delay, attack: dur * 0.8 });
+    for (let t = 0; t + 0.2 < dur; t += 0.42) this.tone(52, 0.18, { gain: 0.22, glideTo: 36, delay: delay + t });
+  }
+
+  /** The win counter passing into a higher tier: a hit and a bell chord, higher for every tier. */
+  tierUp(level: number) {
+    this.tone(60, 0.7, { gain: 0.4, glideTo: 30 });
+    this.hiss(0.4, { freq: 400, q: 0.6, gain: 0.14, reverb: 0.7 });
+    const root = 261.6 * Math.pow(2, (level * 3) / 12);
+    [1, 1.189, 1.498, 2].forEach((m, i) => this.tone(root * m, 1.4, { type: 'triangle', gain: 0.05, delay: 0.04 + i * 0.05, reverb: 0.6 }));
+  }
+
+  /** One tick of the win counter. */
+  tick(pitch: number) {
+    this.tone(1400 + pitch * 900, 0.05, { type: 'square', gain: 0.012 });
   }
 
   /** Static resolves into a symbol. */

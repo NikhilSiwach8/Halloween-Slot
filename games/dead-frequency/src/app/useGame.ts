@@ -12,7 +12,23 @@ export type Overlay =
   | { kind: 'mystery'; prize: MysteryPrize | null }
   | { kind: 'bonusIntro'; bonus: BonusType; source: 'ANTENNAS' | 'TAPE' | 'BUY'; spins: number }
   | { kind: 'bonusEnd'; bonus: BonusType; winX100: number }
-  | { kind: 'bigWin'; winX100: number; tier: 'BIG' | 'MEGA' | 'MAX' };
+  | { kind: 'bigWin'; winX100: number; tier: WinTier };
+
+/** Win celebration tiers, in order. MAX is only shown when the round reached the max win. */
+export type WinTier = 'GOOD' | 'MEGA' | 'INSANE' | 'EPIC' | 'MAX';
+/** Lowest round win (x stake) for each tier below MAX. */
+export const WIN_TIERS: { tier: Exclude<WinTier, 'MAX'>; atX: number }[] = [
+  { tier: 'GOOD', atX: 10 },
+  { tier: 'MEGA', atX: 50 },
+  { tier: 'INSANE', atX: 200 },
+  { tier: 'EPIC', atX: 1000 },
+];
+export function winTier(winX100: number, capped: boolean): WinTier | null {
+  if (capped) return 'MAX';
+  let found: WinTier | null = null;
+  for (const t of WIN_TIERS) if (winX100 >= t.atX * 100) found = t.tier;
+  return found;
+}
 
 export interface BonusView {
   type: BonusType;
@@ -50,6 +66,30 @@ export interface View {
 export const SPIN_MS = 520;
 export const REEL_STAGGER = 90;
 export const TURBO_FACTOR = 0.35;
+/** How long a reel takes to drop into place once it stops. */
+export const LAND_MS = 420;
+/** Extra spin time for each reel that could still complete a bonus (2+ Antennas already landed). */
+export const TEASE_MS = 750;
+
+/**
+ * When each reel stops (ms after the results arrive). Reels stop left to right; once two
+ * Antennas are showing, every later reel spins on longer (the "tease") before it stops.
+ */
+export function reelStops(board: Board, turbo: boolean): { delays: number[]; tease: boolean[] } {
+  const k = turbo ? TURBO_FACTOR : 1;
+  const delays: number[] = [];
+  const tease: boolean[] = [];
+  let antennas = 0;
+  let extra = 0;
+  for (let r = 0; r < board.length; r++) {
+    const t = antennas >= 2;
+    if (t) extra += TEASE_MS;
+    tease.push(t);
+    delays.push((r * REEL_STAGGER + extra) * k);
+    antennas += board[r].filter((c) => c.s === 'ANTENNA').length;
+  }
+  return { delays, tease };
+}
 
 const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0 };
 
@@ -89,10 +129,15 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
     audio.spin();
     await sleep(SPIN_MS);
     const turbo = speedRef.current === 'turbo';
+    const stops = reelStops(s.landed, turbo);
     patch({ board: s.landed, spinning: false, unrevealed: !!s.reveal });
-    audio.land(((turbo ? TURBO_FACTOR : 1) * REEL_STAGGER) / 1000);
-    // Reels land one by one (CSS, REEL_STAGGER apart); continue once the last one has settled.
-    await sleep(REEL_STAGGER * (cfg.reels - 1) + 200);
+    if (!skip.current) {
+      audio.land(stops.delays.map((d) => d / 1000));
+      stops.tease.forEach((t, r) => t && audio.tease((stops.delays[r - 1] ?? 0) / 1000, (stops.delays[r] - (stops.delays[r - 1] ?? 0)) / 1000));
+    }
+    // Reels stop one by one (CSS, same delays); continue once the last one has settled.
+    // The delays already include turbo, so wait for them directly rather than through sleep().
+    await new Promise<void>((res) => (skip.current ? res() : setTimeout(res, stops.delays[cfg.reels - 1] + LAND_MS * (turbo ? 0.6 : 1))));
     patch({ antennas: s.antennas });
     if (s.antennas >= 2) audio.antenna(s.antennas);
     if (s.reveal) {
@@ -196,10 +241,10 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       await waitForPlayer();
       patch({ overlay: null, bonus: null });
     }
-    const winX = round.winX100 / 100;
-    if (round.capped || winX >= 20) {
+    const tier = winTier(round.winX100, round.capped);
+    if (tier) {
       skip.current = false;
-      patch({ overlay: { kind: 'bigWin', winX100: round.winX100, tier: round.capped ? 'MAX' : winX >= 100 ? 'MEGA' : 'BIG' } });
+      patch({ overlay: { kind: 'bigWin', winX100: round.winX100, tier } });
       audio.bigWin();
       await waitForPlayer();
     }

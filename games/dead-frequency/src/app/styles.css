@@ -63,9 +63,6 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .overlay-card .prize strong { color: var(--signal); }
 .overlay-card .small, .small { font-size: 12px; color: var(--dim); }
 .overlay-art { width: 120px; height: 120px; margin: 0 auto; animation: pulse 1.6s ease-in-out infinite; }
-.tier { font-size: clamp(30px, 8vw, 48px); }
-.tier-mega { color: var(--signal) !important; }
-.tier-max { color: var(--onair) !important; text-shadow: 0 0 22px rgba(255, 59, 79, 0.8); }
 .primary { margin-top: 12px; padding: 10px 26px; border-radius: 999px; border: 2px solid var(--onair); background: var(--blood); font-weight: 800; letter-spacing: 0.08em; }
 .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
 .row button:not(.primary) { margin-top: 12px; padding: 10px 20px; border-radius: 999px; border: 1px solid var(--line); background: #1b1e27; }
@@ -342,7 +339,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* -------------------------------------------------------------------- reels */
 .reels { position: relative; width: var(--reel-w); display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-.reel { position: relative; display: grid; grid-template-rows: repeat(4, 1fr); gap: 5px; overflow: hidden; border-radius: 8px; }
+.reel { position: relative; overflow: hidden; border-radius: 8px; }
 .cell {
   position: relative; aspect-ratio: 1; border-radius: 8px; display: grid; place-items: center; overflow: hidden;
   background: radial-gradient(circle at 50% 38%, #1d2029, #0c0e13 75%); border: 1px solid rgba(201, 164, 94, 0.14);
@@ -359,20 +356,50 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .cell.kind-bonus { border: 2px solid var(--signal); background: radial-gradient(circle, rgba(54, 217, 160, 0.3), #071210 70%); }
 .cell.kind-mystery { background: #0a0b0d; }
 
-/* Spin: a blurred strip scrolls; on landing each reel drops in with a bounce, one after another. */
-.reel-strip { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 5px; opacity: 0; pointer-events: none; z-index: 1; }
+/*
+ * Spin: the shown symbols kick up and drop out of the bottom while a blurred strip scrolls down
+ * behind them. On landing, each reel stops at its own --stop time (set from useGame.reelStops):
+ * the strip fades and the four new symbols drop in from above and bounce to rest. A teased reel
+ * (bonus still possible) glows red while it spins on.
+ */
+.reel-cells { display: grid; grid-template-rows: repeat(4, 1fr); gap: 5px; position: relative; z-index: 2; }
+.reel-strip { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 5px; opacity: 0; pointer-events: none; z-index: 1; filter: blur(2px) brightness(0.8) saturate(0.8); }
 .strip-cell { aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; background: #101219; }
-.strip-cell .sym { width: 84%; height: 84%; }
-.reels.is-spinning .reel-strip { opacity: 1; filter: blur(1.6px) brightness(0.85); animation: strip-scroll 0.24s linear infinite; }
-.reels.is-spinning .cell { opacity: 0; }
-.reels.is-landing .reel-strip {
-  filter: blur(1.6px) brightness(0.85);
-  animation: strip-scroll 0.24s linear infinite, strip-out 0.12s linear calc(var(--r) * var(--stagger)) both;
-}
-.reels.is-landing .cell { animation: cell-land 0.36s cubic-bezier(0.22, 1.35, 0.42, 1) calc(var(--r) * var(--stagger)) both; }
-@keyframes strip-scroll { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+.strip-cell .sym { width: 84%; height: 84%; transform: scaleY(1.18); }
+.reels.is-spinning .reel-cells { animation: reel-out 0.3s calc(var(--r) * 35ms) both; }
+.reels.is-spinning .reel-strip { animation: strip-scroll 0.2s linear infinite, strip-in 0.14s ease-out calc(var(--r) * 35ms + 90ms) both; }
+.reels.is-landing .reel-strip { opacity: 1; animation: strip-scroll 0.2s linear infinite, strip-out 0.1s linear var(--stop) both; }
+.reels.is-landing .reel-cells { animation: reel-in 0.42s var(--stop) both; }
+.reels.turbo.is-landing .reel-cells { animation-duration: 0.26s; }
+@keyframes strip-scroll { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+@keyframes strip-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes strip-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes cell-land { from { opacity: 0; transform: translateY(-70%); filter: blur(3px); } 60% { opacity: 1; filter: none; } to { opacity: 1; transform: none; } }
+@keyframes reel-out {
+  0% { transform: none; animation-timing-function: ease-out; }
+  30% { transform: translateY(-7%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  100% { transform: translateY(115%); filter: blur(3px); }
+}
+@keyframes reel-in {
+  0% { transform: translateY(-115%); filter: blur(3px); animation-timing-function: cubic-bezier(0.4, 0.2, 0.8, 1); }
+  62% { transform: translateY(6%); filter: none; animation-timing-function: ease-out; }
+  82% { transform: translateY(-2.2%); animation-timing-function: ease-in-out; }
+  100% { transform: none; }
+}
+/* A light catching the reel as it slams to a stop. */
+.reel-flash { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; border-radius: 8px;
+  background: linear-gradient(180deg, transparent 55%, rgba(255, 230, 180, 0.14) 85%, rgba(255, 240, 200, 0.3));
+}
+.reels.is-landing .reel-flash { animation: reel-flash 0.38s ease-out calc(var(--stop) + 0.24s) both; }
+@keyframes reel-flash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+/* Tease: a reel spinning on because a bonus is still possible. */
+.reel.tease::before {
+  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: 8px;
+  border: 2px solid #ff3b4f; box-shadow: inset 0 0 26px rgba(255, 59, 79, 0.7), 0 0 18px rgba(255, 59, 79, 0.8);
+  animation: tease-env var(--stop) linear both, tease-pulse 0.22s ease-in-out infinite alternate;
+}
+.reel.tease .reel-strip { filter: blur(3px) brightness(1.05) sepia(0.6) hue-rotate(-30deg) saturate(2); }
+@keyframes tease-env { 0% { opacity: 0; } 45% { opacity: 1; } 97% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes tease-pulse { from { border-color: #ff3b4f; } to { border-color: #ffd0a0; } }
 
 .reels .reel .cell.win { animation: win-pulse 0.9s ease-in-out infinite; z-index: 2; border-color: #8dffd5; box-shadow: 0 0 18px rgba(54, 217, 160, 0.75), inset 0 0 16px rgba(54, 217, 160, 0.35); }
 .reels .reel .cell.dim { opacity: 0.35; filter: saturate(0.4); transition: opacity 0.25s; }
@@ -555,7 +582,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .pillar span { display: none; }
   .tube { width: 10px; height: 26px; }
   .tube i { width: 4px; height: 11px; bottom: 5px; }
-  .reels, .reel { gap: 3px; }
+  .reels, .reel, .reel-cells { gap: 3px; }
   .reel-strip { gap: 3px; }
   .bar { display: grid; grid-template-columns: auto 1fr auto auto auto; grid-template-areas: 'main main main main main' 'turbo bet spin dc buy'; gap: 8px; padding: 4px 10px; align-items: center; }
   .bar-main { grid-area: main; max-width: none; height: 54px; }
@@ -605,7 +632,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .frame-body { display: block; }
   .pillar { display: none; }
   .rivet { display: none; }
-  .reels, .reel { gap: 3px; }
+  .reels, .reel, .reel-cells { gap: 3px; }
   .reel-strip { gap: 3px; }
   .bar { display: grid; width: auto; grid-template-columns: 1fr 1fr; grid-template-areas: 'main main' 'bet bet' 'turbo dc' 'spin buy'; gap: 6px; padding: 8px 8px 44px 0; align-content: center; justify-items: center; }
   .bar-main { grid-area: main; width: 100%; height: auto; flex-wrap: wrap; padding: 4px 8px; gap: 2px 10px; }
@@ -654,3 +681,80 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .overlay-art { width: 44px; height: 44px; }
 }
 .controls-guide { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* ------------------------------------------------------------ win celebration */
+.bigwin {
+  --c1: #ffe7a8; --c2: #c9a45e; --c3: #6a4a14; --glow: 255, 196, 92;
+  position: fixed; inset: 0; z-index: 60; display: grid; place-content: center; justify-items: center; gap: 2px;
+  overflow: hidden; text-align: center; cursor: pointer; padding: 16px;
+  background: radial-gradient(circle at 50% 45%, rgba(var(--glow), 0.28), rgba(6, 3, 5, 0.9) 55%, rgba(0, 0, 0, 0.96));
+  animation: bw-in 0.35s ease-out both;
+}
+.bw-mega { --c1: #d8fff0; --c2: #36d9a0; --c3: #0b5a3e; --glow: 54, 217, 160; }
+.bw-insane { --c1: #f1dcff; --c2: #b46bff; --c3: #3e1170; --glow: 180, 107, 255; }
+.bw-epic { --c1: #ffe0c8; --c2: #ff5a3c; --c3: #6a0d12; --glow: 255, 70, 50; }
+.bw-max { --c1: #ffffff; --c2: #ff3b4f; --c3: #3a0006; --glow: 255, 59, 79; }
+@keyframes bw-in { from { opacity: 0; } to { opacity: 1; } }
+.bw-rays {
+  position: absolute; left: 50%; top: 45%; width: 220vmax; height: 220vmax; translate: -50% -50%; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(var(--glow), 0.13) 0deg 6deg, transparent 6deg 20deg);
+  mask-image: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.5) 8%, transparent 20%); -webkit-mask-image: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.5) 8%, transparent 20%);
+  animation: bw-spin 18s linear infinite;
+}
+.bw-epic .bw-rays, .bw-max .bw-rays { animation-duration: 7s; }
+@keyframes bw-spin { to { rotate: 360deg; } }
+.bw-embers { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.bw-host {
+  position: absolute; left: 50%; top: 44%; width: min(70vmin, 560px); translate: -50% -50%; pointer-events: none;
+  opacity: 0.16; filter: grayscale(0.6) contrast(1.3) drop-shadow(0 0 30px rgba(var(--glow), 0.8)); mix-blend-mode: screen;
+  animation: bw-host 3.2s ease-in-out infinite alternate;
+}
+.bw-epic .bw-host, .bw-max .bw-host { opacity: 0.32; }
+@keyframes bw-host { from { scale: 1; } to { scale: 1.08; } }
+.bw-content { position: relative; animation: bw-slam 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both, bw-shake 0.4s 0.22s linear; }
+@keyframes bw-slam { 0% { opacity: 0; transform: scale(3.2); filter: blur(12px); } 55% { opacity: 1; filter: none; } 100% { transform: scale(1); } }
+@keyframes bw-shake {
+  0%, 100% { translate: 0 0; } 15% { translate: -9px 4px; } 30% { translate: 8px -5px; } 45% { translate: -6px -3px; }
+  60% { translate: 5px 4px; } 80% { translate: -2px 1px; }
+}
+.bw-title { position: relative; margin: 0; display: grid; line-height: 0.92; font-family: var(--display); font-weight: 900; letter-spacing: 0.06em; }
+.bw-title span {
+  display: block; font-size: clamp(46px, 13vmin, 132px);
+  background: linear-gradient(180deg, var(--c1) 8%, var(--c2) 52%, var(--c3) 96%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.55);
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 22px rgba(var(--glow), 0.85));
+}
+.bw-title .bw-w2 { font-size: clamp(34px, 9vmin, 92px); letter-spacing: 0.3em; margin-right: -0.3em; }
+/* Glitched copies flickering behind the title. */
+.bw-title::before, .bw-title::after {
+  content: attr(data-text); position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  font-size: clamp(46px, 13vmin, 132px); color: rgba(255, 40, 70, 0.5); mix-blend-mode: screen; opacity: 0;
+  animation: bw-glitch 2.6s steps(1) infinite;
+}
+.bw-title::after { color: rgba(60, 220, 255, 0.45); animation-delay: -1.3s; }
+@keyframes bw-glitch { 0%, 86%, 100% { opacity: 0; transform: none; } 88% { opacity: 1; transform: translate(-6px, 2px); clip-path: inset(10% 0 55% 0); } 92% { opacity: 1; transform: translate(5px, -3px); clip-path: inset(60% 0 8% 0); } }
+.bw-amount {
+  position: relative; margin: 14px 0 0; font: 800 clamp(30px, 7vmin, 66px) var(--display); color: #fff6dc; letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(var(--glow), 0.9), 0 3px 0 #000;
+}
+.bigwin.done .bw-amount { animation: bw-pulse 1s ease-in-out infinite; }
+@keyframes bw-pulse { 50% { transform: scale(1.06); } }
+.bw-x { position: relative; margin: 0; color: var(--c2); font-weight: 800; letter-spacing: 0.1em; font-size: clamp(14px, 2.6vmin, 22px); }
+.bw-ladder { position: relative; list-style: none; display: flex; gap: 8px; padding: 0; margin: 14px 0 0; }
+.bw-ladder li {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em; padding: 4px 9px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.35); transition: all 0.3s;
+}
+.bw-ladder li.on { color: #120808; background: var(--c2); border-color: var(--c1); box-shadow: 0 0 14px rgba(var(--glow), 0.8); }
+.bw-btn { position: relative; margin-top: 16px; min-width: 150px; }
+@media (max-height: 420px) {
+  .bigwin { gap: 0; }
+  .bw-title span { font-size: clamp(30px, 15vmin, 70px); }
+  .bw-title .bw-w2 { font-size: clamp(22px, 10vmin, 50px); }
+  .bw-amount { margin-top: 6px; font-size: clamp(22px, 9vmin, 40px); }
+  .bw-ladder { margin-top: 6px; } .bw-ladder li { font-size: 9px; padding: 2px 6px; }
+  .bw-btn { margin-top: 6px; padding: 6px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bw-rays, .bw-host, .bw-content, .bw-title::before, .bw-title::after, .bigwin.done .bw-amount { animation: none; }
+}
