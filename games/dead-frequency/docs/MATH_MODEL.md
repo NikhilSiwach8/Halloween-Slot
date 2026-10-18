@@ -1,8 +1,10 @@
 # Dead Frequency: Math Model (v0.1.0)
 
-All parameters live in `src/config/gameConfig.ts`. Every figure below was **measured by
-simulation**. None is certified, and none comes from an exact lookup table yet. Raw output is in
-`docs/simulation/`.
+All parameters live in `src/config/gameConfig.ts`. The figures below describe the game's natural
+math and were **measured by simulation**. Raw output is in `docs/simulation/`.
+
+The **published** Stake Engine lookup tables (`stake-upload/math/`) return exactly 96.00% in every
+mode. They are built from these same rounds; see [STAKE_ENGINE.md](STAKE_ENGINE.md) for how.
 
 ## Targets
 

@@ -2,11 +2,11 @@ import { PAYING_SYMBOLS } from '../config/symbols';
 import { MODE_ORDER } from '../config/gameConfig';
 import type { GameConfig } from '../config/types';
 import { formatX } from '../app/format';
-import measured from '../config/measuredRtp.json';
+import published from '../config/publishedMath.json';
 import { SymbolArt } from './SymbolArt';
 
-export function RulesModal({ cfg, onClose }: { cfg: GameConfig; bet: number; onClose: () => void }) {
-  const rtp = measured.modes as Record<string, number>;
+export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp: boolean; onClose: () => void }) {
+  const math = published.modes as Record<string, { rtp: number; maxWinX: number; maxWinOneIn: number }>;
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Rules">
       <div className="overlay-card rules">
@@ -44,22 +44,49 @@ export function RulesModal({ cfg, onClose }: { cfg: GameConfig; bet: number; onC
             <li>3+ Antennas during any bonus: +{cfg.retrigger.extraSpins} spins (at most {cfg.retrigger.maxTotalSpins} in total).</li>
           </ul>
           <h3>Mystery Bonus</h3>
-          <p>An <strong>Unmarked Tape</strong> on reel 6 plays the Mystery Bonus. The tape holds either a cash prize from 2x to 500x or one of the three bonuses. The prize is decided when the spin lands.</p>
+          <p>An <strong>Unmarked Tape</strong> on reel 6 plays the Mystery Bonus. The tape holds one prize: a cash prize of {cfg.mystery.prizes.flatMap((p) => (p.value.kind === 'CASH' ? [formatX(p.value.x100)] : [])).join(', ')}, or one of the three bonuses (Night Shift, Possession or Dead Air). The prize is decided when the spin lands.</p>
           <h3>Double Chance</h3>
           <p>Raises the stake to 1.5×. Every bonus-triggering Antenna count becomes twice as likely to land. Feature Spins and Bonus Buys are not affected.</p>
           <h3>Feature Spins & Bonus Buy</h3>
           <p>Static Storm ({cfg.modes.STATIC_STORM.cost}x): every spin has 2 or 3 full reels of Static. Haunted Wilds ({cfg.modes.HAUNTED_WILDS.cost}x): every spin has 2 or 3 extra multiplier wilds. Neither can trigger a bonus. Bonuses can also be bought: Night Shift {cfg.modes.BUY_NIGHT_SHIFT.cost}x, Possession {cfg.modes.BUY_POSSESSION.cost}x, Dead Air {cfg.modes.BUY_DEAD_AIR.cost}x.</p>
         </section>
         <section>
-          <h3>Return to player</h3>
+          <h3>Modes, return to player and maximum win</h3>
           <table className="rtp">
+            <thead><tr><th>Mode</th><th>Cost</th>{showRtp ? <th>RTP</th> : null}<th>Max win</th></tr></thead>
             <tbody>
               {MODE_ORDER.map((m) => (
-                <tr key={m}><td>{cfg.modes[m].name}</td><td>{cfg.modes[m].cost}x</td><td>{rtp[m] ? `${rtp[m].toFixed(2)}%` : '—'}</td></tr>
+                <tr key={m}>
+                  <td>{cfg.modes[m].name}</td>
+                  <td>{cfg.modes[m].cost}x stake</td>
+                  {showRtp ? <td>{math[m] ? `${math[m].rtp.toFixed(2)}%` : '—'}</td> : null}
+                  <td>{math[m] ? `${math[m].maxWinX.toLocaleString('en')}x` : '—'}</td>
+                </tr>
               ))}
             </tbody>
           </table>
-          <p className="small">RTP is a simulated estimate ({measured.method}), not a certified figure. Maximum win: {cfg.maxWinX.toLocaleString()}x the base stake per round. Reaching it ends the round. Malfunction voids all pays and plays.</p>
+          <p className="small">
+            Wins and the maximum win are multiples of the base stake. A round ends as soon as it reaches its maximum win.
+            Static Storm has no multipliers, so its highest possible win is {math.STATIC_STORM ? math.STATIC_STORM.maxWinX.toLocaleString('en') : '10,240'}x
+            (the Night Host on all 4,096 ways); every other mode can reach {cfg.maxWinX.toLocaleString('en')}x.
+          </p>
+        </section>
+        <section>
+          <h3>Controls</h3>
+          <p className="small">
+            SPIN (or Space) plays a round and skips animations while one is playing. − / + change the stake. Double Chance switches the 1.5x mode
+            on or off. Feature Spins & Bonus Buy opens the menu of feature modes and bonus purchases; a bonus purchase asks for confirmation.
+            Turbo speeds up animations. The speaker button mutes all sound; ? opens these rules.
+          </p>
+        </section>
+        <section>
+          <h3>Disclaimer</h3>
+          <p className="small">
+            Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game
+            to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any
+            physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game
+            Server and not from events within the web browser. TM and © 2026 Stake Engine.
+          </p>
         </section>
         <button className="primary" onClick={onClose}>Close</button>
       </div>

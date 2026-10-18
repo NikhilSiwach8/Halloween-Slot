@@ -108,6 +108,24 @@ A bought bonus is identical to a triggered one; only the paid spin is skipped.
 round reaches it, the win is capped at exactly 50,000x and the round ends immediately; any
 remaining free spins are not played.
 
+**Static Storm** has no multipliers, so it cannot reach 50,000x. Its highest possible win is
+**10,240x**: the Night Host on all 4,096 ways (4⁶ ways × 2.50x).
+
+## Return to player
+
+Every mode returns **96.00%**. This is exact: it is computed from the published lookup tables in
+`stake-upload/math/` (see [STAKE_ENGINE.md](STAKE_ENGINE.md)).
+
+| Mode | Cost | RTP | Max win | Max win odds (from the lookup table) |
+|---|---|---|---|---|
+| Base | 1x | 96.00% | 50,000x | 1 in 8,000,000 |
+| Double Chance | 1.5x | 96.00% | 50,000x | 1 in 6,000,000 |
+| Static Storm | 8x | 96.00% | 10,240x | 1 in 5,000,000 |
+| Haunted Wilds | 12x | 96.00% | 50,000x | 1 in 8,000,000 |
+| Night Shift (buy) | 80x | 96.00% | 50,000x | 1 in 2,000,000 |
+| Possession (buy) | 160x | 96.00% | 50,000x | 1 in 2,000,000 |
+| Dead Air (buy) | 275x | 96.00% | 50,000x | 1 in 20,000 |
+
 ## Resolution order of a paid spin
 
 1. The board lands (Static, symbols, Antennas, Tape, guaranteed features).

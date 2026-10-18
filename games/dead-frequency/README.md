@@ -17,8 +17,11 @@ It is a **6×4, 4,096-ways** game with a **50,000× max win** and:
 | **Bonus Buy** | Night Shift 80x · Possession 160x · Dead Air 275x. |
 
 Every round is independent: nothing carries over from one round to the next.
-That makes the game suitable for book-based platforms such as Stake Engine. Publication files are
-not generated yet; see [Next steps](#next-steps).
+
+**Stake Engine:** the upload is ready in [`stake-upload/`](stake-upload/README.md). It contains
+the math files for all 7 modes (exactly 96.00% RTP each) and the static frontend build, which
+talks to the RGS and supports bet replay. It has not been uploaded or approved yet; see
+[docs/STAKE_ENGINE.md](docs/STAKE_ENGINE.md) for the checks and the open items.
 
 ## Run it
 
@@ -31,6 +34,8 @@ npm run df:build      # typecheck + production build to games/dead-frequency/dis
 npm run df:test       # unit tests for this game (also part of `npm test`)
 npm run df:simulate -- --modes BASE,DOUBLE_CHANCE --rounds 1000000 --seeds 1,2
 npm run df:rtp -- --rounds 4000000 --bonusRounds 1000000   # low-variance RTP per mode
+npm run df:books && npm run df:books:verify                 # Stake math upload (~17 min) + checks
+npm run df:replay-examples && npm run df:stake:frontend     # replay ids + frontend build for Stake
 ```
 
 `?seed=123` gives a reproducible session. **Space** spins, or skips the current animation.
@@ -39,15 +44,18 @@ npm run df:rtp -- --rounds 4000000 --bonusRounds 1000000   # low-variance RTP pe
 
 ```
 games/dead-frequency/
-  src/config/      gameConfig.ts (all math), types.ts, symbols.ts, measuredRtp.json
+  src/config/      gameConfig.ts (all math), types.ts, symbols.ts, publishedMath.json (written by df:books)
   src/engine/      rng.ts, board.ts (board draws), ways.ts (evaluation), round.ts (spins, bonuses, mystery, cap)
   src/simulation/  simulator.ts (whole-round simulation)
   src/app/         App.tsx, useGame.ts (round playback), audio.ts (synth placeholders), styles.css
+  src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
+  src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
   src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Background (animated canvas scene),
                    Overlays (incl. the "Signal Intercepted" bonus intro), StationMenu, Rules
   public/assets/   symbols/*.webp
-  scripts/         simulate.ts, rtp.ts, art/slice_symbol_sheet.py
-  tests/           engine.test.ts
+  scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts, art/
+  stake-upload/    the Stake Engine upload: math/, frontend/, replay-examples.json
+  tests/           engine.test.ts, stake.test.ts
   docs/            GAME_RULES.md, MATH_MODEL.md
 ```
 
@@ -59,23 +67,24 @@ result back, so the player's clicks (for example "Play the tape") never change a
 
 - [docs/GAME_RULES.md](docs/GAME_RULES.md): every rule, trigger and the resolution order
 - [docs/MATH_MODEL.md](docs/MATH_MODEL.md): targets, method and measured RTP per mode
+- [docs/STAKE_ENGINE.md](docs/STAKE_ENGINE.md): Stake Engine files, checks and open items
 
 ## Known limitations
 
 - **Placeholder audio.** Sounds are synthesized. The symbol art is final-style artwork in
   `public/assets/symbols/` (512×512 WebP, cut from the symbol sheet with
   `scripts/art/slice_symbol_sheet.py`). The hand-built SVGs remain as a fallback.
-- **Development PRNG.** It is not a certified RNG, and there are demo credits only.
-- **Simulated RTP only.** Figures are simulation estimates with stated error bars, not certified
-  values.
-- **No platform integration yet.** There are no Stake Engine books or lookup tables and no RGS
-  adapter for this game.
-- **Missing features.** There is no autoplay, no localisation, and no browser (Playwright) tests
-  for this game yet.
+- **Local demo RNG.** The local demo uses a development PRNG with demo credits. On Stake, the RGS
+  picks every outcome from the published books.
+- **Not yet run on Stake Engine.** It has only been tested against a mock RGS that serves the real
+  books.
+- **Doll symbol.** The art may break Stake's rule against child-like characters. Replace it before
+  submitting (see docs/STAKE_ENGINE.md).
+- **Missing features.** There is no autoplay, no social-casino (Stake.us) wording, no
+  localisation, and no Playwright tests in the repo for this game.
 
 ## Next steps
 
-1. Generate weighted books and lookup tables per mode, as The Hollow Hour does in
-   `scripts/export-books.ts`. That gives an exact RTP per mode.
-2. Add an RGS adapter and replay mode.
-3. Add final audio and big-win animations.
+1. Replace the Doll art and the placeholder audio.
+2. Upload `stake-upload/` and test every mode and the replay ids on the dashboard.
+3. Add social-casino wording for Stake.us.

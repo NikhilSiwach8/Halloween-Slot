@@ -1,0 +1,46 @@
+{
+  "modes": [
+    {
+      "name": "base",
+      "cost": 1,
+      "events": "books_base.jsonl.zst",
+      "weights": "lookUpTable_base_0.csv"
+    },
+    {
+      "name": "double_chance",
+      "cost": 1.5,
+      "events": "books_double_chance.jsonl.zst",
+      "weights": "lookUpTable_double_chance_0.csv"
+    },
+    {
+      "name": "static_storm",
+      "cost": 8,
+      "events": "books_static_storm.jsonl.zst",
+      "weights": "lookUpTable_static_storm_0.csv"
+    },
+    {
+      "name": "haunted_wilds",
+      "cost": 12,
+      "events": "books_haunted_wilds.jsonl.zst",
+      "weights": "lookUpTable_haunted_wilds_0.csv"
+    },
+    {
+      "name": "night_shift",
+      "cost": 80,
+      "events": "books_night_shift.jsonl.zst",
+      "weights": "lookUpTable_night_shift_0.csv"
+    },
+    {
+      "name": "possession",
+      "cost": 160,
+      "events": "books_possession.jsonl.zst",
+      "weights": "lookUpTable_possession_0.csv"
+    },
+    {
+      "name": "dead_air",
+      "cost": 275,
+      "events": "books_dead_air.jsonl.zst",
+      "weights": "lookUpTable_dead_air_0.csv"
+    }
+  ]
+}

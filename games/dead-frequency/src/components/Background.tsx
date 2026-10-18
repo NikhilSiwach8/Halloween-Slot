@@ -131,7 +131,8 @@ export function Background({ mood, reducedMotion }: { mood: BackgroundMood; redu
     let raf = 0;
 
     const frame = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      // rAF timestamps can be slightly earlier than performance.now() at start: never run time backwards.
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
       last = now;
       elapsed += dt;
       const m = MOODS[moodRef.current];
@@ -247,7 +248,7 @@ export function Background({ mood, reducedMotion }: { mood: BackgroundMood; redu
 
       // --- film grain
       ctx.globalAlpha = 0.07;
-      const tile = tiles[Math.floor(elapsed * 24) % tiles.length];
+      const tile = tiles[Math.abs(Math.floor(elapsed * 24)) % tiles.length];
       const ox = Math.floor(Math.random() * 128);
       const oy = Math.floor(Math.random() * 128);
       for (let y = -oy; y < H; y += 128) for (let x = -ox; x < W; x += 128) ctx.drawImage(tile, x, y);

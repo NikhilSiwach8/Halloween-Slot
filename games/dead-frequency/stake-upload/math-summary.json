@@ -1,0 +1,168 @@
+{
+  "game": "dead-frequency",
+  "version": "0.1.0",
+  "generatedAt": "2026-10-18T15:37:58.107Z",
+  "baseSeed": 20261018,
+  "targetRtp": 0.96,
+  "modes": {
+    "base": {
+      "mode": "BASE",
+      "cost": 1,
+      "tiltLambda": -0.013838367155910272,
+      "maxWinSearchRounds": {
+        "normal": 200000,
+        "night_shift": 20000,
+        "possession": 20000,
+        "dead_air": 20000,
+        "bigwin": 629,
+        "wincap": 320
+      },
+      "rtp": 0.9600000000003022,
+      "hitRate": 0.351190451998712,
+      "maxWinX": 50000,
+      "maxWinProbability": 1.24999999e-7,
+      "criteriaProbability": {
+        "normal": 0.994896999999997,
+        "night_shift": 0.004153000000001,
+        "possession": 0.00076,
+        "dead_air": 0.000189623156048,
+        "wincap": 1.24999999e-7,
+        "bigwin": 2.51843951e-7
+      },
+      "books": 260100,
+      "nonZeroWeightPayouts": 21954
+    },
+    "double_chance": {
+      "mode": "DOUBLE_CHANCE",
+      "cost": 1.5,
+      "tiltLambda": -0.005106716802093816,
+      "maxWinSearchRounds": {
+        "normal": 200000,
+        "night_shift": 20000,
+        "possession": 20000,
+        "dead_air": 20000,
+        "bigwin": 1038,
+        "wincap": 329
+      },
+      "rtp": 0.9600000000001548,
+      "hitRate": 0.356758957599101,
+      "maxWinX": 50000,
+      "maxWinProbability": 1.66666666e-7,
+      "criteriaProbability": {
+        "normal": 0.989845816796884,
+        "night_shift": 0.008263829677157,
+        "possession": 0.001512282820765,
+        "dead_air": 0.000377535277589,
+        "wincap": 1.66666666e-7,
+        "bigwin": 3.68760935e-7
+      },
+      "books": 260100,
+      "nonZeroWeightPayouts": 21884
+    },
+    "static_storm": {
+      "mode": "STATIC_STORM",
+      "cost": 8,
+      "tiltLambda": 0.0011357075340469721,
+      "maxWinSearchRounds": {
+        "normal": 200000,
+        "bigwin": 597,
+        "wincap": 10
+      },
+      "rtp": 0.9599999999996875,
+      "hitRate": 0.412722997791734,
+      "maxWinX": 10240,
+      "maxWinProbability": 2e-7,
+      "criteriaProbability": {
+        "normal": 0.999992996136077,
+        "bigwin": 0.000006803863922,
+        "wincap": 2e-7
+      },
+      "books": 200046,
+      "nonZeroWeightPayouts": 478
+    },
+    "haunted_wilds": {
+      "mode": "HAUNTED_WILDS",
+      "cost": 12,
+      "tiltLambda": -0.002695114494696038,
+      "maxWinSearchRounds": {
+        "normal": 200000,
+        "bigwin": 427,
+        "wincap": 115
+      },
+      "rtp": 0.9599999999999351,
+      "hitRate": 0.636069986665943,
+      "maxWinX": 50000,
+      "maxWinProbability": 1.24999999e-7,
+      "criteriaProbability": {
+        "normal": 0.999997049740732,
+        "bigwin": 0.000002825259267,
+        "wincap": 1.24999999e-7
+      },
+      "books": 200080,
+      "nonZeroWeightPayouts": 5148
+    },
+    "night_shift": {
+      "mode": "BUY_NIGHT_SHIFT",
+      "cost": 80,
+      "tiltLambda": -0.000792530954835556,
+      "maxWinSearchRounds": {
+        "normal": 100000,
+        "bigwin": 100,
+        "wincap": 88
+      },
+      "rtp": 0.9600000000000508,
+      "hitRate": 0.995428181605645,
+      "maxWinX": 50000,
+      "maxWinProbability": 4.99999999e-7,
+      "criteriaProbability": {
+        "normal": 0.999982139316658,
+        "bigwin": 0.000017360683341,
+        "wincap": 4.99999999e-7
+      },
+      "books": 100090,
+      "nonZeroWeightPayouts": 21472
+    },
+    "possession": {
+      "mode": "BUY_POSSESSION",
+      "cost": 160,
+      "tiltLambda": -0.0010329158212786928,
+      "maxWinSearchRounds": {
+        "normal": 100000,
+        "bigwin": 125,
+        "wincap": 257
+      },
+      "rtp": 0.9599999999999598,
+      "hitRate": 0.996066369239926,
+      "maxWinX": 50000,
+      "maxWinProbability": 4.99999999e-7,
+      "criteriaProbability": {
+        "normal": 0.999965010241841,
+        "bigwin": 0.000034489758158,
+        "wincap": 4.99999999e-7
+      },
+      "books": 100090,
+      "nonZeroWeightPayouts": 27525
+    },
+    "dead_air": {
+      "mode": "BUY_DEAD_AIR",
+      "cost": 275,
+      "tiltLambda": 0.0020387943956121863,
+      "maxWinSearchRounds": {
+        "normal": 100000,
+        "bigwin": 740,
+        "wincap": 706
+      },
+      "rtp": 0.9599999999999936,
+      "hitRate": 0.998294761848463,
+      "maxWinX": 50000,
+      "maxWinProbability": 0.00005,
+      "criteriaProbability": {
+        "normal": 0.999881195793792,
+        "wincap": 0.00005,
+        "bigwin": 0.000068804206207
+      },
+      "books": 100160,
+      "nonZeroWeightPayouts": 35690
+    }
+  }
+}

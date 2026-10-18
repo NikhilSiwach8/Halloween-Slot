@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { BonusType, GameConfig, SymbolId } from '../config/types';
 import type { Overlay } from '../app/useGame';
+import type { Currency } from '../platform/platform';
 import { formatMoney, formatX } from '../app/format';
 import { SYMBOL_IMAGES } from './assets';
 import { noiseDataUrl } from './Background';
@@ -53,8 +54,8 @@ function BonusIntro({ cfg, overlay, onContinue }: { cfg: GameConfig; overlay: Ex
   );
 }
 
-export function OverlayView({ cfg, overlay, bet, onContinue }: { cfg: GameConfig; overlay: Overlay; bet: number; onContinue: () => void }) {
-  const money = (x100: number) => formatMoney(cfg, Math.floor((bet * x100) / 100));
+export function OverlayView({ cfg, currency, overlay, bet, onContinue }: { cfg: GameConfig; currency: Currency; overlay: Overlay; bet: number; onContinue: () => void }) {
+  const money = (x100: number) => formatMoney(currency, Math.floor((bet * x100) / 100));
   let body;
   let button = 'Continue';
   switch (overlay.kind) {

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { roundCost } from '../config/gameConfig';
 import type { GameConfig, ModeId } from '../config/types';
 import { formatMoney } from '../app/format';
+import type { Currency } from '../platform/platform';
 
 const FEATURES: ModeId[] = ['STATIC_STORM', 'HAUNTED_WILDS'];
 const BUYS: ModeId[] = ['BUY_NIGHT_SHIFT', 'BUY_POSSESSION', 'BUY_DEAD_AIR'];
 
 interface Props {
   cfg: GameConfig;
+  currency: Currency;
   bet: number;
   balance: number;
   featureMode: ModeId | null;
@@ -17,9 +19,9 @@ interface Props {
 }
 
 /** Feature Spins (a paid spin mode that stays on) and Bonus Buys (one-off, confirmed). */
-export function StationMenu({ cfg, bet, balance, featureMode, onFeature, onBuy, onClose }: Props) {
+export function StationMenu({ cfg, currency, bet, balance, featureMode, onFeature, onBuy, onClose }: Props) {
   const [confirm, setConfirm] = useState<ModeId | null>(null);
-  const money = (m: ModeId) => formatMoney(cfg, roundCost(cfg, m, bet));
+  const money = (m: ModeId) => formatMoney(currency, roundCost(cfg, m, bet));
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Feature Spins and Bonus Buy">
       <div className="overlay-card menu">

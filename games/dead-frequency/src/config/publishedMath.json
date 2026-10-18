@@ -1,0 +1,55 @@
+{
+  "version": "0.1.0",
+  "generatedAt": "2026-10-18T15:37:58.107Z",
+  "modes": {
+    "BASE": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 8000000,
+      "hitRate": 35.12,
+      "books": 260100
+    },
+    "DOUBLE_CHANCE": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 6000000,
+      "hitRate": 35.68,
+      "books": 260100
+    },
+    "STATIC_STORM": {
+      "rtp": 96,
+      "maxWinX": 10240,
+      "maxWinOneIn": 5000000,
+      "hitRate": 41.27,
+      "books": 200046
+    },
+    "HAUNTED_WILDS": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 8000000,
+      "hitRate": 63.61,
+      "books": 200080
+    },
+    "BUY_NIGHT_SHIFT": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 2000000,
+      "hitRate": 99.54,
+      "books": 100090
+    },
+    "BUY_POSSESSION": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 2000000,
+      "hitRate": 99.61,
+      "books": 100090
+    },
+    "BUY_DEAD_AIR": {
+      "rtp": 96,
+      "maxWinX": 50000,
+      "maxWinOneIn": 20000,
+      "hitRate": 99.83,
+      "books": 100160
+    }
+  }
+}

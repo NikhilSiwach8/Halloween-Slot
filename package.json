@@ -19,7 +19,11 @@
     "df:build": "tsc -b && vite build --config games/dead-frequency/vite.config.ts",
     "df:test": "vitest run --config games/dead-frequency/vite.config.ts",
     "df:simulate": "tsx games/dead-frequency/scripts/simulate.ts",
-    "df:rtp": "tsx games/dead-frequency/scripts/rtp.ts"
+    "df:rtp": "tsx games/dead-frequency/scripts/rtp.ts",
+    "df:books": "tsx games/dead-frequency/scripts/export-books.ts",
+    "df:books:verify": "tsx games/dead-frequency/scripts/verify-books.ts",
+    "df:stake:frontend": "vite build --config games/dead-frequency/vite.config.ts --outDir stake-upload/frontend --emptyOutDir",
+    "df:replay-examples": "tsx games/dead-frequency/scripts/replay-examples.ts"
   },
   "dependencies": {
     "@fontsource/cinzel": "^5.2.6",

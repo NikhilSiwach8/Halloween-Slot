@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { roundCost } from '../config/gameConfig';
 import type { BonusType, GameConfig, ModeId, MysteryPrize } from '../config/types';
 import type { Board } from '../engine/board';
-import { SeededRng } from '../engine/rng';
-import { playRound, type RoundResult, type SpinResult } from '../engine/round';
+import type { RoundResult, SpinResult } from '../engine/round';
+import type { Platform, PlatformSession } from '../platform/platform';
 import { audio } from './audio';
 
 export type Speed = 'normal' | 'turbo';
@@ -42,10 +42,12 @@ export interface View {
 
 const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0 };
 
-export function useGame(cfg: GameConfig, seed: number) {
-  const rng = useRef(new SeededRng(seed));
-  const [balance, setBalance] = useState(cfg.currency.startingBalance);
-  const [bet, setBet] = useState(cfg.defaultBet);
+export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSession) {
+  const [balance, setBalance] = useState(session.balance);
+  const [bet, setBet] = useState(session.replay?.bet ?? session.defaultBet);
+  const [error, setError] = useState<string | null>(null);
+  /** Replay mode: true once the replayed round has been shown (offers Play Again). */
+  const [replayed, setReplayed] = useState(false);
   const [doubleChance, setDoubleChance] = useState(false);
   const [featureMode, setFeatureMode] = useState<ModeId | null>(null);
   const [speed, setSpeed] = useState<Speed>('normal');
@@ -110,13 +112,23 @@ export function useGame(cfg: GameConfig, seed: number) {
 
   const play = useCallback(async (mode: ModeId) => {
     const cost = roundCost(cfg, mode, bet);
-    if (view.busy || cost > balance) return;
+    if (view.busy || (!session.replay && cost > balance)) return;
     skip.current = false;
-    setBalance((b) => b - cost);
+    setError(null);
     audio.resume();
-    const round: RoundResult = playRound(cfg, mode, rng.current);
+    patch({ busy: true, roundWinX100: 0, bonus: null, overlay: null, ticker: session.replay ? 'Replaying a past broadcast…' : 'Tuning in…' });
+    let round: RoundResult;
+    try {
+      const r = await platform.play(mode, bet);
+      round = r.round;
+      if (!session.replay) setBalance(r.balance);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      patch({ busy: false, ticker: 'The signal was lost.' });
+      return;
+    }
     let soFar = 0;
-    patch({ busy: true, roundWinX100: 0, bonus: null, overlay: null, ticker: cfg.modes[mode].kind === 'buy' ? 'Bonus bought.' : 'Broadcasting…' });
+    patch({ ticker: session.replay ? 'Replaying a past broadcast…' : cfg.modes[mode].kind === 'buy' ? 'Bonus bought.' : 'Broadcasting…' });
 
     if (round.spin) {
       await showSpin(round.spin, 0);
@@ -174,10 +186,15 @@ export function useGame(cfg: GameConfig, seed: number) {
       audio.bigWin();
       await waitForPlayer();
     }
-    const money = Math.floor((bet * round.winX100) / 100);
-    setBalance((b) => b + money);
+    try {
+      const after = await platform.endRound(round, bet);
+      if (!session.replay) setBalance(after);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+    if (session.replay) setReplayed(true);
     patch({ busy: false, overlay: null, roundWinX100: round.winX100, ticker: round.winX100 > 0 ? (round.capped ? 'MAXIMUM WIN — the broadcast ends.' : 'Signal lost… for now.') : 'Dead air. Spin again.' });
-  }, [bet, balance, view.busy, cfg]);
+  }, [bet, balance, view.busy, cfg, platform, session]);
 
-  return { balance, bet, setBet, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance };
+  return { balance, bet, setBet, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance, error, setError, replayed };
 }

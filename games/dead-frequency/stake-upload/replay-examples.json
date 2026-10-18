@@ -1,0 +1,141 @@
+{
+  "BASE": {
+    "loss": {
+      "id": 2,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 35,
+      "payoutX": 1.35
+    },
+    "bigWin": {
+      "id": 198165,
+      "payoutX": 7987.68
+    },
+    "maxWin": {
+      "id": 247134,
+      "payoutX": 50000
+    },
+    "bonusTrigger": {
+      "id": 1019,
+      "payoutX": 23.92
+    }
+  },
+  "DOUBLE_CHANCE": {
+    "loss": {
+      "id": 1,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 4,
+      "payoutX": 2.88
+    },
+    "bigWin": {
+      "id": 201080,
+      "payoutX": 2194.52
+    },
+    "maxWin": {
+      "id": 241367,
+      "payoutX": 50000
+    },
+    "bonusTrigger": {
+      "id": 10942,
+      "payoutX": 17.08
+    }
+  },
+  "STATIC_STORM": {
+    "loss": {
+      "id": 2,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 38,
+      "payoutX": 9.6
+    },
+    "bigWin": {
+      "id": 29124,
+      "payoutX": 2880
+    },
+    "maxWin": {
+      "id": 200037,
+      "payoutX": 10240
+    },
+    "bonusTrigger": null
+  },
+  "HAUNTED_WILDS": {
+    "loss": {
+      "id": 1,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 16,
+      "payoutX": 12
+    },
+    "bigWin": {
+      "id": 154146,
+      "payoutX": 3225.6
+    },
+    "maxWin": {
+      "id": 200061,
+      "payoutX": 50000
+    },
+    "bonusTrigger": null
+  },
+  "NIGHT_SHIFT": {
+    "loss": {
+      "id": 156,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 4,
+      "payoutX": 181.72
+    },
+    "bigWin": {
+      "id": 728,
+      "payoutX": 2517.75
+    },
+    "maxWin": {
+      "id": 100061,
+      "payoutX": 50000
+    },
+    "bonusTrigger": null
+  },
+  "POSSESSION": {
+    "loss": {
+      "id": 108,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 6,
+      "payoutX": 354.14
+    },
+    "bigWin": {
+      "id": 150,
+      "payoutX": 2814.2
+    },
+    "maxWin": {
+      "id": 100061,
+      "payoutX": 50000
+    },
+    "bonusTrigger": null
+  },
+  "DEAD_AIR": {
+    "loss": {
+      "id": 919,
+      "payoutX": 0
+    },
+    "normalWin": {
+      "id": 1,
+      "payoutX": 312.32
+    },
+    "bigWin": {
+      "id": 8,
+      "payoutX": 2074.92
+    },
+    "maxWin": {
+      "id": 28906,
+      "payoutX": 50000
+    },
+    "bonusTrigger": null
+  }
+}
