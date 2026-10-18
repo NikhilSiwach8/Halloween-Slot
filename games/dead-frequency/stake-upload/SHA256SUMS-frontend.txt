@@ -1,9 +1,10 @@
+9e3f967cacb91fe1e0785f23293aaa3a0a876d1c43a99c9585a3e54c78cf0a46  ./assets/audio/halloween-waltz-loop.mp3
 2243d5f6c378d19b02d682ff61d007e77731c60c1fbe3e756a6172471771e02f  ./assets/cinzel-latin-700-normal-Br4LEWUb.woff
 3658c0fd3974a994437f9e8734f16a9ab1787c92e62b84c43e3bec13acea3d47  ./assets/cinzel-latin-700-normal-DSxGOqh5.woff2
 f4d245ead288eed022417f58d875bd3827caeb9439df2309df18e25143354ec8  ./assets/cinzel-latin-ext-700-normal-BPIBBQU9.woff
 0dc1223538c731bd1f338f85211de25355115c9d23bb435e5c82d55769036bf5  ./assets/cinzel-latin-ext-700-normal-BhgFjnpQ.woff2
 db2ed5f00b5babc4d5f764a52c2ef597b8dc988b65d2831aec00f149b176a7dc  ./assets/index-BnfEf15r.css
-7fc0455683bbbe3812e34f0246a5e308454018463c1048cb73c74f3671c64796  ./assets/index-ColLStDR.js
+44788fcf68a117095dc359b1c038c860679d7dd5d445823ca6341f93024305f3  ./assets/index-CO7hsrZa.js
 0c2553399b27578d86508fe2ed3138c6d1343503da58468590f0b8613e809a1a  ./assets/symbols/antenna.webp
 509b3dc1b8c60d893bda0ee2a544121987570bb17fe33894355e903780e978ad  ./assets/symbols/cassette.webp
 47b0ce5c119789a238e45566fcc4846d0d7ca1f07ccd6286fc295a9884da6081  ./assets/symbols/headphones.webp
@@ -17,5 +18,5 @@ ad071068bcdc53488a14e201fad090b0b977d3f621efdf3d02c1203b0afa446a  ./assets/symbo
 53655451aaba92a41b6e94155796a46d79b972e46352b6acec3ef09d37bb5612  ./assets/symbols/widow.webp
 13103b7fe471696071c60d421b9af3c868a984882a11c3c5f5d90f26fae04c33  ./assets/symbols/wild.webp
 f32ba5faecd7c4c8c652e8c126d3f439c44fd15253cf8e16e0fd59d37c4881d5  ./favicon.svg
-2bb558f2740f1c48cb57e86471ee25bdffcf651ea7d4f85cd27fd3cd47269f1d  ./index.html
-bbf3230808ccf0c08d63353a61cd888ae45518e8970916d84376b69c751c5644  dead-frequency-frontend.zip
+7bed7af6d297bb65deb7d74bc3db8e745ea906855141bbabb68f113b6966baed  ./index.html
+8d1bd76be288948e90826ea117eebee5d528c7b668cbdc07f8784a020e664474  dead-frequency-frontend.zip

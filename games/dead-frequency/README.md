@@ -69,7 +69,7 @@ games/dead-frequency/
   src/config/      gameConfig.ts (all math), types.ts, symbols.ts, publishedMath.json (written by df:books)
   src/engine/      rng.ts, board.ts (board draws), ways.ts (evaluation), round.ts (spins, bonuses, mystery, cap)
   src/simulation/  simulator.ts (whole-round simulation)
-  src/app/         App.tsx, useGame.ts (round playback), audio.ts (synthesized sound design),
+  src/app/         App.tsx, useGame.ts (round playback), audio.ts (music loop + synthesized effects),
                    socialText.ts (Stake.us wording), styles.css
   src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
   src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
@@ -77,7 +77,7 @@ games/dead-frequency/
                    Signal Panel, Night Host, icons, rolling win meter), SymbolArt (image + SVG fallback),
                    assets.ts, Background (animated canvas scene), Overlays (incl. the "Signal
                    Intercepted" bonus intro), StationMenu, Rules
-  public/assets/   symbols/*.webp
+  public/assets/   symbols/*.webp, audio/halloween-waltz-loop.mp3
   scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts,
                    art/ (slice_symbol_sheet.py, cutout_single.py)
   stake-upload/    the Stake Engine upload: math/, frontend/, replay-examples.json
@@ -94,11 +94,13 @@ result back, so the player's clicks (for example "Play the tape") never change a
 - [docs/GAME_RULES.md](docs/GAME_RULES.md): every rule, trigger and the resolution order
 - [docs/MATH_MODEL.md](docs/MATH_MODEL.md): targets, method and measured RTP per mode
 - [docs/STAKE_ENGINE.md](docs/STAKE_ENGINE.md): Stake Engine files, checks and open items
+- [docs/AUDIO.md](docs/AUDIO.md): the music loop (source, licence, how it was cut) and the sound design
 
 ## Known limitations
 
-- **Code-synthesized audio.** Sound is generated live with the Web Audio API: original, but not
-  studio-recorded.
+- **Music licence to confirm.** The background music is a licensed track supplied by the owner
+  (see [docs/AUDIO.md](docs/AUDIO.md)); keep its licence record for the submission. The sound
+  effects are synthesized live with the Web Audio API.
 - **Local demo RNG.** The local demo uses a development PRNG with demo credits. On Stake, the RGS
   picks every outcome from the published books.
 - **Not yet run on Stake Engine.** It has only been tested against a mock RGS that serves the real

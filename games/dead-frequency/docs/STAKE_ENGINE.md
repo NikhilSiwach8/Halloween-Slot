@@ -97,7 +97,7 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
 | `mode` sent to `/wallet/play`: the spelling the RGS lists in authenticate `config.betModes` (matched case-insensitively); upper-case `index.json` name if it lists none | Done; unit-tested with object and array forms |
 | **Social mode** (`social=true` or the RGS `socialCasino` flag): Stake's restricted-phrase list applied to all visible text, `aria-label` and `title` | Done; browser scan of 8 screens incl. full rules found 0 restricted phrases |
 | **Viewports** desktop 1200×675, laptop 1024×576, popout L 800×450, popout S 400×225, mobile 425×812 / 375×667 / 320×568 | All fit without scrolling, board never distorted (square cells); popouts use a landscape layout with controls on the right |
-| Audio: synthesized in code (no sample files), ambient bed with moods per bonus, mute remembered | Done |
+| Audio: looping music track (ducks under scares and win screens), synthesized effects and ambience with moods per bonus, mute remembered | Done |
 
 ## Open items before submission
 
@@ -108,9 +108,10 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
 2. **Confirm `mode` on a test session.** If the RGS lists its modes in `config.betModes`, the
    client uses that exact spelling. If it lists none, the client sends `BASE`, `DEAD_AIR`, …. Play
    one round of every mode on the dashboard to confirm.
-3. **Audio is code-synthesized.** It is original and unique to this game, which is what Stake
-   asks for, but it is not studio audio. Professional sound design would raise the quality
-   rating.
+3. **Music licence.** The background music is a third-party track (see
+   [AUDIO.md](AUDIO.md)). Confirm its licence covers use in a commercial game and keep the record;
+   Stake requires rights to every asset. The effects are synthesized in code, so they are original
+   to the game.
 4. **Run on Stake:** upload, then play every mode in a dashboard test session, at least once with
    `social=true` and once in the mini-player, and replay the ids in `replay-examples.json`.
 5. **Math is frozen after approval.** Bump `version` in `src/config/gameConfig.ts` whenever the

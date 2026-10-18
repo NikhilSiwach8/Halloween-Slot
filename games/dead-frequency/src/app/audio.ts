@@ -3,9 +3,13 @@ import type { BonusType } from '../config/types';
 export type AudioMood = 'base' | BonusType;
 
 /**
- * Dead Frequency's sound, synthesized live with the Web Audio API. It uses no sample files, so
- * every sound is original to this game.
+ * Dead Frequency's sound: a looping music track plus effects synthesized live with the Web Audio
+ * API.
  *
+ *  - Music: "Halloween Waltz" (public/assets/audio/halloween-waltz-loop.mp3; see docs/AUDIO.md for
+ *    its source and licence), cut to a seamless 20.7 s loop. It plays everywhere: base game,
+ *    Feature Spins, bonus buys and bonuses, a little louder in bonuses, and ducks under the
+ *    bonus jump scare and the win screens.
  *  - Ambience: a dark radio drone with a slowly breathing filter, tuned-off-station hiss and
  *    crackle, and muffled ghost voices drifting through. Each bonus has its own mood: Morse blips
  *    in Night Shift, more whispers in Possession, a heartbeat in Dead Air.
@@ -23,6 +27,14 @@ const MOODS: Record<AudioMood, { drone: number; cutoff: number; voiceEvery: [num
 
 const MUTE_KEY = 'dead-frequency:muted';
 
+const MUSIC_URL = `${import.meta.env.BASE_URL}assets/audio/halloween-waltz-loop.mp3`;
+/** Length of the seamless loop in the file (seconds); see docs/AUDIO.md for how it was cut. */
+const MUSIC_LOOP_S = 913475 / 44100;
+/** Music level in the base game and in bonuses (before ducking and the master volume). */
+const MUSIC_LEVEL = { base: 0.3, bonus: 0.38 };
+/** The synthesized ambience sits under the music once it plays. */
+const AMBIENCE_UNDER_MUSIC = 0.28;
+
 class Audio {
   private ctx: AudioContext | null = null;
   private master!: GainNode;
@@ -32,6 +44,9 @@ class Audio {
   private noise!: AudioBuffer;
   private drone: { oscs: OscillatorNode[]; filter: BiquadFilterNode } | null = null;
   private mood: AudioMood = 'base';
+  /** Music: level (mood) and duck gains in series, so ducking never fights the mood level. */
+  private musicLevel: GainNode | null = null;
+  private musicDuck: GainNode | null = null;
   private timers: number[] = [];
   private _muted = false;
 
@@ -97,6 +112,7 @@ class Audio {
     for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
 
     this.startAmbience();
+    void this.startMusic();
     document.addEventListener('visibilitychange', () => (document.hidden ? void ctx.suspend() : void ctx.resume()));
   }
 
@@ -308,6 +324,49 @@ class Audio {
     if (mood === this.mood) return;
     this.mood = mood;
     this.applyMood();
+    if (this.ctx && this.musicLevel) this.musicLevel.gain.setTargetAtTime(mood === 'base' ? MUSIC_LEVEL.base : MUSIC_LEVEL.bonus, this.now, 0.8);
+  }
+
+  // --------------------------------------------------------------------- music
+  /** Loads the music and loops it gaplessly, fading in. A failed load just leaves the ambience. */
+  private async startMusic() {
+    const ctx = this.ctx!;
+    try {
+      const res = await fetch(MUSIC_URL);
+      if (!res.ok) return;
+      const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
+      // Some decoders keep the MP3 encoder delay as leading silence: loop from the first sound.
+      const ch = buffer.getChannelData(0);
+      let first = 0;
+      while (first < ch.length && Math.abs(ch[first]) < 1e-4) first++;
+      const loopStart = first / buffer.sampleRate;
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+      src.loopStart = loopStart;
+      src.loopEnd = Math.min(buffer.duration, loopStart + MUSIC_LOOP_S);
+      this.musicLevel = ctx.createGain();
+      this.musicLevel.gain.value = 0;
+      this.musicDuck = ctx.createGain();
+      src.connect(this.musicLevel).connect(this.musicDuck).connect(this.master);
+      src.start(this.now + 0.05, loopStart);
+      this.musicLevel.gain.setTargetAtTime(this.mood === 'base' ? MUSIC_LEVEL.base : MUSIC_LEVEL.bonus, this.now, 0.9);
+      this.ambience.gain.setTargetAtTime(AMBIENCE_UNDER_MUSIC, this.now, 0.9);
+    } catch {
+      /* no music (offline, blocked or undecodable): the synthesized ambience carries on alone */
+    }
+  }
+
+  /** Dips the music to `depth` of its level for `hold` seconds, then brings it back over `release`. */
+  private duck(depth: number, hold: number, release = 1.2) {
+    if (!this.ctx || !this.musicDuck) return;
+    const g = this.musicDuck.gain;
+    const t = this.now;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(depth, t + 0.08);
+    g.setValueAtTime(depth, t + hold);
+    g.linearRampToValueAtTime(1, t + hold + release);
   }
 
   // ------------------------------------------------------------------- effects
@@ -343,6 +402,7 @@ class Audio {
 
   /** Win-screen jump scare: a static blast swelling into an impact and a screech, harsher per tier. */
   scare(level: number) {
+    this.duck(0.15, 0.9, 0.8);
     this.hiss(0.32, { freq: 2600, q: 0.3, gain: 0.13 });
     this.hiss(0.3, { freq: 300, sweep: 5000, q: 1.4, gain: 0.1, attack: 0.28 });
     this.tone(46, 0.9, { type: 'sine', gain: 0.5, glideTo: 26, delay: 0.3 });
@@ -394,6 +454,7 @@ class Audio {
 
   /** Bonus start: static blast, a reversed swell into the face lunge, an impact and a screech. */
   intercept() {
+    this.duck(0.06, 2.6, 2);
     this.hiss(1.0, { freq: 2500, q: 0.3, gain: 0.14, attack: 0.01 });
     this.hiss(1.25, { freq: 200, sweep: 4000, q: 1.5, gain: 0.12, attack: 1.2, delay: 0.1 });
     this.tone(55, 2.2, { type: 'sawtooth', gain: 0.06, delay: 0.1, attack: 0.6 });
@@ -406,6 +467,7 @@ class Audio {
 
   /** Big win: a swelling minor pad with bells over it. */
   bigWin() {
+    this.duck(0.5, 3);
     [196, 233.1, 293.7, 392].forEach((f) => {
       this.tone(f, 2.6, { type: 'sawtooth', gain: 0.03, attack: 0.6, reverb: 0.5 });
       this.tone(f * 1.003, 2.6, { type: 'sawtooth', gain: 0.025, attack: 0.6 });
