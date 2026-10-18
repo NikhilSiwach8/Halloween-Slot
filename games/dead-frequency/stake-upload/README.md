@@ -57,8 +57,6 @@ spelling instead (for example `dead_air`).
 ## Before you submit
 
 Read **[../docs/STAKE_ENGINE.md](../docs/STAKE_ENGINE.md), "Open items before submission"**:
-- **Widow artwork.** The Doll is gone. The Widow uses a built-in drawing until painted art arrives
-  (prompt in `../docs/ART_PROMPTS.md`); add it and rebuild the frontend.
 - **Test session.** Confirm one round of every mode, then test `social=true` and the mini-player.
 
 ## Regenerating

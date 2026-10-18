@@ -2,6 +2,9 @@
 
 ## The Widow (replaces the Doll)
 
+**Status: done.** The art is in `public/assets/symbols/widow.webp`. The prompt below is kept for
+regenerating it.
+
 The Doll was removed because Stake does not allow "artistic depictions of children or
 child-like characters in any gambling context". The Widow takes the same slot and the same pays.
 She is a clearly **adult** woman: in the game's story she calls the station every night at 3:33.
@@ -21,11 +24,10 @@ Use the same shared style block as the other symbols, then:
 > collar. Mournful and menacing, not gory. Mature adult features only: lines around the eyes,
 > sharp cheekbones. Must read clearly at 96×96 pixels. Lighting from the upper left.
 
-Delivery: a 512×512 transparent PNG or WebP, saved as
-`games/dead-frequency/public/assets/symbols/widow.webp`. Then uncomment the `WIDOW` line in
-`games/dead-frequency/src/components/assets.ts` and run `npm run df:stake:frontend`. If you
-regenerate the whole sheet instead, put the Widow where the Doll was (row 2, column 2) and run
-`scripts/art/slice_symbol_sheet.py`.
+To replace it: if the image has a painted checkerboard instead of real transparency, run
+`python3 games/dead-frequency/scripts/art/cutout_single.py IN.webp
+games/dead-frequency/public/assets/symbols/widow.webp`. It also clears the checkerboard showing
+through lace. Then run `npm run df:stake:frontend`.
 
 **Avoid:** a young face, big round eyes, dolls, school uniforms, pigtails or bows. Reviewers judge
 how the art looks, not what the name says.

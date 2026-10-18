@@ -14,9 +14,9 @@ const MOODS: Record<BackgroundMood, { sky: [string, string]; glow: string; beaco
 
 /** Which face haunts the fog in each mood. */
 const GHOSTS: Record<BackgroundMood, (keyof typeof SYMBOL_IMAGES)[]> = {
-  base: ['HOST', 'PRIEST', 'STATIC'],
+  base: ['HOST', 'WIDOW', 'PRIEST', 'STATIC'],
   NIGHT_SHIFT: ['PRIEST', 'HOST'],
-  POSSESSION: ['STATIC', 'PRIEST'],
+  POSSESSION: ['WIDOW', 'STATIC'],
   DEAD_AIR: ['HOST'],
 };
 
@@ -114,7 +114,7 @@ export function Background({ mood, reducedMotion }: { mood: BackgroundMood; redu
 
     const tiles = getNoiseTiles();
     const ghosts: Partial<Record<string, HTMLImageElement>> = {};
-    for (const id of ['HOST', 'PRIEST', 'STATIC'] as const) {
+    for (const id of ['HOST', 'WIDOW', 'PRIEST', 'STATIC'] as const) {
       const img = new Image();
       img.src = SYMBOL_IMAGES[id]!;
       ghosts[id] = img;

@@ -5,6 +5,8 @@ transparent 512x512 WebP symbols.
     pip install numpy pillow scipy
     python3 games/dead-frequency/scripts/art/slice_symbol_sheet.py SHEET.webp games/dead-frequency/public/assets/symbols
 
+For a single symbol on a painted checkerboard (including see-through lace), use cutout_single.py.
+
 Grid order (rows top to bottom): valve cassette mic headphones / radio widow priest host /
 wild static antenna tape.
 """

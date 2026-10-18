@@ -54,7 +54,8 @@ games/dead-frequency/
   src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Background (animated canvas scene),
                    Overlays (incl. the "Signal Intercepted" bonus intro), StationMenu, Rules
   public/assets/   symbols/*.webp
-  scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts, art/
+  scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts,
+                   art/ (slice_symbol_sheet.py, cutout_single.py)
   stake-upload/    the Stake Engine upload: math/, frontend/, replay-examples.json
   tests/           engine.test.ts, stake.test.ts
   docs/            GAME_RULES.md, MATH_MODEL.md, STAKE_ENGINE.md, ART_PROMPTS.md
@@ -72,8 +73,6 @@ result back, so the player's clicks (for example "Play the tape") never change a
 
 ## Known limitations
 
-- **Interim Widow art.** The Widow (which replaced the Doll) uses a built-in drawing until
-  painted art arrives; the prompt is in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
 - **Code-synthesized audio.** Sound is generated live with the Web Audio API: original, but not
   studio-recorded.
 - **Local demo RNG.** The local demo uses a development PRNG with demo credits. On Stake, the RGS
@@ -85,6 +84,5 @@ result back, so the player's clicks (for example "Play the tape") never change a
 
 ## Next steps
 
-1. Add the Widow artwork (docs/ART_PROMPTS.md).
-2. Upload `stake-upload/` and test every mode, social mode, the mini-player and the replay ids on
+1. Upload `stake-upload/` and test every mode, social mode, the mini-player and the replay ids on
    the dashboard.

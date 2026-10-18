@@ -101,10 +101,10 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
 
 ## Open items before submission
 
-1. **Widow artwork.** The Doll (a young girl) was removed because of Stake's rule against
-   child-like characters **(skill)**. The symbol is now **The Widow**, an adult caller, with the
-   same slot and pays. It uses a built-in drawing until painted art matching the other symbols
-   arrives; see [ART_PROMPTS.md](ART_PROMPTS.md). The doll image is no longer in the build.
+1. **Done: Doll replaced by the Widow.** The Doll (a young girl) was removed because of Stake's
+   rule against child-like characters **(skill)**. **The Widow**, a clearly adult caller, now has
+   the same slot and pays, with painted art (`public/assets/symbols/widow.webp`, cut out with
+   `scripts/art/cutout_single.py`). The doll image is no longer in the build.
 2. **Confirm `mode` on a test session.** If the RGS lists its modes in `config.betModes`, the
    client uses that exact spelling. If it lists none, the client sends `BASE`, `DEAD_AIR`, …. Play
    one round of every mode on the dashboard to confirm.
