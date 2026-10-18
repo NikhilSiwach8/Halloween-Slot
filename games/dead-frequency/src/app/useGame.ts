@@ -36,9 +36,11 @@ export interface View {
   bonus: BonusView | null;
   overlay: Overlay | null;
   busy: boolean;
+  /** Increments each time a bonus's spins begin (drives the static wipe). */
+  bonusFx: number;
 }
 
-const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false };
+const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0 };
 
 export function useGame(cfg: GameConfig, seed: number) {
   const rng = useRef(new SeededRng(seed));
@@ -136,13 +138,14 @@ export function useGame(cfg: GameConfig, seed: number) {
       skip.current = false;
       const def = cfg.bonuses[b.type];
       patch({ overlay: { kind: 'bonusIntro', bonus: b.type, source: b.source, spins: def.spins } });
-      audio.bonus();
+      audio.intercept();
       await waitForPlayer();
       skip.current = false;
       const sticky = def.stickyStatic ? Array.from({ length: cfg.reels }, () => Array<boolean>(cfg.rows).fill(false)) : undefined;
       let bonusWin = 0;
       let totalSpins = def.spins;
-      patch({ overlay: null, bonus: { type: b.type, spin: 0, totalSpins, winX100: 0, meter: def.signalMeter?.start, sticky } });
+      setView((v) => ({ ...v, overlay: null, bonusFx: v.bonusFx + 1, bonus: { type: b.type, spin: 0, totalSpins, winX100: 0, meter: def.signalMeter?.start, sticky } }));
+      await sleep(500);
       for (let i = 0; i < b.spins.length; i++) {
         const s = b.spins[i];
         setView((v) => ({ ...v, bonus: v.bonus && { ...v.bonus, spin: i + 1 } }));

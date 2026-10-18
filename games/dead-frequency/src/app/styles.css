@@ -193,3 +193,136 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .cell.static .sym-img img { animation: static-flicker 0.2s steps(2) infinite; }
 @keyframes static-flicker { 50% { filter: brightness(1.35) contrast(1.2) hue-rotate(20deg); } }
 .overlay-art .sym { width: 100%; height: 100%; }
+
+/* ------------------------------------------------------ animated background */
+.bg-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; display: block; }
+.reels { background: linear-gradient(180deg, rgba(13, 15, 21, 0.94), rgba(22, 25, 34, 0.94)); }
+
+/* ------------------------------------------- bonus start: SIGNAL INTERCEPTED */
+.intercept {
+  --tint: 255, 59, 79;
+  position: fixed; inset: 0; z-index: 30; overflow: hidden;
+  display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, 0.72);
+  animation: intercept-shake 2.6s linear both, intercept-backdrop 2.6s linear both;
+}
+/* Pitch black for the scare, then the haunted game shows through behind the card. */
+@keyframes intercept-backdrop { 0%, 55% { background-color: #000; } 80%, 100% { background-color: rgba(0, 0, 0, 0.72); } }
+.intercept-night_shift { --tint: 54, 217, 160; }
+.intercept-possession { --tint: 180, 107, 255; }
+.intercept-dead_air { --tint: 255, 32, 56; }
+
+.intercept-static {
+  position: absolute; inset: -10%;
+  background: var(--noise) repeat;
+  background-size: 160px 160px;
+  mix-blend-mode: screen;
+  opacity: 0.08;
+  animation: noise-jump 0.12s steps(1) infinite, static-fade 2.6s ease-out both;
+}
+.intercept-static::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0 2px, transparent 2px 4px);
+}
+.intercept-face {
+  position: absolute; left: 50%; top: 50%;
+  width: min(80vw, 70vh); height: auto;
+  transform: translate(-50%, -50%);
+  filter: grayscale(1) contrast(1.8) brightness(1.2) drop-shadow(0 0 30px rgba(var(--tint), 0.9));
+  opacity: 0;
+  animation: face-lunge 2.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  pointer-events: none;
+}
+.intercept-flash { position: absolute; inset: 0; opacity: 0; pointer-events: none; animation: intercept-flash 2.6s linear both; }
+.intercept-alert {
+  position: absolute; top: 22%; left: 0; right: 0; margin: 0; text-align: center;
+  font: 800 clamp(18px, 5vw, 40px) 'Courier New', monospace; letter-spacing: 0.3em;
+  color: rgb(var(--tint)); text-shadow: 0 0 18px rgba(var(--tint), 0.9), 3px 0 0 rgba(0, 255, 255, 0.4), -3px 0 0 rgba(255, 0, 60, 0.5);
+  opacity: 0;
+  animation: alert-flicker 2.6s steps(1) both;
+}
+.intercept-card {
+  position: relative; width: min(520px, 100%); text-align: center;
+  padding: 22px 20px; border-radius: 16px;
+  background: rgba(8, 9, 12, 0.82); border: 1px solid rgba(var(--tint), 0.6);
+  box-shadow: 0 0 60px rgba(var(--tint), 0.35), inset 0 0 40px rgba(var(--tint), 0.08);
+  animation: card-slam 2.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.intercept-card p { line-height: 1.45; }
+.intercept-card .eyebrow { color: rgb(var(--tint)); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; margin: 0; font-style: italic; }
+.intercept-card .spins { font-size: 26px; font-weight: 800; color: rgb(var(--tint)); margin: 0; }
+.intercept-card .small { font-size: 12px; color: var(--dim); }
+
+.glitch {
+  position: relative; margin: 8px 0 10px;
+  font-family: var(--display); font-size: clamp(34px, 9vw, 60px); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ivory); text-shadow: 0 0 24px rgba(var(--tint), 0.8);
+  animation: glitch-skew 2.2s infinite steps(1);
+}
+.glitch::before, .glitch::after {
+  content: attr(data-text); position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+}
+.glitch::before { color: #0ff; transform: translate(-3px, 0); clip-path: inset(10% 0 55% 0); opacity: 0.7; animation: glitch-a 1.3s infinite steps(1); }
+.glitch::after { color: #ff2038; transform: translate(3px, 0); clip-path: inset(60% 0 5% 0); opacity: 0.7; animation: glitch-b 1.1s infinite steps(1); }
+
+@keyframes noise-jump {
+  0% { background-position: 0 0; } 25% { background-position: -40px 60px; }
+  50% { background-position: 70px -30px; } 75% { background-position: -90px -80px; }
+}
+@keyframes static-fade { 0%, 30% { opacity: 1; } 55% { opacity: 0.45; } 100% { opacity: 0.08; } }
+@keyframes alert-flicker {
+  0%, 10% { opacity: 0; } 12% { opacity: 1; } 16% { opacity: 0; } 19% { opacity: 1; }
+  30% { opacity: 0.3; } 32% { opacity: 1; } 46% { opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes face-lunge {
+  0%, 26% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+  30% { opacity: 0.35; transform: translate(-48%, -50%) scale(0.5); }
+  33% { opacity: 0.05; }
+  38% { opacity: 0.5; transform: translate(-51%, -49%) scale(0.62); }
+  41% { opacity: 0.15; }
+  49% { opacity: 0.85; transform: translate(-50%, -50%) scale(0.8); }
+  53% { opacity: 1; transform: translate(-50%, -46%) scale(1.9); }
+  55%, 100% { opacity: 0; transform: translate(-50%, -46%) scale(2.1); }
+}
+@keyframes intercept-flash {
+  0%, 52% { opacity: 0; background: #fff; }
+  53% { opacity: 0.95; background: #fff; }
+  57% { opacity: 0.7; background: rgb(var(--tint)); }
+  70%, 100% { opacity: 0; background: rgb(var(--tint)); }
+}
+@keyframes intercept-shake {
+  0%, 52% { transform: none; }
+  54% { transform: translate(-12px, 8px) rotate(-0.6deg); }
+  56% { transform: translate(10px, -10px) rotate(0.5deg); }
+  58% { transform: translate(-8px, -6px); }
+  60% { transform: translate(6px, 6px); }
+  63% { transform: translate(-3px, 2px); }
+  66%, 100% { transform: none; }
+}
+@keyframes card-slam {
+  0%, 56% { opacity: 0; transform: scale(1.7); filter: blur(8px); }
+  62% { opacity: 1; transform: scale(0.95); filter: blur(0); }
+  66%, 100% { opacity: 1; transform: scale(1); filter: none; }
+}
+@keyframes glitch-skew { 0%, 100% { transform: none; } 92% { transform: skewX(8deg) translateX(-2px); } 94% { transform: skewX(-6deg); } 96% { transform: none; } }
+@keyframes glitch-a { 0% { clip-path: inset(10% 0 55% 0); } 30% { clip-path: inset(70% 0 8% 0); transform: translate(-5px, 1px); } 60% { clip-path: inset(35% 0 40% 0); transform: translate(-2px, -1px); } }
+@keyframes glitch-b { 0% { clip-path: inset(60% 0 5% 0); } 40% { clip-path: inset(5% 0 75% 0); transform: translate(5px, -1px); } 70% { clip-path: inset(40% 0 30% 0); transform: translate(2px, 1px); } }
+
+/* Static wipe as the bonus spins begin. */
+.static-wipe {
+  position: fixed; inset: 0; z-index: 25; pointer-events: none;
+  background: var(--noise) repeat; background-size: 160px 160px;
+  animation: noise-jump 0.1s steps(1) infinite, wipe 0.7s ease-out forwards;
+}
+@keyframes wipe {
+  0% { opacity: 0.95; clip-path: inset(0 0 0 0); }
+  60% { opacity: 0.7; clip-path: inset(45% 0 45% 0); }
+  100% { opacity: 0; clip-path: inset(50% 0 50% 0); }
+}
+
+/* Dead Air: the whole machine breathes red while it plays. */
+.bonus-dead_air .reels { animation: dead-air-breathe 1.6s ease-in-out infinite; }
+@keyframes dead-air-breathe { 50% { box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 0 0 6px #0b0c10, 0 0 110px rgba(255, 32, 56, 0.65); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .intercept-face, .intercept-alert, .static-wipe { display: none; }
+}

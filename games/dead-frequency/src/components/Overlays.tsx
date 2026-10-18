@@ -1,6 +1,9 @@
-import type { GameConfig } from '../config/types';
+import type { CSSProperties } from 'react';
+import type { BonusType, GameConfig, SymbolId } from '../config/types';
 import type { Overlay } from '../app/useGame';
 import { formatMoney, formatX } from '../app/format';
+import { SYMBOL_IMAGES } from './assets';
+import { noiseDataUrl } from './Background';
 import { SymbolArt } from './SymbolArt';
 
 const BONUS_BLURB = {
@@ -9,7 +12,46 @@ const BONUS_BLURB = {
   DEAD_AIR: 'Static expands to fill its reel. On Air wilds carry x2 to x25, and multipliers on a way multiply together.',
 } as const;
 
-const SOURCE = { ANTENNAS: 'The Antennas caught a signal', TAPE: 'The tape played a broadcast', BUY: 'Bonus bought' } as const;
+const SOURCE = {
+  ANTENNAS: 'The antennas caught something out there…',
+  TAPE: 'The tape is playing by itself…',
+  BUY: 'You paid for this broadcast. There are no refunds.',
+} as const;
+
+/** The face that lunges out of the static when each bonus starts. */
+const FACE: Record<BonusType, SymbolId> = { NIGHT_SHIFT: 'PRIEST', POSSESSION: 'DOLL', DEAD_AIR: 'HOST' };
+
+/**
+ * Bonus start: a ~2.6s "signal intercepted" sequence (static burst, flickering alert, a face
+ * lunging at the screen, flash and shake), then the bonus card. Pressing the button or Space
+ * at any point skips straight into the bonus.
+ */
+function BonusIntro({ cfg, overlay, onContinue }: { cfg: GameConfig; overlay: Extract<Overlay, { kind: 'bonusIntro' }>; onContinue: () => void }) {
+  const def = cfg.bonuses[overlay.bonus];
+  const face = SYMBOL_IMAGES[FACE[overlay.bonus]];
+  return (
+    <div
+      className={`intercept intercept-${overlay.bonus.toLowerCase()}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${def.name} bonus`}
+      style={{ '--noise': `url(${noiseDataUrl()})` } as CSSProperties}
+    >
+      <div className="intercept-static" />
+      {face ? <img className="intercept-face" src={face} alt="" /> : null}
+      <div className="intercept-flash" />
+      <p className="intercept-alert" aria-hidden="true">SIGNAL INTERCEPTED</p>
+      <div className="intercept-card">
+        <p className="eyebrow">{SOURCE[overlay.source]}</p>
+        <h2 className="glitch" data-text={def.name}>{def.name}</h2>
+        <p className="spins">{overlay.spins} free spins</p>
+        <p>{BONUS_BLURB[overlay.bonus]}</p>
+        <p className="small">3+ Antennas during the bonus: +{cfg.retrigger.extraSpins} spins.</p>
+        <button className="primary" autoFocus onClick={onContinue}>Go on air</button>
+      </div>
+    </div>
+  );
+}
 
 export function OverlayView({ cfg, overlay, bet, onContinue }: { cfg: GameConfig; overlay: Overlay; bet: number; onContinue: () => void }) {
   const money = (x100: number) => formatMoney(cfg, Math.floor((bet * x100) / 100));
@@ -34,20 +76,8 @@ export function OverlayView({ cfg, overlay, bet, onContinue }: { cfg: GameConfig
       );
       break;
     }
-    case 'bonusIntro': {
-      const def = cfg.bonuses[overlay.bonus];
-      button = 'Go on air';
-      body = (
-        <>
-          <p className="eyebrow">{SOURCE[overlay.source]}</p>
-          <h2>{def.name}</h2>
-          <p className="spins">{overlay.spins} free spins</p>
-          <p>{BONUS_BLURB[overlay.bonus]}</p>
-          <p className="small">3+ Antennas during the bonus: +{cfg.retrigger.extraSpins} spins.</p>
-        </>
-      );
-      break;
-    }
+    case 'bonusIntro':
+      return <BonusIntro cfg={cfg} overlay={overlay} onContinue={onContinue} />;
     case 'bonusEnd':
       button = 'Collect';
       body = (

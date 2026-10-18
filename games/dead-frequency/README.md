@@ -43,7 +43,8 @@ games/dead-frequency/
   src/engine/      rng.ts, board.ts (board draws), ways.ts (evaluation), round.ts (spins, bonuses, mystery, cap)
   src/simulation/  simulator.ts (whole-round simulation)
   src/app/         App.tsx, useGame.ts (round playback), audio.ts (synth placeholders), styles.css
-  src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Overlays, StationMenu, Rules
+  src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Background (animated canvas scene),
+                   Overlays (incl. the "Signal Intercepted" bonus intro), StationMenu, Rules
   public/assets/   symbols/*.webp
   scripts/         simulate.ts, rtp.ts, art/slice_symbol_sheet.py
   tests/           engine.test.ts
@@ -77,4 +78,4 @@ result back, so the player's clicks (for example "Play the tape") never change a
 1. Generate weighted books and lookup tables per mode, as The Hollow Hour does in
    `scripts/export-books.ts`. That gives an exact RTP per mode.
 2. Add an RGS adapter and replay mode.
-3. Add final audio, backgrounds and win animations.
+3. Add final audio and big-win animations.

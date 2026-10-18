@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { DEFAULT_CONFIG, roundCost } from '../config/gameConfig';
 import type { ModeId } from '../config/types';
+import { Background, noiseDataUrl } from '../components/Background';
 import { Reels } from '../components/Reels';
 import { SymbolDefs } from '../components/SymbolArt';
 import { OverlayView } from '../components/Overlays';
@@ -12,6 +13,7 @@ import { useGame } from './useGame';
 
 const cfg = DEFAULT_CONFIG;
 const params = new URLSearchParams(window.location.search);
+const REDUCED_MOTION = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SEED = params.has('seed') ? Number(params.get('seed')) >>> 0 : crypto.getRandomValues(new Uint32Array(1))[0] >>> 0;
 
 const money = (units: number) => formatMoney(cfg, units);
@@ -47,8 +49,10 @@ export function App() {
 
   return (
     <div className={`app ${view.bonus ? `in-bonus bonus-${view.bonus.type.toLowerCase()}` : ''}`}>
+      <Background mood={view.bonus?.type ?? 'base'} reducedMotion={REDUCED_MOTION} />
       <SymbolDefs />
       <div className="scanlines" aria-hidden="true" />
+      {view.bonusFx > 0 ? <div className="static-wipe" key={view.bonusFx} aria-hidden="true" style={{ '--noise': `url(${noiseDataUrl()})` } as CSSProperties} /> : null}
       <header className="topbar">
         <div className="brand">
           <h1>Dead Frequency</h1>
