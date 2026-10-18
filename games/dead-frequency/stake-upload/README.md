@@ -4,7 +4,7 @@ This folder holds everything to upload to the Stake Engine dashboard.
 
 ```
 stake-upload/
-  math/                         <- upload as the game's math files
+  math/                         <- upload as the game's math files (15 files)
     index.json
     books_base.jsonl.zst             lookUpTable_base_0.csv
     books_double_chance.jsonl.zst    lookUpTable_double_chance_0.csv
@@ -15,9 +15,15 @@ stake-upload/
     books_dead_air.jsonl.zst         lookUpTable_dead_air_0.csv
   frontend/                     <- upload as the game's frontend (static files)
     index.html, assets/…, favicon.svg
+  dead-frequency-frontend.zip   <- the same frontend, zipped with index.html at the top level
+  SHA256SUMS-math.txt           <- checksums to confirm the uploaded files are intact
+  SHA256SUMS-frontend.txt
   replay-examples.json          <- book ids to give reviewers (not uploaded)
   math-summary.json             <- statistics per mode (not uploaded)
 ```
+
+A zip of `math/` is not committed: it is 120 MB, above GitHub's 100 MB per-file limit. Upload
+the 15 files directly, or zip them yourself (`cd math && zip ../math.zip *`).
 
 ## Steps
 
@@ -25,8 +31,7 @@ stake-upload/
    books and 7 lookup tables. Upload them together; the RGS checks that every book's payout matches
    its lookup row.
 2. **Frontend.** Upload the **contents** of `frontend/`, with `index.html` at the top level. If the
-   dashboard asks for an archive, zip the contents (not the folder itself), e.g.
-   `cd frontend && zip -r ../frontend.zip .`
+   dashboard asks for an archive, use `dead-frequency-frontend.zip` (contents at the top level).
 3. **Test session.** Open the game from the dashboard. It reads `sessionID` and `rgs_url` from the
    URL. Play every mode: Base, Double Chance (toggle), Static Storm and Haunted Wilds
    (Feature Spins menu), and the three bonus buys.
@@ -53,6 +58,14 @@ stake-upload/
 
 \* If the RGS lists its modes in authenticate (`config.betModes`), the game sends that exact
 spelling instead (for example `dead_air`).
+
+## Final check (done before handing over)
+
+The committed build was played end to end against a mock Stake RGS serving these exact books:
+all 7 modes × loss / normal win / bonus trigger / big win / max win (30 rounds). The displayed
+balance matched the server to the cent after every round. A 50,000x max-win replay ran in the
+400×225 popout with Stake.us wording, with no console errors and no requests to other origins.
+`npm run df:books:verify` passes on these files.
 
 ## Before you submit
 
