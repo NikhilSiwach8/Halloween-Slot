@@ -194,8 +194,14 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
     let raf = 0;
 
     const frame = (now: number) => {
+      // The scene redraws at ~30 fps: it is slow-moving atmosphere, and halving its cost leaves the
+      // main thread and GPU free for the reels and the UI, which run at the full frame rate.
+      if (!reducedMotion && now - last < 30) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       // rAF timestamps can be slightly earlier than performance.now() at start: never run time backwards.
-      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
+      const dt = Math.max(0, Math.min(0.08, (now - last) / 1000));
       last = now;
       elapsed += dt;
       const m = MOODS[moodRef.current];

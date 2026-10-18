@@ -33,8 +33,8 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 .scanlines {
   pointer-events: none; position: fixed; inset: 0; z-index: 5;
-  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
-  mix-blend-mode: overlay;
+  /* Plain alpha lines: a blend mode here would make the whole screen re-blend on every frame. */
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px);
 }
 
 @keyframes flicker {
@@ -267,13 +267,15 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* ---------------------------------------------------------------- logo */
 .logo { position: absolute; top: 8px; right: 1.5vw; z-index: 4; width: clamp(160px, calc((100vw - var(--reel-w)) / 2 - 120px), 340px); pointer-events: none; }
-.logo svg { width: 100%; height: auto; overflow: visible; animation: logo-breathe 4s ease-in-out infinite; }
+.logo svg { position: relative; width: 100%; height: auto; overflow: visible; }
+/* Breathing glow: a pre-drawn red haze that only fades (animating a drop-shadow repaints the logo every frame). */
+.logo::before { content: ''; position: absolute; inset: 5% 0; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 59, 79, 0.32), transparent 65%); opacity: 0; will-change: opacity; animation: logo-breathe 4s ease-in-out infinite; }
 .logo-word1 { font: 700 54px var(--display); letter-spacing: 6px; }
 .logo-word2 { font: 700 42px var(--display); letter-spacing: 3px; }
 .logo-beacon { animation: beacon 1.4s steps(1) infinite; }
 .logo-wave { animation: wave 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 .logo-wave.w2 { animation-delay: 0.6s; }
-@keyframes logo-breathe { 50% { filter: drop-shadow(0 0 14px rgba(255, 59, 79, 0.55)); } }
+@keyframes logo-breathe { 50% { opacity: 1; } }
 @keyframes beacon { 50% { opacity: 0.25; } }
 @keyframes wave { 0% { opacity: 0; transform: scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.25); } }
 
@@ -357,49 +359,33 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .cell.kind-mystery { background: #0a0b0d; }
 
 /*
- * Spin: the shown symbols kick up and drop out of the bottom while a blurred strip scrolls down
- * behind them. On landing, each reel stops at its own --stop time (set from useGame.reelStops):
- * the strip fades and the four new symbols drop in from above and bounce to rest. A teased reel
- * (bonus still possible) glows red while it spins on.
+ * Reels (motion driven by Reels.tsx): three stacked layers per reel, moved only with
+ * translate3d. Each layer is promoted to its own compositor layer (will-change), so the blur on
+ * the strip is drawn once and every frame is just compositing; nothing here animates a filter.
  */
-.reel-cells { display: grid; grid-template-rows: repeat(4, 1fr); gap: 5px; position: relative; z-index: 2; }
-.reel-strip { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 5px; opacity: 0; pointer-events: none; z-index: 1; filter: blur(2px) brightness(0.8) saturate(0.8); }
+.reel-cells, .reel-old { display: grid; grid-template-rows: repeat(4, 1fr); gap: 5px; position: relative; z-index: 2; will-change: transform; }
+/* Opaque gaps (the window's colour), so the strip behind never shows between moving symbols. */
+.reel-cells, .reel-old { background: #07080b; }
+.reel-old { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; }
+.reel-strip { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 1; visibility: hidden; will-change: transform; }
 .strip-cell { aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; background: #101219; }
-.strip-cell .sym { width: 84%; height: 84%; transform: scaleY(1.18); }
-.reels.is-spinning .reel-cells { animation: reel-out 0.3s calc(var(--r) * 35ms) both; }
-.reels.is-spinning .reel-strip { animation: strip-scroll 0.2s linear infinite, strip-in 0.14s ease-out calc(var(--r) * 35ms + 90ms) both; }
-.reels.is-landing .reel-strip { opacity: 1; animation: strip-scroll 0.2s linear infinite, strip-out 0.1s linear var(--stop) both; }
-.reels.is-landing .reel-cells { animation: reel-in 0.42s var(--stop) both; }
-.reels.turbo.is-landing .reel-cells { animation-duration: 0.26s; }
-@keyframes strip-scroll { from { transform: translateY(-50%); } to { transform: translateY(0); } }
-@keyframes strip-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes strip-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes reel-out {
-  0% { transform: none; animation-timing-function: ease-out; }
-  30% { transform: translateY(-7%); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
-  100% { transform: translateY(115%); filter: blur(3px); }
-}
-@keyframes reel-in {
-  0% { transform: translateY(-115%); filter: blur(3px); animation-timing-function: cubic-bezier(0.4, 0.2, 0.8, 1); }
-  62% { transform: translateY(6%); filter: none; animation-timing-function: ease-out; }
-  82% { transform: translateY(-2.2%); animation-timing-function: ease-in-out; }
-  100% { transform: none; }
-}
-/* A light catching the reel as it slams to a stop. */
+.strip-cell .sym { width: 84%; height: 84%; transform: scaleY(1.22); opacity: 0.7; }
+/* A light catching the reel as it slams to a stop (at --stop, the moment it first hits rest). */
 .reel-flash { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; border-radius: 8px;
   background: linear-gradient(180deg, transparent 55%, rgba(255, 230, 180, 0.14) 85%, rgba(255, 240, 200, 0.3));
+  animation: reel-flash 0.38s ease-out var(--stop) both;
 }
-.reels.is-landing .reel-flash { animation: reel-flash 0.38s ease-out calc(var(--stop) + 0.24s) both; }
 @keyframes reel-flash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
 /* Tease: a reel spinning on because a bonus is still possible. */
-.reel.tease::before {
-  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: 8px;
+.reel-tease {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: 8px;
   border: 2px solid #ff3b4f; box-shadow: inset 0 0 26px rgba(255, 59, 79, 0.7), 0 0 18px rgba(255, 59, 79, 0.8);
-  animation: tease-env var(--stop) linear both, tease-pulse 0.22s ease-in-out infinite alternate;
+  animation: tease-env var(--stop) linear both;
 }
-.reel.tease .reel-strip { filter: blur(3px) brightness(1.05) sepia(0.6) hue-rotate(-30deg) saturate(2); }
+.reel-tease::after { content: ''; position: absolute; inset: -2px; border-radius: 8px; border: 2px solid #ffd0a0; animation: tease-pulse 0.22s ease-in-out infinite alternate; }
+.reel.tease .strip-cell { background: #2a0c12; }
 @keyframes tease-env { 0% { opacity: 0; } 45% { opacity: 1; } 97% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes tease-pulse { from { border-color: #ff3b4f; } to { border-color: #ffd0a0; } }
+@keyframes tease-pulse { from { opacity: 0; } to { opacity: 1; } }
 
 .reels .reel .cell.win { animation: win-pulse 0.9s ease-in-out infinite; z-index: 2; border-color: #8dffd5; box-shadow: 0 0 18px rgba(54, 217, 160, 0.75), inset 0 0 16px rgba(54, 217, 160, 0.35); }
 .reels .reel .cell.dim { opacity: 0.35; filter: saturate(0.4); transition: opacity 0.25s; }
@@ -469,7 +455,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* ---------------------------------------------------------------- character */
 .character { justify-self: start; position: relative; width: min(100%, 420px, 54vh); aspect-ratio: 1; pointer-events: none; align-self: end; margin-bottom: -10px; }
-.character img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)); animation: breathe 4.2s ease-in-out infinite; transform-origin: 50% 95%; }
+.character img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)); animation: breathe 4.2s ease-in-out infinite; transform-origin: 50% 95%; will-change: transform; }
 .character-glow { position: absolute; inset: 8% 10% 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 59, 79, 0.35), transparent 65%); animation: glow-pulse 3s ease-in-out infinite; }
 .character-eyes { position: absolute; left: 30%; top: 30%; width: 40%; height: 16%; border-radius: 50%; background: radial-gradient(ellipse at 30% 50%, rgba(54, 217, 160, 0.55), transparent 30%), radial-gradient(ellipse at 70% 50%, rgba(54, 217, 160, 0.55), transparent 30%); mix-blend-mode: screen; animation: eyes 5s steps(1) infinite; }
 .character.excited img { animation: breathe 4.2s ease-in-out infinite, excited 0.12s linear 6; }
@@ -494,9 +480,11 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .round-btn.turbo.on svg { animation: bolt 0.8s ease-in-out infinite; }
 @keyframes bolt { 50% { filter: drop-shadow(0 0 6px #f7d98d); } }
 .dc-x { font: 800 18px/1 var(--display); }
-.round-btn.buy { width: 66px; height: 66px; border: 3px solid #c9a45e; color: #f7d98d; background: radial-gradient(circle at 50% 35%, #4a1520, #12060a 75%); box-shadow: 0 0 22px rgba(255, 59, 79, 0.35), 0 6px 16px rgba(0, 0, 0, 0.6); animation: buy-glow 2.4s ease-in-out infinite; }
+.round-btn.buy { position: relative; width: 66px; height: 66px; border: 3px solid #c9a45e; color: #f7d98d; background: radial-gradient(circle at 50% 35%, #4a1520, #12060a 75%); box-shadow: 0 0 22px rgba(255, 59, 79, 0.35), 0 6px 16px rgba(0, 0, 0, 0.6); }
+/* Pulsing glow as a separate layer that only fades. */
+.round-btn.buy::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 34px rgba(255, 59, 79, 0.7); opacity: 0; pointer-events: none; will-change: opacity; animation: buy-glow 2.4s ease-in-out infinite; }
 .round-btn.buy small { color: #f7d98d; }
-@keyframes buy-glow { 50% { box-shadow: 0 0 34px rgba(255, 59, 79, 0.7), 0 6px 16px rgba(0, 0, 0, 0.6); } }
+@keyframes buy-glow { 50% { opacity: 1; } }
 
 .bar-main, .bet-pill {
   height: 66px; display: flex; align-items: center; border-radius: 14px;
@@ -582,7 +570,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .pillar span { display: none; }
   .tube { width: 10px; height: 26px; }
   .tube i { width: 4px; height: 11px; bottom: 5px; }
-  .reels, .reel, .reel-cells { gap: 3px; }
+  .reels, .reel, .reel-cells, .reel-old { gap: 3px; }
   .reel-strip { gap: 3px; }
   .bar { display: grid; grid-template-columns: auto 1fr auto auto auto; grid-template-areas: 'main main main main main' 'turbo bet spin dc buy'; gap: 8px; padding: 4px 10px; align-items: center; }
   .bar-main { grid-area: main; max-width: none; height: 54px; }
@@ -632,7 +620,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .frame-body { display: block; }
   .pillar { display: none; }
   .rivet { display: none; }
-  .reels, .reel, .reel-cells { gap: 3px; }
+  .reels, .reel, .reel-cells, .reel-old { gap: 3px; }
   .reel-strip { gap: 3px; }
   .bar { display: grid; width: auto; grid-template-columns: 1fr 1fr; grid-template-areas: 'main main' 'bet bet' 'turbo dc' 'spin buy'; gap: 6px; padding: 8px 8px 44px 0; align-content: center; justify-items: center; }
   .bar-main { grid-area: main; width: 100%; height: auto; flex-wrap: wrap; padding: 4px 8px; gap: 2px 10px; }

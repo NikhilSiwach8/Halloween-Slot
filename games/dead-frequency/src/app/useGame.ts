@@ -60,14 +60,32 @@ export interface View {
   antennas: number;
   /** Win of the spin being shown, for the win pop-up over the reels (0 = hidden). */
   spinWinX100: number;
+  /** The player skipped: reels jump straight to rest instead of animating. */
+  instant: boolean;
 }
 
 /** Reel animation timing (ms). The reels land one by one, `REEL_STAGGER` apart. */
 export const SPIN_MS = 520;
 export const REEL_STAGGER = 90;
 export const TURBO_FACTOR = 0.35;
-/** How long a reel takes to drop into place once it stops. */
-export const LAND_MS = 420;
+/**
+ * Reel motion (see components/Reels.tsx). A reel scrolls at `speed` cells per second, then
+ * decelerates over `stopMs` with an ease-out-back curve whose starting speed equals the cruise
+ * speed (so the stop has no jolt) and that overshoots once before settling. `baseMs` is the
+ * time from the result arriving to the first reel starting its stop; it is just long enough
+ * for the new symbols to scroll in from above the window rather than appear in it.
+ */
+export const REEL_BACK = 1.6;
+export function reelMotion(turbo: boolean) {
+  const speed = turbo ? 30 : 18;
+  const stopMs = turbo ? 230 : 380;
+  /** Distance (cells) covered while stopping. */
+  const stopCells = (speed * stopMs) / 1000 / (REEL_BACK + 3);
+  const baseMs = Math.ceil(((4.2 - stopCells) / speed) * 1000);
+  /** When, within the stop, the reel first reaches its resting place (the "thunk"). */
+  const hitMs = stopMs / (REEL_BACK + 1);
+  return { speed, stopMs, stopCells, baseMs, hitMs };
+}
 /** Extra spin time for each reel that could still complete a bonus (2+ Antennas already landed). */
 export const TEASE_MS = 750;
 
@@ -91,7 +109,7 @@ export function reelStops(board: Board, turbo: boolean): { delays: number[]; tea
   return { delays, tease };
 }
 
-const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0 };
+const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0, instant: false };
 
 export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSession) {
   const [balance, setBalance] = useState(session.balance);
@@ -125,19 +143,21 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
   }, []);
 
   const showSpin = async (s: SpinResult, roundSoFar: number, extra: Partial<View> = {}) => {
-    setView((v) => ({ ...v, spinning: true, spinId: v.spinId + 1, winCells: new Set(), antennas: 0, spinWinX100: 0, ...extra }));
+    setView((v) => ({ ...v, spinning: true, instant: skip.current, spinId: v.spinId + 1, winCells: new Set(), antennas: 0, spinWinX100: 0, ...extra }));
     audio.spin();
     await sleep(SPIN_MS);
     const turbo = speedRef.current === 'turbo';
     const stops = reelStops(s.landed, turbo);
-    patch({ board: s.landed, spinning: false, unrevealed: !!s.reveal });
+    patch({ board: s.landed, spinning: false, unrevealed: !!s.reveal, instant: skip.current });
+    const motion = reelMotion(turbo);
+    const hits = stops.delays.map((d) => (motion.baseMs + d + motion.hitMs) / 1000);
     if (!skip.current) {
-      audio.land(stops.delays.map((d) => d / 1000));
-      stops.tease.forEach((t, r) => t && audio.tease((stops.delays[r - 1] ?? 0) / 1000, (stops.delays[r] - (stops.delays[r - 1] ?? 0)) / 1000));
+      audio.land(hits);
+      stops.tease.forEach((t, r) => t && audio.tease(hits[r - 1] ?? 0, hits[r] - (hits[r - 1] ?? 0)));
     }
-    // Reels stop one by one (CSS, same delays); continue once the last one has settled.
+    // Reels stop one by one (Reels.tsx, same timing); continue once the last one has settled.
     // The delays already include turbo, so wait for them directly rather than through sleep().
-    await new Promise<void>((res) => (skip.current ? res() : setTimeout(res, stops.delays[cfg.reels - 1] + LAND_MS * (turbo ? 0.6 : 1))));
+    await new Promise<void>((res) => (skip.current ? res() : setTimeout(res, motion.baseMs + stops.delays[cfg.reels - 1] + motion.stopMs + 40)));
     patch({ antennas: s.antennas });
     if (s.antennas >= 2) audio.antenna(s.antennas);
     if (s.reveal) {

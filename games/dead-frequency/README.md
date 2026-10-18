@@ -46,7 +46,9 @@ in a radio-console frame with a multiplier plaque and an LED ticker. The control
 Balance / Win, the Bet with ˄ ˅, Double Chance (2×), the round Spin button and the Buy (tower) button.
 Portrait screens stack the parts; the mini-player moves the controls into a column beside the reels.
 
-**Presentation.** Reels scroll downward and stop left to right with a bounce. Once two Antennas
+**Presentation.** Reels scroll downward and stop left to right with a bounce. A small reel engine
+(Reels.tsx) moves them with transforms only, one animation loop for all six reels; each stop eases
+out from exactly the cruise speed, so there is no jolt. Once two Antennas
 are showing, every later reel spins on longer and glows red (the tease). Round wins of 10x, 50x,
 200x and 1,000x open the GOOD / MEGA / INSANE / EPIC WIN screen, and a capped round opens MAX WIN.
 The amount counts up and the title climbs through the tiers it passes; the button or Space skips
