@@ -311,13 +311,18 @@ class Audio {
   }
 
   // ------------------------------------------------------------------- effects
-  /** Reels start: a tape-transport whir, then one thunk per reel as it stops. */
+  /** Reels start: a tape-transport whir that winds up. */
   spin() {
-    this.hiss(0.35, { freq: 500, sweep: 1600, q: 1.2, gain: 0.05, attack: 0.04 });
+    this.hiss(0.55, { freq: 400, sweep: 1800, q: 1.2, gain: 0.05, attack: 0.06 });
+    this.tone(70, 0.5, { type: 'sawtooth', gain: 0.025, glideTo: 140, attack: 0.08 });
+  }
+
+  /** One heavy thunk per reel as it lands, `stagger` seconds apart (matches the CSS landing). */
+  land(stagger: number) {
     for (let r = 0; r < 6; r++) {
-      const d = 0.16 + r * 0.045;
-      this.tone(95 - r * 4, 0.09, { gain: 0.13, glideTo: 55, delay: d });
-      this.hiss(0.02, { freq: 2500, q: 3, gain: 0.03, delay: d });
+      const d = r * stagger;
+      this.tone(96 - r * 4, 0.12, { gain: 0.16, glideTo: 50, delay: d });
+      this.hiss(0.025, { freq: 2600, q: 3, gain: 0.035, delay: d });
     }
   }
 

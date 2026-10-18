@@ -38,9 +38,20 @@ export interface View {
   busy: boolean;
   /** Increments each time a bonus's spins begin (drives the static wipe). */
   bonusFx: number;
+  /** Increments on every spin (restarts the reel spin / landing animations). */
+  spinId: number;
+  /** Antennas on the board that just landed (lights the Signal Panel lamps). */
+  antennas: number;
+  /** Win of the spin being shown, for the win pop-up over the reels (0 = hidden). */
+  spinWinX100: number;
 }
 
-const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0 };
+/** Reel animation timing (ms). The reels land one by one, `REEL_STAGGER` apart. */
+export const SPIN_MS = 520;
+export const REEL_STAGGER = 90;
+export const TURBO_FACTOR = 0.35;
+
+const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0 };
 
 export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSession) {
   const [balance, setBalance] = useState(session.balance);
@@ -61,7 +72,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
   const sleep = (ms: number) =>
     new Promise<void>((res) => {
       if (skip.current) return res();
-      setTimeout(res, speedRef.current === 'turbo' ? ms * 0.35 : ms);
+      setTimeout(res, speedRef.current === 'turbo' ? ms * TURBO_FACTOR : ms);
     });
   /** Waits for the player to press the overlay button. */
   const waitForPlayer = () => new Promise<void>((res) => (waiter.current = res));
@@ -74,10 +85,15 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
   }, []);
 
   const showSpin = async (s: SpinResult, roundSoFar: number, extra: Partial<View> = {}) => {
-    patch({ spinning: true, winCells: new Set(), ...extra });
+    setView((v) => ({ ...v, spinning: true, spinId: v.spinId + 1, winCells: new Set(), antennas: 0, spinWinX100: 0, ...extra }));
     audio.spin();
-    await sleep(380);
+    await sleep(SPIN_MS);
+    const turbo = speedRef.current === 'turbo';
     patch({ board: s.landed, spinning: false, unrevealed: !!s.reveal });
+    audio.land(((turbo ? TURBO_FACTOR : 1) * REEL_STAGGER) / 1000);
+    // Reels land one by one (CSS, REEL_STAGGER apart); continue once the last one has settled.
+    await sleep(REEL_STAGGER * (cfg.reels - 1) + 200);
+    patch({ antennas: s.antennas });
     if (s.antennas >= 2) audio.antenna(s.antennas);
     if (s.reveal) {
       await sleep(650);
@@ -101,6 +117,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       const best = [...s.wins].sort((a, b) => b.winX100 - a.winX100)[0];
       patch({
         winCells: cells,
+        spinWinX100: s.winX100,
         roundWinX100: roundSoFar + s.winX100,
         ticker: `${best.ways > 1 ? `${best.ways} ways of ` : ''}${cfg.symbols[best.symbol].name} x${best.length}${best.multipliedWays !== best.ways ? ` · wild multipliers x${(best.multipliedWays / best.ways).toFixed(1).replace('.0', '')}` : ''}${best.globalMultiplier > 1 ? ` · Signal x${best.globalMultiplier}` : ''}`,
       });

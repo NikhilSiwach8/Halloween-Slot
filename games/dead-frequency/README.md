@@ -40,6 +40,12 @@ npm run df:replay-examples && npm run df:stake:frontend     # replay ids + front
 
 `?seed=123` gives a reproducible session. **Space** spins, or skips the current animation.
 
+**Screen layout.** The logo is top left, the Signal Panel is left of the reels (one lamp per
+Antenna, and the spins left during a bonus), and the Night Host stands to the right. The reels sit
+in a radio-console frame with a multiplier plaque and an LED ticker. The control bar holds Turbo,
+Balance / Win, the Bet with ˄ ˅, Double Chance (2×), the round Spin button and the Buy (tower) button.
+Portrait screens stack the parts; the mini-player moves the controls into a column beside the reels.
+
 ## Layout
 
 ```
@@ -51,8 +57,10 @@ games/dead-frequency/
                    socialText.ts (Stake.us wording), styles.css
   src/math/        bookFormat.ts (round <-> book events), books.ts (Stake books + lookup tables)
   src/platform/    platform.ts (local demo, Stake RGS client, bet replay)
-  src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Background (animated canvas scene),
-                   Overlays (incl. the "Signal Intercepted" bonus intro), StationMenu, Rules
+  src/components/  Reels (spinning strips, staggered landing, win pop-up), Cabinet (logo, reel frame,
+                   Signal Panel, Night Host, icons, rolling win meter), SymbolArt (image + SVG fallback),
+                   assets.ts, Background (animated canvas scene), Overlays (incl. the "Signal
+                   Intercepted" bonus intro), StationMenu, Rules
   public/assets/   symbols/*.webp
   scripts/         simulate.ts, rtp.ts, export-books.ts, verify-books.ts, replay-examples.ts,
                    art/ (slice_symbol_sheet.py, cutout_single.py)

@@ -73,11 +73,16 @@ export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp
         </section>
         <section>
           <h3>Controls</h3>
-          <p className="small">
-            SPIN (or Space) plays a round and skips animations while one is playing. − / + change the stake. Double Chance switches the 1.5x mode
-            on or off. Feature Spins & Bonus Buy opens the menu of feature modes and bonus purchases; a bonus purchase asks for confirmation.
-            Turbo speeds up animations. The speaker button mutes all sound; ? opens these rules.
-          </p>
+          <ul className="small controls-guide">
+            <li><strong>Round spin button</strong> (or Space): plays a round. While a round plays it shows a stop square and skips the animations.</li>
+            <li><strong>Bet ˄ / ˅</strong>: raise or lower the stake. The cost of a round is shown under the bet when it differs from the stake.</li>
+            <li><strong>⚡ Turbo</strong>: faster animations.</li>
+            <li><strong>2× Chance</strong>: switches Double Chance (stake x1.5, twice the chance to start a bonus) on or off.</li>
+            <li><strong>Tower button (Buy)</strong>: opens the Feature Spins and Bonus Buy menu. A bonus purchase asks for confirmation.</li>
+            <li><strong>☰ and ⓘ</strong>: open these rules. <strong>Speaker</strong>: mutes all sound.</li>
+            <li><strong>Balance</strong> shows your current balance; <strong>Win</strong> counts up to the round's total win.</li>
+            <li><strong>Signal Panel</strong> (left): lights one lamp per Antenna that lands; during a bonus it shows the spins left.</li>
+          </ul>
         </section>
         <section>
           <h3>Disclaimer</h3>
