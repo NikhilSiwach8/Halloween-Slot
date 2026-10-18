@@ -82,6 +82,7 @@ export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp
             <li><strong>☰ and ⓘ</strong>: open these rules. <strong>Speaker</strong>: mutes all sound.</li>
             <li><strong>Balance</strong> shows your current balance; <strong>Win</strong> counts up to the round's total win.</li>
             <li><strong>Signal Panel</strong> (left): lights one lamp per Antenna that lands; during a bonus it shows the spins left.</li>
+            <li><strong>Win screens</strong>: round wins of 10x, 50x, 200x and 1,000x show GOOD, MEGA, INSANE and EPIC WIN (MAX WIN at the maximum). Each new tier opens with a short jump scare: a sudden face, a loud sound and a flash. Turn on your device's reduced-motion setting to switch the scares off. The button or Space skips the count, then collects.</li>
           </ul>
         </section>
         <section>

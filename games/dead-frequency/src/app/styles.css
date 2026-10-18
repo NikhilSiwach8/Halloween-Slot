@@ -711,7 +711,49 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 }
 .bw-epic .bw-host, .bw-max .bw-host { opacity: 0.32; }
 @keyframes bw-host { from { scale: 1; } to { scale: 1.08; } }
-.bw-content { position: relative; animation: bw-slam 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both, bw-shake 0.4s 0.22s linear; }
+.bw-content { position: relative; animation: bw-slam 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 0.42s both, bw-shake 0.4s 0.64s linear; }
+/*
+ * Jump scare (~0.9s, on every tier-up): static bursts in, the tier's ghost flickers closer and
+ * lunges at the screen, a flash, then the title slams down over it. One flash per tier, so it
+ * never strobes.
+ */
+.bw-scare { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; animation: bw-scare-shake 0.9s linear both; }
+.bw-scare-static {
+  position: absolute; inset: -10%; background: var(--noise) repeat; mix-blend-mode: screen; filter: contrast(1.6) brightness(0.55);
+  animation: bw-scare-static 0.9s linear both, jitter 0.08s steps(2) infinite;
+}
+@keyframes bw-scare-static { 0% { opacity: 0; } 8% { opacity: 0.75; } 40% { opacity: 0.6; } 55% { opacity: 0.35; } 100% { opacity: 0; } }
+.bw-scare::before { content: ''; position: absolute; inset: 0; background: #000; animation: bw-scare-dark 0.9s linear both; }
+@keyframes bw-scare-dark { 0%, 40% { opacity: 0.85; } 60%, 100% { opacity: 0; } }
+.bw-scare-face {
+  position: absolute; top: 50%; width: min(80vmin, 640px);
+  left: calc(50% + (var(--i) - (var(--n) - 1) / 2) * min(30vmin, 260px));
+  filter: grayscale(0.4) contrast(1.6) brightness(1.15) drop-shadow(0 0 40px rgba(var(--glow), 0.9));
+  animation: bw-face 0.9s cubic-bezier(0.3, 0, 0.6, 1) calc(var(--i) * 70ms) both;
+}
+.bw-max .bw-scare-face { filter: sepia(1) hue-rotate(-50deg) saturate(4) contrast(1.6) drop-shadow(0 0 50px #ff0018); }
+@keyframes bw-face {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+  12% { opacity: 0.4; transform: translate(-48%, -50%) scale(0.42); }
+  17% { opacity: 0.05; }
+  24% { opacity: 0.6; transform: translate(-51%, -49%) scale(0.55); }
+  29% { opacity: 0.15; }
+  40% { opacity: 1; transform: translate(-50%, -50%) scale(0.75); }
+  47% { opacity: 1; transform: translate(-50%, -46%) scale(2.1); }
+  62% { opacity: 0.6; transform: translate(-50%, -45%) scale(2.4); }
+  100% { opacity: 0; transform: translate(-50%, -45%) scale(2.6); }
+}
+.bw-scare-flash { position: absolute; inset: 0; opacity: 0; animation: bw-scare-flash 0.9s linear both; }
+@keyframes bw-scare-flash { 0%, 45% { opacity: 0; background: #fff; } 47% { opacity: 0.85; background: #fff; } 52% { opacity: 0.55; background: rgb(var(--glow)); } 70%, 100% { opacity: 0; background: rgb(var(--glow)); } }
+@keyframes bw-scare-shake {
+  0%, 45% { transform: none; } 48% { transform: translate(-14px, 9px); } 51% { transform: translate(12px, -10px); }
+  54% { transform: translate(-8px, -6px); } 58% { transform: translate(6px, 5px); } 64%, 100% { transform: none; }
+}
+.bw-line {
+  position: relative; max-width: 34ch; margin: 8px auto 0; color: #e8dcc8; font-style: italic; font-size: clamp(12px, 2.1vmin, 17px);
+  text-shadow: 0 2px 6px #000; animation: bw-line 0.8s ease-out 0.7s both;
+}
+@keyframes bw-line { from { opacity: 0; letter-spacing: 0.25em; filter: blur(4px); } to { opacity: 0.9; letter-spacing: 0.01em; filter: none; } }
 @keyframes bw-slam { 0% { opacity: 0; transform: scale(3.2); filter: blur(12px); } 55% { opacity: 1; filter: none; } 100% { transform: scale(1); } }
 @keyframes bw-shake {
   0%, 100% { translate: 0 0; } 15% { translate: -9px 4px; } 30% { translate: 8px -5px; } 45% { translate: -6px -3px; }
@@ -754,7 +796,8 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .bw-amount { margin-top: 6px; font-size: clamp(22px, 9vmin, 40px); }
   .bw-ladder { margin-top: 6px; } .bw-ladder li { font-size: 9px; padding: 2px 6px; }
   .bw-btn { margin-top: 6px; padding: 6px 18px; }
+  .bw-line { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bw-rays, .bw-host, .bw-content, .bw-title::before, .bw-title::after, .bigwin.done .bw-amount { animation: none; }
+  .bw-rays, .bw-host, .bw-content, .bw-line, .bw-title::before, .bw-title::after, .bigwin.done .bw-amount { animation: none; }
 }

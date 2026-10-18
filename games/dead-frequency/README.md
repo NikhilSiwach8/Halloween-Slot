@@ -50,7 +50,9 @@ Portrait screens stack the parts; the mini-player moves the controls into a colu
 are showing, every later reel spins on longer and glows red (the tease). Round wins of 10x, 50x,
 200x and 1,000x open the GOOD / MEGA / INSANE / EPIC WIN screen, and a capped round opens MAX WIN.
 The amount counts up and the title climbs through the tiers it passes; the button or Space skips
-the count, then collects. Behind it all, the background has a moon, storm clouds, lightning bolts,
+the count, then collects. Every tier opens with a jump scare by that tier's ghost (the Priest, the
+Widow, the Night Host, all three for EPIC, the Host in red for MAX) and a line from the station.
+Reduced motion turns the scares off. Behind it all, the background has a moon, storm clouds, lightning bolts,
 bats, and a power line with sparks, and it surges on every sizeable win.
 
 ## Layout

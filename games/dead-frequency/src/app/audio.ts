@@ -334,11 +334,21 @@ class Audio {
   }
 
   /** The win counter passing into a higher tier: a hit and a bell chord, higher for every tier. */
-  tierUp(level: number) {
-    this.tone(60, 0.7, { gain: 0.4, glideTo: 30 });
-    this.hiss(0.4, { freq: 400, q: 0.6, gain: 0.14, reverb: 0.7 });
+  tierUp(level: number, delay = 0) {
+    this.tone(60, 0.7, { gain: 0.4, glideTo: 30, delay });
+    this.hiss(0.4, { freq: 400, q: 0.6, gain: 0.14, reverb: 0.7, delay });
     const root = 261.6 * Math.pow(2, (level * 3) / 12);
-    [1, 1.189, 1.498, 2].forEach((m, i) => this.tone(root * m, 1.4, { type: 'triangle', gain: 0.05, delay: 0.04 + i * 0.05, reverb: 0.6 }));
+    [1, 1.189, 1.498, 2].forEach((m, i) => this.tone(root * m, 1.4, { type: 'triangle', gain: 0.05, delay: delay + 0.04 + i * 0.05, reverb: 0.6 }));
+  }
+
+  /** Win-screen jump scare: a static blast swelling into an impact and a screech, harsher per tier. */
+  scare(level: number) {
+    this.hiss(0.32, { freq: 2600, q: 0.3, gain: 0.13 });
+    this.hiss(0.3, { freq: 300, sweep: 5000, q: 1.4, gain: 0.1, attack: 0.28 });
+    this.tone(46, 0.9, { type: 'sine', gain: 0.5, glideTo: 26, delay: 0.3 });
+    this.hiss(0.5, { freq: 280, q: 0.5, gain: 0.18, delay: 0.3, reverb: 0.8 });
+    const base = 1150 + level * 90;
+    [0, 1.06, 1.12, 1.19].forEach((m, i) => this.tone(base * (m || 1), 0.5, { type: 'sawtooth', gain: 0.016 + level * 0.003, glideTo: base * 0.65, delay: 0.3 + i * 0.012, reverb: 0.6 }));
   }
 
   /** One tick of the win counter. */

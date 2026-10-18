@@ -3,6 +3,8 @@ import { WIN_TIERS, type Overlay, type WinTier } from '../app/useGame';
 import { audio } from '../app/audio';
 import { formatX } from '../app/format';
 import { SYMBOL_IMAGES } from './assets';
+import { noiseDataUrl } from './Background';
+import type { SymbolId } from '../config/types';
 
 const TITLE: Record<WinTier, [string, string]> = {
   GOOD: ['GOOD', 'WIN'],
@@ -11,6 +13,18 @@ const TITLE: Record<WinTier, [string, string]> = {
   EPIC: ['EPIC', 'WIN'],
   MAX: ['MAX', 'WIN'],
 };
+/**
+ * Who jumps out at each tier, and what the station says about it. Each tier belongs to one of
+ * the station's ghosts; EPIC brings all three, and MAX is the Night Host himself, in red.
+ */
+const SCARE: Record<WinTier, { faces: SymbolId[]; line: string }> = {
+  GOOD: { faces: ['PRIEST'], line: 'The Priest heard you. He is still blessing the transmitter.' },
+  MEGA: { faces: ['WIDOW'], line: 'The Widow finally got her song. 3:33 AM, right on time.' },
+  INSANE: { faces: ['HOST'], line: 'The Night Host grabs the mic: “Stay tuned. Don\'t touch that dial.”' },
+  EPIC: { faces: ['PRIEST', 'WIDOW', 'HOST'], line: 'Every ghost in the building is on air tonight.' },
+  MAX: { faces: ['HOST'], line: 'The station goes dark. You own the night.' },
+};
+
 /** Seconds the counter spends climbing through each tier. */
 const STAGE_S = 1.9;
 
@@ -61,7 +75,8 @@ export function BigWin({ overlay, money, onContinue, reducedMotion = REDUCED_MOT
       if (i !== lastStage) {
         lastStage = i;
         setStage(i);
-        audio.tierUp(i);
+        audio.scare(i);
+        audio.tierUp(i, 0.42);
       }
       if (now - lastTick > 70 && v < final) {
         lastTick = now;
@@ -97,8 +112,27 @@ export function BigWin({ overlay, money, onContinue, reducedMotion = REDUCED_MOT
   const tier = stages.current[stage].tier;
   const [w1, w2] = TITLE[tier];
   const host = SYMBOL_IMAGES.HOST;
+  const scare = SCARE[tier];
   return (
-    <div className={`bigwin bw-${tier.toLowerCase()} ${done ? 'done' : ''}`} role="dialog" aria-modal="true" aria-label={`${w1} ${w2}`} onClick={press}>
+    <div
+      className={`bigwin bw-${tier.toLowerCase()} ${done ? 'done' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${w1} ${w2}`}
+      onClick={press}
+      style={{ '--noise': `url(${noiseDataUrl()})` } as CSSProperties}
+    >
+      {reducedMotion ? null : (
+        // Jump scare on every tier-up: static burst, the tier's ghost lunging at the screen, a flash.
+        <div className="bw-scare" key={`scare${stage}`} aria-hidden="true">
+          <div className="bw-scare-static" />
+          {scare.faces.map((f, i) => {
+            const src = SYMBOL_IMAGES[f];
+            return src ? <img key={f} className="bw-scare-face" src={src} alt="" style={{ '--i': i, '--n': scare.faces.length } as CSSProperties} /> : null;
+          })}
+          <div className="bw-scare-flash" />
+        </div>
+      )}
       <div className="bw-rays" aria-hidden="true" />
       <Embers key={stage} level={stage + (tier === 'MAX' ? 2 : 0)} reducedMotion={reducedMotion} />
       {host ? <img className="bw-host" src={host} alt="" aria-hidden="true" /> : null}
@@ -110,6 +144,7 @@ export function BigWin({ overlay, money, onContinue, reducedMotion = REDUCED_MOT
       </div>
       <p className="bw-amount" data-testid="bigwin-amount">{money(shown)}</p>
       <p className="bw-x">{formatX(shown)}</p>
+      <p className="bw-line" key={`line${stage}`}>{scare.line}</p>
       <ol className="bw-ladder" aria-hidden="true">
         {WIN_TIERS.map((t) => (
           <li key={t.tier} className={stages.current.slice(0, stage + 1).some((s) => s.tier === t.tier) ? 'on' : ''}>{t.tier}</li>
