@@ -43,8 +43,9 @@ games/dead-frequency/
   src/engine/      rng.ts, board.ts (board draws), ways.ts (evaluation), round.ts (spins, bonuses, mystery, cap)
   src/simulation/  simulator.ts (whole-round simulation)
   src/app/         App.tsx, useGame.ts (round playback), audio.ts (synth placeholders), styles.css
-  src/components/  Reels, SymbolArt (SVG placeholders), Overlays, StationMenu, Rules
-  scripts/         simulate.ts, rtp.ts
+  src/components/  Reels, SymbolArt (image + SVG fallback), assets.ts, Overlays, StationMenu, Rules
+  public/assets/   symbols/*.webp
+  scripts/         simulate.ts, rtp.ts, art/slice_symbol_sheet.py
   tests/           engine.test.ts
   docs/            GAME_RULES.md, MATH_MODEL.md
 ```
@@ -60,7 +61,9 @@ result back, so the player's clicks (for example "Play the tape") never change a
 
 ## Known limitations
 
-- **Placeholder art and audio.** Symbols are hand-built SVG and sounds are synthesized.
+- **Placeholder audio.** Sounds are synthesized. The symbol art is final-style artwork in
+  `public/assets/symbols/` (512×512 WebP, cut from the symbol sheet with
+  `scripts/art/slice_symbol_sheet.py`). The hand-built SVGs remain as a fallback.
 - **Development PRNG.** It is not a certified RNG, and there are demo credits only.
 - **Simulated RTP only.** Figures are simulation estimates with stated error bars, not certified
   values.
@@ -74,4 +77,4 @@ result back, so the player's clicks (for example "Play the tape") never change a
 1. Generate weighted books and lookup tables per mode, as The Hollow Hour does in
    `scripts/export-books.ts`. That gives an exact RTP per mode.
 2. Add an RGS adapter and replay mode.
-3. Commission final art and audio.
+3. Add final audio, backgrounds and win animations.

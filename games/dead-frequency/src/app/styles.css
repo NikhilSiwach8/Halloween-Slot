@@ -184,3 +184,12 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 @media (min-width: 721px) {
   .reels { width: min(100%, calc((100vh - 250px) * 1.42)); margin: 0 auto; }
 }
+
+/* Image symbols (public/assets/symbols). The wild's multiplier badge is an SVG overlay. */
+.sym-img { position: relative; display: inline-block; }
+.sym-img img, .sym-img svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.sym-img img { filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7)); user-select: none; }
+.cell.win .sym-img img { filter: drop-shadow(0 0 8px rgba(54, 217, 160, 0.8)) brightness(1.12); }
+.cell.static .sym-img img { animation: static-flicker 0.2s steps(2) infinite; }
+@keyframes static-flicker { 50% { filter: brightness(1.35) contrast(1.2) hue-rotate(20deg); } }
+.overlay-art .sym { width: 100%; height: 100%; }

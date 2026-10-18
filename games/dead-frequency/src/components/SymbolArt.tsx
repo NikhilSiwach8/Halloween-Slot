@@ -1,7 +1,8 @@
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import type { SymbolId } from '../config/types';
+import { SYMBOL_IMAGES } from './assets';
 
-/** Placeholder symbol art: hand-built SVG, viewBox 0 0 100 100. */
+/** Fallback symbol art: hand-built SVG, viewBox 0 0 100 100. Used when an image is missing. */
 const ART: Record<SymbolId, ReactElement> = {
   VALVE: (
     <g>
@@ -115,16 +116,33 @@ const ART: Record<SymbolId, ReactElement> = {
   ),
 };
 
-export function SymbolArt({ s, m }: { s: SymbolId; m?: number }) {
+function MultiplierBadge({ m }: { m: number }) {
   return (
-    <svg viewBox="0 0 100 100" className={`sym sym-${s.toLowerCase()}`} role="img" aria-label={m && m > 1 ? `${s} x${m}` : s}>
+    <g>
+      <circle cx="78" cy="22" r="16" fill="#ffcf4a" stroke="#5b0f1c" strokeWidth="3" />
+      <text x="78" y="28" textAnchor="middle" fontSize="16" fontWeight="900" fill="#5b0f1c" fontFamily="system-ui, sans-serif">x{m}</text>
+    </g>
+  );
+}
+
+export function SymbolArt({ s, m }: { s: SymbolId; m?: number }) {
+  // Remember which image failed, so a cell that later shows another symbol still tries that image.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const label = m && m > 1 ? `${s} x${m}` : s;
+  const badge = s === 'WILD' && m && m > 1 ? <MultiplierBadge m={m} /> : null;
+  const src = SYMBOL_IMAGES[s];
+  if (src && src !== failedSrc) {
+    return (
+      <span className={`sym sym-img sym-${s.toLowerCase()}`} role="img" aria-label={label}>
+        <img src={src} alt="" draggable={false} onError={() => setFailedSrc(src)} />
+        {badge ? <svg viewBox="0 0 100 100" aria-hidden="true">{badge}</svg> : null}
+      </span>
+    );
+  }
+  return (
+    <svg viewBox="0 0 100 100" className={`sym sym-${s.toLowerCase()}`} role="img" aria-label={label}>
       {ART[s]}
-      {s === 'WILD' && m && m > 1 ? (
-        <g>
-          <circle cx="78" cy="22" r="16" fill="#ffcf4a" stroke="#5b0f1c" strokeWidth="3" />
-          <text x="78" y="28" textAnchor="middle" fontSize="16" fontWeight="900" fill="#5b0f1c" fontFamily="system-ui, sans-serif">x{m}</text>
-        </g>
-      ) : null}
+      {badge}
     </svg>
   );
 }
