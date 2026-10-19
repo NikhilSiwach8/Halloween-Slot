@@ -70,6 +70,15 @@ is ink black, bone, toxic phosphor green, rust and blood red. The symbols are th
 paintings. Prompts for a painterly creature redraw (textured, droopy-eyed creatures filling each
 tile) are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Painterly creature style").
 
+**The deck is haunted.** The deck stands like a physical machine: its top leans away a little and,
+with a mouse, it tilts toward the pointer while the reflection on the dust cover slides against
+it. While the reels are still, every 9–22 s something happens on it: a pair of bloodshot human
+eyes opens on one of the tracks, looks around, blinks and weeps blood before closing; a pale,
+long-fingered hand with filthy nails creeps round the edge from behind the deck, grips it, taps
+and withdraws; or the Widow's face drifts faintly across the dust cover like a reflection. These
+are silent, never appear during a spin, win screen or pop-up, and are off with reduced motion
+(components/Haunt.tsx).
+
 **Random jump scares.** Besides the win-screen scares, six short scares can strike at random: a
 face that slams into the screen, a blackout with glowing eyes, a bloody hand print on the glass, the
 Widow behind the reels, a signal glitch and a lunge from the dark. Each has its own sound. They come

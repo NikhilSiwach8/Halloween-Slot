@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { BonusType, GameConfig } from '../config/types';
 import { SYMBOL_IMAGES } from './assets';
+import { DeckHand, GlassFace, TrackEyes, useDeckTilt, useHaunt } from './Haunt';
 
 /* ------------------------------------------------------------------ icons */
 export const Icon = {
@@ -264,8 +265,11 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
   children: ReactNode;
 }) {
   const digits = String(multiplier).padStart(2, '0').split('');
+  const deck = useRef<HTMLDivElement>(null);
+  useDeckTilt(deck);
+  const haunt = useHaunt(!onAir);
   return (
-    <div className={`frame deck vu-${scope}`}>
+    <div ref={deck} className={`frame deck vu-${scope}`}>
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <defs>
           <radialGradient id="spool-metal" cx="0.35" cy="0.3" r="0.8">
@@ -316,6 +320,8 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
         </div>
         <div className="frame-window">
           {children}
+          {haunt?.kind === 'eyes' ? <TrackEyes key={haunt.id} col={haunt.col} row={haunt.row} /> : null}
+          {haunt?.kind === 'face' ? <GlassFace key={haunt.id} from={haunt.from} /> : null}
           <div className="crt" aria-hidden="true">
             <i className="crt-lines" />
             {/* Damage on the dust cover: a fracture in the top-right corner and a bloody
@@ -341,6 +347,7 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
         </div>
       </div>
       {footer ? <div className="frame-foot">{footer}</div> : null}
+      {haunt?.kind === 'hand' ? <DeckHand key={haunt.id} side={haunt.side} at={haunt.at} /> : null}
       <i className="screw tl" aria-hidden="true" /><i className="screw tr" aria-hidden="true" />
       <i className="screw bl" aria-hidden="true" /><i className="screw br" aria-hidden="true" />
     </div>

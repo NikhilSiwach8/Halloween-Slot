@@ -1592,3 +1592,54 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 @media (min-aspect-ratio: 1/1) and (min-height: 561px) { .screw.tl, .screw.tr { z-index: 0; } }
 .channel span { white-space: nowrap; } .channel em { font-style: normal; }
 @media (max-aspect-ratio: 1/1) and (max-width: 520px) { .channel em { display: none; } }
+
+/* ======================================================================== */
+/* 3D and the haunting: the deck tilts toward the pointer, and while the   */
+/* reels are still, eyes open on the tape, a hand grips the deck, or a     */
+/* face drifts across the dust cover (components/Haunt.tsx).               */
+/* ======================================================================== */
+/* A deck standing on a desk: its top leans away a little; the pointer adds parallax. */
+.frame.deck { transform: perspective(1800px) rotateX(calc(2.5deg + var(--rx, 0deg))) rotateY(var(--ry, 0deg)); transform-origin: 50% 60%; }
+.frame.deck .crt-lines { transform: translate(calc(var(--px, 0) * -6px), calc(var(--py, 0) * -4px)); }
+.signal-panel { transform: perspective(1400px) rotateY(calc(9deg + var(--ry-p, 0deg))) rotateX(2deg); transform-origin: 100% 50%; }
+@media (max-aspect-ratio: 1/1) { .signal-panel { transform: none; } .frame.deck { transform: perspective(1400px) rotateX(2deg); } }
+@media (max-height: 560px) and (min-aspect-ratio: 5/4) { .frame.deck { transform: none; } }
+
+/* Eyes opening on a track. */
+.track-eyes {
+  position: absolute; z-index: 5; pointer-events: none; width: calc((100% - 2 * var(--win-pad)) / 6 * 0.98);
+  left: calc(var(--win-pad) + (100% - 2 * var(--win-pad)) / 6 * (var(--c) + 0.5)); top: calc(var(--win-pad) + (100% - 2 * var(--win-pad)) / 4 * (var(--r) + 0.5));
+  translate: -50% -50%; animation: eyes-env 3.6s linear both;
+}
+.track-eyes svg { display: block; width: 100%; overflow: visible; }
+.track-eyes .eye { animation: eye-open 3.6s ease-in-out both; }
+.track-eyes .iris { animation: eye-look 3.6s ease-in-out both; }
+@keyframes eyes-env { 0% { opacity: 0; } 8% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes eye-open { 0%, 6% { transform: scaleY(0.05); } 16% { transform: scaleY(1); } 52% { transform: scaleY(1); } 55% { transform: scaleY(0.08); } 58% { transform: scaleY(1); } 84% { transform: scaleY(1); } 94%, 100% { transform: scaleY(0.05); } }
+.track-eyes .eye-tear { stroke-dasharray: 40; stroke-dashoffset: 40; animation: eye-tear 3.6s ease-in both; }
+@keyframes eye-tear { 0%, 30% { stroke-dashoffset: 40; } 80%, 100% { stroke-dashoffset: 0; } }
+@keyframes eye-look { 0%, 20% { transform: translateX(0); } 30%, 42% { transform: translateX(-6px); } 50%, 62% { transform: translateX(6px) translateY(1px); } 70%, 100% { transform: translateX(0) translateY(2px) scale(1.08); } }
+
+/* A hand gripping the deck's edge from behind it. */
+.deck-hand { position: absolute; z-index: 8; top: var(--at); width: clamp(140px, 19vw, 280px); pointer-events: none; filter: drop-shadow(3px 6px 6px rgba(0, 0, 0, 0.8)); }
+.deck-hand svg { display: block; width: 100%; }
+.deck-hand.l { left: 0; translate: -46% 0; animation: hand-l 6.2s cubic-bezier(0.4, 0, 0.3, 1) both; }
+.deck-hand.r { right: 0; translate: 46% 0; animation: hand-r 6.2s cubic-bezier(0.4, 0, 0.3, 1) both; }
+.deck-hand.r svg { transform: scaleX(-1); }
+@keyframes hand-l { 0% { opacity: 0; transform: translateX(-45%); } 12% { opacity: 1; } 26% { transform: translateX(3%); } 30% { transform: translateX(0); } 80% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(-50%); } }
+@keyframes hand-r { 0% { opacity: 0; transform: translateX(45%); } 12% { opacity: 1; } 26% { transform: translateX(-3%); } 30% { transform: translateX(0); } 80% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(50%); } }
+/* The fingers tighten, then tap one by one. */
+.deck-hand .finger { animation: finger-tap 6.2s ease-in-out both; }
+.deck-hand .f1 { animation-delay: 0.12s; } .deck-hand .f2 { animation-delay: 0.24s; } .deck-hand .f3 { animation-delay: 0.36s; }
+@keyframes finger-tap { 0%, 30% { transform: rotate(-6deg); } 36% { transform: rotate(2deg); } 48% { transform: rotate(0deg); } 52% { transform: rotate(-5deg); } 56% { transform: rotate(1deg); } 64% { transform: rotate(-4deg); } 68%, 100% { transform: rotate(0deg); } }
+
+/* The Widow's face in the dust cover. */
+.glass-face {
+  position: absolute; z-index: 6; top: 4%; height: 92%; pointer-events: none; opacity: 0;
+  filter: grayscale(1) contrast(1.7) brightness(1.6) blur(0.3px); mix-blend-mode: screen; animation: face-drift 6.5s ease-in-out both;
+}
+.glass-face.l { left: 4%; } .glass-face.r { right: 4%; transform: scaleX(-1); }
+.glass-face.r { animation-name: face-drift-r; }
+@keyframes face-drift { 0% { opacity: 0; translate: -8% 2%; } 30% { opacity: 0.32; } 60% { opacity: 0.4; translate: 10% -1%; } 100% { opacity: 0; translate: 22% 0; } }
+@keyframes face-drift-r { 0% { opacity: 0; translate: 8% 2%; } 30% { opacity: 0.32; } 60% { opacity: 0.4; translate: -10% -1%; } 100% { opacity: 0; translate: -22% 0; } }
+@media (prefers-reduced-motion: reduce) { .frame.deck, .signal-panel { transform: none; } }
