@@ -66,6 +66,14 @@ rope lashings at the bottom. The painted symbols and the Night Host carry a thic
 for now (`scripts/art/toonify.py`; originals in `art/painted/`). Prompts to redraw them in the
 cartoon style are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Cartoon redraw").
 
+**Symbol animations.** Every symbol lands with a cartoon squash-and-stretch as its reel stops,
+and acts out its own loop while it is part of a win: the Night Host headbangs with flaring eyes,
+the Widow drifts and fades like a ghost, the Priest levitates in a green glow, the Radio's speaker
+thumps, the Microphone swings, the Headphones bounce to the beat, the Cassette rocks, the Valve
+hums and flickers, the ON AIR neon buzzes, Static glitches, the Antenna sends out signal rings and
+the Tape rattles. The wild, the Antenna and the Tape keep a gentle idle animation so they stand
+out. Only transform and opacity animate, so it costs nothing measurable per frame.
+
 **Depth and life.** One light from the upper left shades the whole game: bevelled glass tiles with
 symbols casting shadows, a walnut cabinet with real slab thickness, domed physical buttons that press
 down, an extruded logo, and solid, deeper radio cabinets on the title screen. Winning symbols turn in

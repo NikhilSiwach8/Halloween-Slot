@@ -165,7 +165,13 @@ export function Reels({ cfg, view, turbo }: { cfg: GameConfig; view: View; turbo
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   return (
-    <div className={`reels ${spinning ? 'is-spinning' : ''}`} data-testid="reels" role="grid" aria-label="Reels">
+    <div
+      // land-0 / land-1 alternate per spin so each symbol's landing bounce restarts every spin.
+      className={`reels ${spinning ? 'is-spinning' : ''} ${!spinning && spinId > 0 && !instant ? `land-${spinId % 2}` : ''}`}
+      data-testid="reels"
+      role="grid"
+      aria-label="Reels"
+    >
       {Array.from({ length: cfg.reels }, (_, r) => (
         <div
           className={`reel ${stops?.tease[r] ? 'tease' : ''}`}
