@@ -411,6 +411,47 @@ class Audio {
     [0, 1.06, 1.12, 1.19].forEach((m, i) => this.tone(base * (m || 1), 0.5, { type: 'sawtooth', gain: 0.016 + level * 0.003, glideTo: base * 0.65, delay: 0.3 + i * 0.012, reverb: 0.6 }));
   }
 
+  /** Random jump scares (purely cosmetic): a different sting for each kind. */
+  randomScare(kind: 'face' | 'blackout' | 'hand' | 'widow' | 'glitch' | 'lunge') {
+    switch (kind) {
+      case 'face':
+        this.duck(0.1, 0.6, 0.8);
+        this.hiss(0.35, { freq: 2600, q: 0.3, gain: 0.16 });
+        [1280, 1356, 1437].forEach((f, i) => this.tone(f, 0.45, { type: 'sawtooth', gain: 0.024, glideTo: f * 0.6, delay: 0.02 + i * 0.01, reverb: 0.6 }));
+        this.tone(44, 0.6, { gain: 0.45, glideTo: 26 });
+        break;
+      case 'blackout':
+        this.duck(0.03, 1.2, 1.2);
+        this.tone(220, 0.5, { type: 'sawtooth', gain: 0.05, glideTo: 40 }); // power dies
+        this.tone(58, 1.3, { type: 'sawtooth', gain: 0.07, delay: 0.5, attack: 0.3 }); // growl
+        this.tone(61.5, 1.3, { type: 'sawtooth', gain: 0.06, delay: 0.5, attack: 0.3 });
+        this.hiss(0.9, { freq: 220, q: 1.5, gain: 0.08, delay: 0.5, attack: 0.3 });
+        break;
+      case 'hand':
+        this.duck(0.2, 0.5, 1);
+        this.tone(70, 0.5, { gain: 0.6, glideTo: 32 });
+        this.hiss(0.25, { freq: 900, q: 0.7, gain: 0.2, reverb: 0.4 });
+        this.tone(2200, 0.9, { type: 'triangle', gain: 0.012, glideTo: 1500, delay: 0.15, reverb: 0.5 }); // glass creak
+        break;
+      case 'widow':
+        this.duck(0.25, 1, 1);
+        this.hiss(1.1, { freq: 1500, sweep: 3800, q: 6, gain: 0.07, attack: 0.5 }); // a whisper rushing past
+        this.tone(660, 1.0, { type: 'sine', gain: 0.03, glideTo: 330, delay: 0.3, reverb: 0.8 });
+        break;
+      case 'glitch':
+        this.duck(0.1, 0.6, 0.8);
+        [180, 191, 203, 760, 805].forEach((f, i) => this.tone(f, 0.5, { type: 'square', gain: 0.02, glideTo: f * (i % 2 ? 1.6 : 0.5), delay: i * 0.02 }));
+        this.hiss(0.5, { freq: 3000, q: 0.3, gain: 0.12 });
+        break;
+      case 'lunge':
+        this.duck(0.1, 0.7, 0.9);
+        this.tone(48, 0.8, { gain: 0.55, glideTo: 26 });
+        this.hiss(0.5, { freq: 260, q: 0.5, gain: 0.2, reverb: 0.8 });
+        [1180, 1255, 1322, 1408].forEach((f, i) => this.tone(f, 0.6, { type: 'sawtooth', gain: 0.022, glideTo: f * 0.7, delay: 0.05 + i * 0.015, reverb: 0.6 }));
+        break;
+    }
+  }
+
   /** One tick of the win counter. */
   tick(pitch: number) {
     this.tone(1400 + pitch * 900, 0.05, { type: 'square', gain: 0.012 });

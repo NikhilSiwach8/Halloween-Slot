@@ -17,6 +17,7 @@ browser against a mock RGS (22 checks) and by unit tests (`tests/approval.test.t
 |---|---|---|
 | Title unique, no restricted terms | Checked | No existing slot named "Dead Frequency" found in a web search; please also search Stake's own catalogue |
 | Assets not offensive or inappropriate | **You decide** | Horror theme. Note: the Priest is an undead clergyman holding a crucifix. Religious imagery can be judged offensive; if Stake raises it, he can be swapped for a non-religious character |
+| Jump scares and flashing | Done (**you** check Stake accepts it) | Random scares are rare, short (under 2.5 s), never block input and never run during win screens, panels or the title screen. A content warning in the rules has an on/off switch saved on the device; reduced motion turns them off by default |
 | Sufficiently distinct from existing titles | Done | Original theme, mechanics (Static & Retune, Signal Meter) and art |
 | Thumbnail meets artwork guidelines | **You** | Prompts for 3:4 and 16:9 tiles were provided; check them against Stake's artwork guidelines |
 

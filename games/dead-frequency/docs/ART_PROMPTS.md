@@ -75,12 +75,12 @@ or "image-to-image" mode.
 The game picks them up with no code changes. Check that every symbol still reads clearly at phone
 size, and that the Widow and every other character are clearly adults (Stake's content rules).
 
-## Cartoon redraw (current direction)
+## Cartoon redraw (not used)
 
-The UI is now in a bold cartoon style: thick dark-brown ink outlines, flat colour with hard
-highlight and shadow bands, chunky shapes and the Lilita One font. Until the art is redrawn, the
-painted symbols and the Night Host carry a thick sticker outline (`scripts/art/toonify.py`, sticker
-mode; originals in `art/painted/`). These prompts redraw them to match the UI.
+An earlier, abandoned direction was a bold cartoon style: thick dark-brown ink outlines, flat colour with hard
+highlight and shadow bands, chunky shapes and the Lilita One font. It was reverted in favour of
+realistic horror, and the symbols are the original paintings again; these prompts are kept for
+reference only.
 
 **Shared style (put this first in every prompt):**
 
@@ -120,3 +120,49 @@ mode; originals in `art/painted/`). These prompts redraw them to match the UI.
 Save the symbols as 512×512 transparent WebP under the same names in `public/assets/symbols/`
 (cut a sheet with `scripts/art/slice_symbol_sheet.py`). Since they will already have outlines, skip
 the sticker pass. The Widow and every character must be clearly adult (Stake's content rules).
+
+## Painterly creature style (current direction)
+
+A painterly, semi-realistic creature look: every symbol is a living creature whose body *is* its
+rounded-square tile, with richly textured skin (pores, bumps, scales, wet sheen), heavy-lidded
+bloodshot eyes with tiny pupils, and a grotesque-but-charming expression, lit like a film still.
+These prompts keep Dead Frequency's own cast and theme (a haunted 1970s radio station); they take
+the reference's *style* only, not its creatures.
+
+**Shared style (put this first in every prompt):**
+
+> Painterly semi-realistic 3D illustration for a premium slot game, digital painting with a
+> stylised 3D feel. The subject is a creature whose whole body forms a chunky rounded-square tile
+> shape filling about 90% of the frame. Richly detailed tactile skin: pores, warts, fine scales,
+> wet subsurface sheen, tiny highlights. Big heavy-lidded bloodshot eyes with small black pupils
+> and saggy lower lids; a grotesque but charming expression. Soft cinematic lighting from the
+> upper left, a warm rim light, gentle ambient occlusion. Saturated rich colours. Dark haunted
+> 1970s radio-station horror theme. Centred, fully transparent background, no text unless
+> stated, no frame, no watermark, 1024×1024.
+
+| File | Creature |
+|---|---|
+| `host` | **The Night Host:** a hulking undead radio DJ creature, a square leathery body with a cracked skull-like face, sunken green-glowing bloodshot eyes, a sly crooked grin with yellow teeth, big red studio headphones sunk into his skull, holding a chrome microphone. Highest symbol: the most detailed and menacing. |
+| `widow` | **The Widow:** a moth-like creature (not human) with black lace wings folded into a square shape, a pale velvety face with droopy, tearful, bloodshot eyes, an old telephone receiver held to her face. Elegant and mournful. |
+| `priest` | **The Priest:** a gaunt, waxy creature in a black cassock folded square, candle-wax skin dripping down its cheeks, droopy eyes lit green from below, clutching a tarnished crucifix. |
+| `radio` | **Old Radio:** a carved walnut tube radio that is alive, its speaker cloth a mouth that sags open, two bloodshot eyes peering out of the dial window, a glowing green tongue-like dial needle. |
+| `mic` | **Microphone:** a chrome studio microphone creature, its mesh grille a puffy face with droopy eyes and fat cheeks, the stand like stubby legs. |
+| `headphones` | **Headphones:** a pair of headphones fused into a squat toad-like creature, the ear cups puffed-out cheeks, a wide sleepy mouth. |
+| `cassette` | **Cassette:** a cassette tape creature, the two spools its big droopy eyes, a tangle of tape spilling out like a tongue. |
+| `valve` | **Valve:** a glowing vacuum-tube creature like a glass bulb fish, the orange filament its glowing heart, small fins, droopy glassy eyes. |
+| `wild` | **ON AIR (wild):** a red neon studio sign that is a creature, buzzing with light, a wide mouth full of glass-shard teeth, angry glowing eyes. The sign reads exactly "ON AIR". |
+| `static` | **Static:** a box-shaped TV creature whose screen is crawling static, a ghostly face pressing through the snow, with a question mark ("?") floating in the static. |
+| `antenna` | **Antenna (scatter):** a red radio-tower creature like an anglerfish, a lattice body, a glowing blue lure dangling from its tip, a wide grin of needle teeth, crackling with energy. The most eye-catching symbol. |
+| `tape` | **Unmarked Tape (Mystery):** a black VHS tape mimic with a row of fangs along its edge, a green glow leaking out, a stained hand-written label reading exactly "DON'T PLAY". |
+
+**Background (1920×1080, no transparency):**
+
+> [shared style, but a painted environment with no creature tile] A moody painted swamp at night
+> beside a derelict 1970s radio station: still black water with drifting lily pads, mist, crooked
+> trees with copper-red leaves, a rusting radio tower with a blinking red beacon, shafts of pale
+> moonlight cutting through the fog, fireflies and floating dust. Keep the centre darker and calmer
+> for the reels; detail at the edges.
+
+To swap them in, save each symbol as a 512×512 transparent WebP with the same file name in
+`public/assets/symbols/` (no code changes). Keep every character clearly adult (Stake's content
+rules), and check that each symbol still reads clearly at phone size.

@@ -58,15 +58,22 @@ glare); and a channel strip (CH1–CH6) whose LEDs blink as each reel stops and 
 in a win. Tiles are smoky glass with a phosphor line in each symbol's colour. The screen's
 phosphor colour changes per bonus (green, violet, red), and winning tiles get a CRT scan sweep.
 
-**Art style.** A bold cartoon look: thick dark-brown ink outlines, flat colour with hard highlight
-and shadow bands, solid offset shadows, chunky Lilita One lettering, and a Halloween palette
-(pumpkin, toxic green, bone, blood red, plum, warm wood) under a purple night sky with an orange
-moon. The cabinet is chunky cartoon wood with skull mascots in headphones on the top corners and
-rope lashings at the bottom. The painted symbols and the Night Host carry a thick sticker outline
-for now (`scripts/art/toonify.py`; originals in `art/painted/`). Prompts to redraw them in the
-cartoon style are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Cartoon redraw").
+**Art style.** Realistic, grim horror: a near-black night sky with rain, lightning and a shadow
+figure that sometimes stands at the edge of the light; a dark walnut-and-brass cabinet with grime;
+cracked CRT glass with a bloody handprint; and blood dripping from the FREQUENCY logo. The palette
+is ink black, bone, toxic phosphor green, rust and blood red. The symbols are the original
+paintings. Prompts for a painterly creature redraw (textured, droopy-eyed creatures filling each
+tile) are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Painterly creature style").
 
-**Symbol animations.** Every symbol lands with a cartoon squash-and-stretch as its reel stops,
+**Random jump scares.** Besides the win-screen scares, six short scares can strike at random: a
+face that slams into the screen, a blackout with glowing eyes, a bloody hand print on the glass, the
+Widow behind the reels, a signal glitch and a lunge from the dark. Each has its own sound. They come
+rarely (about 1 in 9 rounds, or after 35–75 s idle, at most one every 22 s), never during a win
+screen, panel or the title screen, never block a click, and last under 2.5 s. A content warning in
+the rules has a "Random jump scares" switch, saved on the device, and reduced motion turns them off
+by default.
+
+**Symbol animations.** Every symbol lands with a squash-and-stretch as its reel stops,
 and acts out its own loop while it is part of a win: the Night Host headbangs with flaring eyes,
 the Widow drifts and fades like a ghost, the Priest levitates in a green glow, the Radio's speaker
 thumps, the Microphone swings, the Headphones bounce to the beat, the Cassette rocks, the Valve

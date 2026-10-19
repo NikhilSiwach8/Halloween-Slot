@@ -1189,220 +1189,17 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .character-body, .character-breath, .character-shadow { animation: none !important; }
 }
 
-/* ======================================================================== */
-/* Cartoon skin: bold ink outlines, flat colour with hard highlight and     */
-/* shadow bands, solid offset shadows and chunky lettering. Layout, sizes  */
-/* and behaviour are untouched; this only restyles surfaces. Hard shadows  */
-/* (no blur) and flat fills are also the cheapest things to draw.          */
-/* ======================================================================== */
+/* Shared colours (used by later sections), in the realistic horror palette. */
 :root {
-  --ink: #1b0e08;
-  --wood: #8a4b22; --wood-l: #b5682f; --wood-d: #5a2e14;
-  --bone: #f3e3c3; --cream: #fff4dc;
-  --pumpkin: #ff8a1f; --toxic: #8fe03b; --blood: #e0313b; --plum: #3a1f3f; --plum-d: #26122a;
-  --display: 'Lilita One', 'Cinzel', Georgia, sans-serif;
-  font-synthesis-weight: none; /* Lilita has one weight: never fake-bold it */
-}
-/* Cartoon text: cream with a solid ink outline and a hard drop. */
-.toon-text, .bar-field output, .panel-big, .bw-amount, .win-pop, .sp-continue, .plaque-led span {
-  text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 1.5px 1.5px 0 var(--ink), -1.5px 1.5px 0 var(--ink), 1.5px -1.5px 0 var(--ink), -1.5px -1.5px 0 var(--ink), 0 4px 0 var(--ink);
+  --ink: #050304;
+  --wood: #4a2614; --wood-l: #6a3a1e; --wood-d: #2a140a;
+  --bone: #d9cdb6; --cream: #ece2cf;
+  --pumpkin: #c8641e; --toxic: #6dffbf; --blood: #8a0f16; --plum: #1c1218; --plum-d: #0f0a0d;
 }
 
-/* ---- Cabinet: chunky cartoon wood, plank seams, ink outline, solid drop ---- */
-.frame {
-  background:
-    linear-gradient(180deg, rgba(255, 220, 160, 0.22) 0 7px, transparent 7px calc(100% - 12px), rgba(0, 0, 0, 0.28) calc(100% - 12px)),
-    repeating-linear-gradient(90deg, transparent 0 58px, rgba(27, 14, 8, 0.32) 58px 61px),
-    linear-gradient(180deg, var(--wood-l), var(--wood) 40%, var(--wood));
-  border: 4px solid var(--ink); border-radius: 20px;
-  box-shadow: 0 8px 0 var(--ink), 0 22px 30px rgba(0, 0, 0, 0.45);
-}
-.frame::before { display: none; }
-.corner { filter: none; width: 64px; height: 64px; }
-.corner.skull { width: 96px; height: 96px; filter: drop-shadow(0 5px 0 var(--ink)); }
-.corner.skull.tl { top: -60px; left: -62px; transform: rotate(-14deg); }
-.corner.skull.tr { top: -60px; right: -62px; transform: rotate(14deg); }
-.corner.rope { width: 52px; height: 52px; }
-.corner.rope.bl { bottom: -18px; left: -18px; transform: none; }
-.corner.rope.br { bottom: -18px; right: -18px; transform: scaleX(-1); }
-.skull-eye { animation: skull-eye 3.6s steps(1) infinite; }
-@keyframes skull-eye { 0%, 92%, 100% { opacity: 1; } 94%, 97% { opacity: 0.15; } }
-
-/* Header instruments: inked cartoon gadgets. */
-.nixie, .scope-wrap, .plaque-led { border: 3px solid var(--ink); box-shadow: inset 0 4px 0 rgba(0, 0, 0, 0.45), 0 3px 0 var(--ink); }
-.nixie { background: var(--plum-d); border-radius: 12px; }
-.nixie-tube { border: 2px solid var(--ink); border-radius: 10px; background: linear-gradient(180deg, #4a2a4f 0 45%, #34183a 45%); box-shadow: none; }
-.nixie-tube::before { display: none; }
-.nixie-tube b { font-family: var(--display); color: var(--pumpkin); text-shadow: 1.5px 0 0 var(--ink), -1.5px 0 0 var(--ink), 0 1.5px 0 var(--ink), 0 -1.5px 0 var(--ink), 0 3px 0 var(--ink); }
-.nixie.hot { border-color: var(--ink); box-shadow: inset 0 4px 0 rgba(0, 0, 0, 0.45), 0 3px 0 var(--ink), 0 0 0 3px var(--pumpkin); }
-.scope-wrap { border-radius: 12px; background: linear-gradient(180deg, #123a24 0 50%, #0c2a1a 50%); }
-.plaque-led { border-radius: 12px; background: var(--plum-d); font-family: var(--display); font-weight: 400; letter-spacing: 0.04em; color: var(--cream); }
-.on-air-lamp { font-family: var(--display); font-weight: 400; border: 3px solid var(--ink); border-radius: 10px; box-shadow: 0 3px 0 var(--ink); background: #4a1a20; color: #8a3a44; }
-.on-air-lamp.lit { background: linear-gradient(180deg, #ff6b74 0 45%, var(--blood) 45%); color: var(--cream); box-shadow: 0 3px 0 var(--ink), 0 0 16px rgba(224, 49, 59, 0.8); text-shadow: 0 2px 0 var(--ink); }
-
-/* Side posts. */
-.pillar { background: linear-gradient(90deg, var(--wood-d) 0 30%, var(--wood) 30% 70%, var(--wood-d) 70%); border: 3px solid var(--ink); box-shadow: inset 0 4px 0 rgba(255, 220, 160, 0.18); }
-.vu i { border: 2px solid var(--ink); border-radius: 4px; box-shadow: none; }
-.vu-cover { background: rgba(27, 14, 8, 0.82); }
-.pillar-label { font-family: var(--display); font-weight: 400; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
-.grille { border: 2px solid var(--ink); background: radial-gradient(circle, var(--ink) 1.7px, transparent 2.1px) 0 0 / 7px 7px, var(--wood-d); box-shadow: none; }
-.tube { border: 2px solid var(--ink); background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0 35%, rgba(255, 255, 255, 0.08) 35%); box-shadow: 0 0 14px rgba(255, 140, 50, 0.6); }
-.tube::before { display: none; }
-
-/* The reel bed: a dark, flat plum well with orange column rules (no glass). */
-.frame-window {
-  background: var(--plum-d); border-radius: 14px; border: 4px solid var(--ink);
-  box-shadow: inset 0 6px 0 rgba(0, 0, 0, 0.45), 0 3px 0 rgba(255, 220, 160, 0.35);
-}
-.crt { display: none; }
-.reels {
-  background-image: linear-gradient(90deg, transparent calc(100% - 4px), rgba(255, 138, 31, 0.5) calc(100% - 4px) calc(100% - 1px), transparent calc(100% - 1px));
-  background-size: calc((100% + 5px) / 6) 100%;
-}
-/* Tiles: plain symbols on the bed; special symbols get an inked, coloured card. */
-.cell { background: radial-gradient(circle at 50% 46%, rgba(var(--acc), 0.18), transparent 68%); border: 0; box-shadow: none; }
-.cell.kind-wild, .cell.kind-scatter, .cell.kind-bonus, .cell.kind-mystery {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 40%, transparent 40%), radial-gradient(circle at 50% 46%, rgba(var(--acc), 0.38), rgba(var(--acc), 0.12) 70%);
-  border: 3px solid var(--ink); box-shadow: inset 0 0 0 3px rgba(var(--acc), 0.85), inset 0 -5px 0 rgba(0, 0, 0, 0.3);
-}
-.cell .sym { transform: none; }
-.cell .sym-img img { filter: drop-shadow(0 5px 0 rgba(27, 14, 8, 0.55)); }
-.strip-cell { background: transparent; }
-.strip-cell .sym { opacity: 0.55; }
-.reels .reel .cell.win {
-  border: 3px solid var(--ink);
-  box-shadow: inset 0 0 0 4px rgb(var(--phos)), 0 0 18px rgba(var(--phos), 0.75);
-  background: radial-gradient(circle at 50% 46%, rgba(var(--phos), 0.35), rgba(var(--phos), 0.08) 70%);
-}
-.cell.win .sym-img img { filter: drop-shadow(0 5px 0 rgba(27, 14, 8, 0.6)) brightness(1.15); }
-.reels .reel .cell.sticky { outline: 4px solid var(--blood); outline-offset: -4px; }
-.reel-tease { border: 4px solid var(--blood); }
-.channel { font-family: var(--display); font-weight: 400; color: var(--cream); text-shadow: 0 2px 0 var(--ink); }
-.led { border: 2px solid var(--ink); width: 11px; height: 11px; }
-.win-pop { font-family: var(--display); font-weight: 400; color: var(--cream); }
-.win-pop.big { color: #fff; text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 0 5px 0 var(--ink), 0 0 30px rgba(var(--phos), 0.9); }
-
-/* ---- Signal panel: an inked wooden board, bulb lamps, cartoon knob ---- */
-.signal-panel {
-  background: linear-gradient(180deg, rgba(255, 220, 160, 0.2) 0 6px, transparent 6px), linear-gradient(180deg, var(--wood-l), var(--wood) 35%);
-  border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink), 0 20px 30px rgba(0, 0, 0, 0.45);
-}
-.signal-panel::before, .signal-panel::after { border-color: var(--pumpkin); border-top-color: transparent; border-bottom-color: transparent; border-width: 4px; }
-.signal-panel::before { border-right: 0; } .signal-panel::after { border-left: 0; }
-.lamps .lamp { border: 3px solid var(--ink); border-radius: 50%; width: 46px; height: 46px; margin: 0 auto; background: linear-gradient(180deg, #3a2240 0 45%, var(--plum-d) 45%); box-shadow: 0 3px 0 var(--ink); color: rgba(243, 227, 195, 0.3); }
-.lamp::after { display: none; }
-.lamp.lit { background: linear-gradient(180deg, #ffd27a 0 45%, var(--pumpkin) 45%); color: var(--ink); box-shadow: 0 3px 0 var(--ink), 0 0 14px rgba(255, 138, 31, 0.8); }
-.lamp.hot { background: linear-gradient(180deg, #ff7a82 0 45%, var(--blood) 45%); color: var(--cream); box-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(224, 49, 59, 0.9); }
-.tiers { color: var(--cream); font-family: var(--display); font-weight: 400; font-size: 13px; text-shadow: 0 2px 0 var(--ink); }
-.tiers b { color: var(--pumpkin); }
-.tiers li.reached { background: var(--blood); border: 2px solid var(--ink); box-shadow: 0 2px 0 var(--ink); }
-.panel-label { color: var(--cream); font-family: var(--display); text-shadow: 0 2px 0 var(--ink); }
-.panel-big { font-family: var(--display); font-weight: 400; color: var(--pumpkin); }
-.dial svg { filter: drop-shadow(0 4px 0 var(--ink)); }
-.knob { border: 3px solid var(--ink); background: linear-gradient(180deg, #ffd27a 0 45%, var(--pumpkin) 45%); box-shadow: 0 4px 0 var(--ink); }
-
-/* ---- Night Host: a solid cartoon drop instead of soft shadows ---- */
-.character img { filter: drop-shadow(0 8px 0 rgba(27, 14, 8, 0.55)); }
-.character-shadow { background: radial-gradient(ellipse, rgba(27, 14, 8, 0.7), transparent 70%); }
-
-/* ---- Logo: chunky lettering ---- */
-.logo-word1 { font: 400 60px var(--display); letter-spacing: 2px; }
-.logo-word2 { font: 400 46px var(--display); letter-spacing: 1px; }
-.logo-spec { display: none; }
-.logo::before { display: none; }
-
-/* ---- Control bar: inked panels, tag labels, chunky buttons that press down ---- */
-.bar-main, .bet-pill {
-  background: linear-gradient(180deg, #4a2a50 0 8px, var(--plum) 8px calc(100% - 8px), var(--plum-d) calc(100% - 8px));
-  border: 3px solid var(--ink); border-radius: 16px;
-  box-shadow: 0 5px 0 var(--ink), 0 12px 18px rgba(0, 0, 0, 0.4);
-}
-.bar-field label { font-family: var(--display); font-weight: 400; color: var(--pumpkin); letter-spacing: 0.08em; text-shadow: 0 2px 0 var(--ink); }
-.bar-field output { font-family: var(--display); font-weight: 400; color: var(--cream); letter-spacing: 0.02em; } /* size stays per layout */
-.bar-field small { color: var(--bone); font-family: var(--display); text-shadow: 0 1px 0 var(--ink); }
-.bar-menu, .bet-arrows button { color: var(--cream); filter: drop-shadow(0 2px 0 var(--ink)); }
-.round-btn {
-  background: linear-gradient(180deg, #5a3462 0 45%, var(--plum) 45% 80%, var(--plum-d) 80%);
-  border: 3px solid var(--ink); color: var(--cream);
-  box-shadow: 0 5px 0 var(--ink), 0 10px 14px rgba(0, 0, 0, 0.4);
-}
-.round-btn::before { display: none; }
-.round-btn svg, .round-btn small, .round-btn .dc-x { filter: drop-shadow(0 2px 0 var(--ink)); }
-.round-btn small, .dc-x { font-family: var(--display); font-weight: 400; color: var(--cream); }
-.round-btn:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink), 0 4px 8px rgba(0, 0, 0, 0.4); }
-.round-btn.on { border-color: var(--ink); color: var(--ink); background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45% 80%, #5aa61f 80%); box-shadow: 0 5px 0 var(--ink), 0 0 16px rgba(143, 224, 59, 0.6); }
-.round-btn.on small, .round-btn.on .dc-x { color: var(--ink); filter: none; }
-.round-btn.buy { border: 3px solid var(--ink); color: var(--cream); background: linear-gradient(180deg, #ffbe5c 0 45%, var(--pumpkin) 45% 80%, #c95a0a 80%); box-shadow: 0 5px 0 var(--ink), 0 0 20px rgba(255, 138, 31, 0.5); }
-.round-btn.buy small { color: var(--cream); }
-.spin-btn {
-  background: linear-gradient(180deg, #ff7a82 0 42%, var(--blood) 42% 78%, #a3141f 78%);
-  border: 5px solid var(--ink);
-  box-shadow: 0 0 0 4px var(--cream), 0 0 0 7px var(--ink), 0 9px 0 5px var(--ink), 0 0 30px rgba(224, 49, 59, 0.5);
-}
-.spin-btn svg { filter: drop-shadow(0 3px 0 var(--ink)); }
-.spin-btn::before { border: 3px dashed rgba(255, 138, 31, 0.75); inset: -16px; }
-.spin-btn:not(:disabled):active { transform: translateY(5px); box-shadow: 0 0 0 4px var(--cream), 0 0 0 7px var(--ink), 0 4px 0 5px var(--ink); }
-.icon-btn { border: 3px solid var(--ink); background: linear-gradient(180deg, #5a3462 0 45%, var(--plum) 45%); box-shadow: 0 3px 0 var(--ink); color: var(--cream); }
-.mode-chip { font-family: var(--display); font-weight: 400; border: 3px solid var(--ink); background: var(--toxic); color: var(--ink); box-shadow: 0 3px 0 var(--ink); }
-.disclaimer { color: rgba(243, 227, 195, 0.7); }
-
-/* ---- Dialogs, rules, bonus screens: inked cartoon panels ---- */
-.overlay-card, .intercept-card {
-  border: 4px solid var(--ink); border-radius: 20px; background: linear-gradient(180deg, #4a2a50 0 10px, var(--plum) 10px);
-  box-shadow: 0 8px 0 var(--ink), 0 24px 40px rgba(0, 0, 0, 0.5);
-}
-.overlay-card h2, .intercept-card h2 { font-family: var(--display); font-weight: 400; letter-spacing: 0.04em; color: var(--pumpkin); text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 0 4px 0 var(--ink); }
-.overlay-card h3 { font-family: var(--display); font-weight: 400; color: var(--toxic); text-shadow: 0 2px 0 var(--ink); }
-.primary { font-family: var(--display); font-weight: 400; letter-spacing: 0.06em; border: 3px solid var(--ink); background: linear-gradient(180deg, #ff7a82 0 45%, var(--blood) 45%); color: var(--cream); box-shadow: 0 4px 0 var(--ink); text-shadow: 0 2px 0 var(--ink); }
-.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-.menu-item { border: 3px solid var(--ink); background: linear-gradient(180deg, #5a3462 0 30%, var(--plum) 30%); box-shadow: 0 4px 0 var(--ink); }
-.menu-item.on { background: linear-gradient(180deg, #c6ff8a 0 30%, var(--toxic) 30%); color: var(--ink); }
-.menu-item.on span { color: var(--ink); }
-
-/* ---- Title screen: cartoon radios ---- */
-.sp-cabinet { border: 4px solid var(--ink); box-shadow: 0 10px 0 var(--ink), 0 24px 34px rgba(0, 0, 0, 0.55); background: linear-gradient(180deg, rgba(255, 220, 160, 0.22) 0 10px, transparent 10px), linear-gradient(180deg, var(--wood-l), var(--wood) 40%); }
-.sp-cabinet::before { display: none; }
-.sp-cloth { border: 3px solid var(--ink); background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1.4px, transparent 1.8px) 0 0 / 7px 7px, var(--plum-d); box-shadow: inset 0 5px 0 rgba(0, 0, 0, 0.45); }
-.sp-dial { border: 3px solid var(--ink); background: linear-gradient(180deg, #ffe39a 0 45%, #ffbf4a 45%); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15); }
-.sp-knobs i { border: 3px solid var(--ink); background: linear-gradient(180deg, #ffd27a 0 45%, var(--pumpkin) 45%); box-shadow: 0 3px 0 var(--ink); }
-.sp-lamp { border: 2px solid var(--ink); font-family: var(--display); font-weight: 400; }
-.sp-valves i { border: 2px solid var(--ink); }
-.sp-caption { font-family: var(--display); font-weight: 400; color: var(--cream); text-shadow: 0 2px 0 var(--ink), 1px 0 0 var(--ink), -1px 0 0 var(--ink); }
-.sp-caption b { color: var(--pumpkin); font-weight: 400; }
-.sp-caption .sp-big { color: var(--toxic); text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 0 4px 0 var(--ink); }
-.sp-maxwin { font-weight: 400; }
-.sp-maxwin span, .bw-title span { -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; filter: drop-shadow(0 5px 0 var(--ink)) drop-shadow(0 0 14px rgba(var(--glow, 255, 190, 70), 0.5)); }
-.sp-mult { border: 3px solid var(--ink); background: linear-gradient(180deg, #ff7a82 0 45%, var(--blood) 45%); font-weight: 400; box-shadow: 0 4px 0 var(--ink); }
-.sp-continue { font-weight: 400; color: var(--cream); }
-.sp-skip { color: var(--bone); }
-
-/* ---- Win screens ---- */
-.bw-title { font-weight: 400; }
-.bw-amount { font-weight: 400; color: var(--cream); }
-.bw-x, .bw-line { font-family: var(--display); font-weight: 400; text-shadow: 0 2px 0 var(--ink); }
-.bw-ladder li { font-family: var(--display); font-weight: 400; border: 2px solid var(--ink); background: rgba(27, 14, 8, 0.5); }
-.bw-ladder li.on { color: var(--ink); border-color: var(--ink); box-shadow: 0 3px 0 var(--ink); }
-/* The reel bed's 4px ink border shifts the reels; keep the channel LEDs under them. */
-.frame-foot { padding-left: calc(var(--pillar-w) + var(--pillar-gap) + var(--win-pad) + 4px); padding-right: calc(var(--pillar-w) + var(--pillar-gap) + var(--win-pad) + 4px); }
-@media (max-aspect-ratio: 1/1) and (max-width: 520px) {
-  .corner, .corner.skull { width: 52px; height: 52px; }
-  .corner.skull.tl { top: -30px; left: -18px; } .corner.skull.tr { top: -30px; right: -18px; }
-  .corner.rope { width: 36px; height: 36px; } .corner.rope.bl { bottom: -12px; left: -12px; } .corner.rope.br { bottom: -12px; right: -12px; }
-}
-@media (max-height: 560px) and (min-aspect-ratio: 5/4) {
-  .corner, .corner.skull { width: 44px; height: 44px; }
-  .corner.skull.tl { top: -20px; left: -14px; } .corner.skull.tr { top: -20px; right: -14px; }
-  .corner.rope { display: none; }
-}
-@media (max-height: 300px) and (min-aspect-ratio: 5/4) {
-  .frame { border-width: 2px; box-shadow: 0 3px 0 var(--ink); }
-  .frame-window { border-width: 2px; }
-  .corner { display: none; }
-}
 /* Phones: slimmer rings round the spin button so it never covers the disclaimer below. */
 @media (max-aspect-ratio: 1/1) and (max-width: 520px) {
-  .spin-btn { border-width: 4px; box-shadow: 0 0 0 3px var(--cream), 0 0 0 5px var(--ink), 0 6px 0 3px var(--ink); }
-  .spin-btn::before { inset: -9px; border-width: 2px; }
+  .spin-btn::before { inset: -9px; }
   .bar { padding-bottom: 16px; }
   .disclaimer { position: relative; z-index: 4; }
 }
@@ -1420,7 +1217,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* ======================================================================== */
 /* Symbol animations. Every symbol has its own act:                         */
-/*   - landing: a cartoon squash-and-stretch as its reel stops (all),       */
+/*   - landing: a heavy thud (slight squash) as its reel stops (all),      */
 /*   - win: a personal loop while it is part of a win,                      */
 /*   - idle: the special symbols (wild, antenna, tape) never sit still.     */
 /* Only transform and opacity animate (compositor-only); glows are static  */
@@ -1435,8 +1232,8 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 /* Landing: squash on impact, stretch on the rebound, settle. Timed to each reel's stop (--stop). */
 .reels.land-0 .reel-cells .sym { animation: sym-land-a 0.5s ease-out var(--stop) both; }
 .reels.land-1 .reel-cells .sym { animation: sym-land-b 0.5s ease-out var(--stop) both; }
-@keyframes sym-land-a { 0% { transform: none; } 22% { transform: translateY(5%) scale(1.14, 0.8); } 48% { transform: translateY(-7%) scale(0.92, 1.1); } 72% { transform: translateY(1%) scale(1.03, 0.97); } 100% { transform: none; } }
-@keyframes sym-land-b { 0% { transform: none; } 22% { transform: translateY(5%) scale(1.14, 0.8); } 48% { transform: translateY(-7%) scale(0.92, 1.1); } 72% { transform: translateY(1%) scale(1.03, 0.97); } 100% { transform: none; } }
+@keyframes sym-land-a { 0% { transform: none; } 22% { transform: translateY(3%) scale(1.05, 0.92); } 48% { transform: translateY(-3%) scale(0.98, 1.03); } 72% { transform: translateY(0.5%) scale(1.01, 0.99); } 100% { transform: none; } }
+@keyframes sym-land-b { 0% { transform: none; } 22% { transform: translateY(3%) scale(1.05, 0.92); } 48% { transform: translateY(-3%) scale(0.98, 1.03); } 72% { transform: translateY(0.5%) scale(1.01, 0.99); } 100% { transform: none; } }
 
 /* Per-symbol glow colours. */
 .reel-cells .sym-host { --fx: 120, 255, 140; }
@@ -1524,27 +1321,90 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* ------------------------------------------------------------------ auto bets */
 .round-btn.auto small { font-variant-numeric: tabular-nums; }
-.round-btn.auto.on { color: var(--ink); background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45% 80%, #5aa61f 80%); box-shadow: 0 5px 0 var(--ink), 0 0 16px rgba(143, 224, 59, 0.6); }
-.round-btn.auto.on small { color: var(--ink); filter: none; }
+.round-btn.auto.on { color: rgb(var(--phos)); border-color: rgb(var(--phos)); box-shadow: 0 5px 0 #050608, 0 0 18px rgba(var(--phos), 0.55), inset 0 0 12px rgba(var(--phos), 0.25); }
+.round-btn.auto.on small { color: rgb(var(--phos)); }
 .round-btn.auto.on svg { animation: auto-turn 1.6s linear infinite; }
 @keyframes auto-turn { to { transform: rotate(360deg); } }
 .spin-btn .auto-count {
   position: absolute; right: -6px; top: -6px; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 15px;
-  display: grid; place-items: center; font: 400 16px/1 var(--display); color: var(--ink);
-  background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45%); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+  display: grid; place-items: center; font: 800 14px/1 var(--ui); color: rgb(var(--phos)); text-shadow: 0 0 6px rgba(var(--phos), 0.8);
+  background: #07090a; border: 2px solid rgb(var(--phos)); box-shadow: 0 0 10px rgba(var(--phos), 0.6);
 }
 .auto-panel { max-width: 460px; }
 .auto-panel h3 { margin-top: 12px; }
 .auto-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .auto-chip {
-  min-width: 56px; padding: 8px 12px; border-radius: 12px; font: 400 16px var(--display); color: var(--cream);
-  border: 3px solid var(--ink); background: linear-gradient(180deg, #5a3462 0 45%, var(--plum) 45%); box-shadow: 0 3px 0 var(--ink);
+  min-width: 56px; padding: 8px 12px; border-radius: 10px; font: 700 15px var(--ui); color: var(--ivory);
+  border: 1px solid rgba(255, 255, 255, 0.14); background: linear-gradient(180deg, #2a2d36, #111318); box-shadow: 0 3px 0 #050608, inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
-.auto-chip.on { color: var(--ink); background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45%); }
-.auto-chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
-.auto-check { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 14px; font: 400 15px var(--display); color: var(--cream); }
+.auto-chip.on { color: rgb(var(--phos)); border-color: rgb(var(--phos)); box-shadow: 0 0 12px rgba(var(--phos), 0.45), inset 0 0 10px rgba(var(--phos), 0.2); }
+.auto-chip:active { transform: translateY(2px); box-shadow: 0 1px 0 #050608; }
+.auto-check { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 14px; font-size: 14px; color: var(--ivory); }
 .auto-check input { width: 18px; height: 18px; accent-color: var(--toxic); }
 @media (max-height: 560px) and (min-aspect-ratio: 5/4) {
   .spin-btn .auto-count { min-width: 22px; height: 22px; font-size: 12px; right: -8px; top: -8px; border-width: 2px; }
   .auto-panel h3 { margin-top: 6px; } .auto-chip { padding: 4px 8px; font-size: 13px; min-width: 40px; }
 }
+
+/* ======================================================================== */
+/* Realistic horror: grime, damage and blood (all static or slow).         */
+/* ======================================================================== */
+/* Rust stains and dirt on the cabinet wood and brass. */
+.frame { isolation: isolate; }
+.frame::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; /* under the contents, over the wood */
+  background:
+    radial-gradient(ellipse 18% 10% at 8% 96%, rgba(120, 40, 10, 0.35), transparent 70%),
+    radial-gradient(ellipse 12% 22% at 97% 30%, rgba(90, 30, 8, 0.3), transparent 70%),
+    radial-gradient(ellipse 25% 6% at 60% 2%, rgba(20, 12, 6, 0.45), transparent 70%),
+    radial-gradient(ellipse 8% 14% at 30% 99%, rgba(60, 4, 8, 0.4), transparent 70%);
+}
+.crt-damage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Logo blood: each drip slowly lengthens, a drop falls, and it starts again. */
+.logo-drips .drip { transform-box: fill-box; transform-origin: top; animation: drip-grow 5.5s ease-in infinite; }
+.logo-drips .drip-drop { transform-box: fill-box; animation: drip-fall 5.5s ease-in infinite; opacity: 0; }
+@keyframes drip-grow { 0% { transform: scaleY(0.2); } 70% { transform: scaleY(1.2); } 76% { transform: scaleY(0.6); } 100% { transform: scaleY(0.2); } }
+@keyframes drip-fall { 0%, 70% { opacity: 0; transform: translateY(0); } 72% { opacity: 1; } 100% { opacity: 0; transform: translateY(26px); } }
+@media (prefers-reduced-motion: reduce) { .logo-drips .drip, .logo-drips .drip-drop { animation: none; } }
+
+/* ------------------------------------------------------------- jump scares */
+/* All scares: fixed layers that never take input and clear themselves within ~2 s. */
+.js { position: fixed; z-index: 65; pointer-events: none; }
+/* Face in the reels: static burst, a pale face flickers up, then gone. */
+.js-face { inset: 0; display: grid; place-items: center; animation: js-face-env 0.75s steps(1) both; }
+.js-face .js-static { position: absolute; inset: -10%; background: var(--noise) repeat; opacity: 0.55; mix-blend-mode: screen; filter: contrast(1.5) brightness(0.6); animation: jitter 0.08s steps(2) infinite; }
+.js-face img { position: relative; width: min(70vmin, 620px); filter: grayscale(1) contrast(1.8) brightness(1.3); animation: js-face-in 0.75s steps(1) both; }
+@keyframes js-face-env { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes js-face-in { 0%, 10% { opacity: 0; transform: scale(0.8); } 14% { opacity: 0.9; transform: scale(1.05) translateX(-2%); } 22% { opacity: 0.2; } 30% { opacity: 1; transform: scale(1.25); } 70% { opacity: 1; transform: scale(1.4) translateX(1%); } 100% { opacity: 0; transform: scale(1.5); } }
+/* Lights out: the screen goes black, two eyes open somewhere, the lights come back. */
+.js-blackout { inset: 0; background: #000; animation: js-blackout 1.5s linear both; }
+@keyframes js-blackout { 0% { opacity: 0; } 6% { opacity: 1; } 10% { opacity: 0.6; } 14% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+.js-eyes { position: absolute; left: var(--x); top: var(--y); width: min(34vmin, 260px); height: min(8vmin, 60px); translate: -50% -50%; opacity: 0;
+  background: radial-gradient(ellipse 14% 40% at 28% 50%, #fff6c8, #ff3b2a 40%, transparent 70%), radial-gradient(ellipse 14% 40% at 72% 50%, #fff6c8, #ff3b2a 40%, transparent 70%);
+  filter: drop-shadow(0 0 14px #ff2a1a) drop-shadow(0 0 40px rgba(255, 30, 20, 0.6)); animation: js-eyes 1.5s steps(1) both; }
+@keyframes js-eyes { 0%, 30% { opacity: 0; } 32% { opacity: 1; } 56% { opacity: 1; } 58% { opacity: 0; } 62% { opacity: 1; } 78% { opacity: 1; } 80%, 100% { opacity: 0; } }
+/* A bloody hand slams onto the glass and slowly fades. */
+.js-hand { left: var(--x); top: var(--y); width: min(34vmin, 260px); translate: -50% -50%; animation: js-hand 2.3s ease-out both; }
+.js-hand.flip svg { transform: scaleX(-1); }
+.js-hand svg { display: block; width: 100%; fill: rgba(105, 4, 12, 0.9); stroke: rgba(105, 4, 12, 0.85); }
+@keyframes js-hand { 0% { opacity: 0; transform: scale(1.6) rotate(-8deg); } 7% { opacity: 1; transform: scale(0.97) rotate(0deg); } 12% { transform: scale(1); } 70% { opacity: 0.85; } 100% { opacity: 0; transform: translateY(4%); } }
+/* The Widow rushes past at the edge of the screen. */
+.js-widow { left: -10vw; bottom: -10vh; width: min(80vmin, 760px); filter: grayscale(0.8) contrast(1.5) brightness(0.9) blur(1px); animation: js-widow 1.15s cubic-bezier(0.5, 0, 0.3, 1) both; }
+.js-widow.flip { left: auto; right: -10vw; transform: scaleX(-1); }
+@keyframes js-widow { 0% { opacity: 0; translate: -60% 10%; } 30% { opacity: 0.9; translate: 0 0; } 55% { opacity: 0.9; translate: 4% -2%; } 100% { opacity: 0; translate: 70% -6%; } }
+.js-widow.flip { animation-name: js-widow-r; }
+@keyframes js-widow-r { 0% { opacity: 0; translate: 60% 10%; } 30% { opacity: 0.9; translate: 0 0; } 55% { opacity: 0.9; translate: -4% -2%; } 100% { opacity: 0; translate: -70% -6%; } }
+/* The picture tears: slices of static and a red message. */
+.js-glitch { inset: 0; animation: js-face-env 0.65s steps(1) both; }
+.js-glitch i { position: absolute; left: 0; right: 0; height: 9%; background: var(--noise) repeat, rgba(255, 30, 50, 0.25); mix-blend-mode: screen; opacity: 0.8; animation: js-tear 0.65s steps(3) both; }
+.js-glitch i:nth-child(1) { top: 14%; } .js-glitch i:nth-child(2) { top: 38%; height: 4%; animation-delay: -0.2s; } .js-glitch i:nth-child(3) { top: 61%; height: 12%; animation-delay: -0.1s; } .js-glitch i:nth-child(4) { top: 83%; height: 5%; animation-delay: -0.3s; }
+@keyframes js-tear { 0% { transform: translateX(-8%); } 33% { transform: translateX(6%); } 66% { transform: translateX(-3%); } 100% { transform: translateX(4%); } }
+.js-glitch p { position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; font: 700 clamp(26px, 6vmin, 64px) var(--display); letter-spacing: 0.12em; color: #ff2a3a; text-shadow: 4px 0 0 rgba(0, 255, 255, 0.5), -4px 0 0 rgba(255, 0, 0, 0.7), 0 0 30px #ff0018; white-space: nowrap; }
+/* The Night Host lunges at the screen from his corner. */
+.js-lunge { right: 2vw; bottom: 0; width: min(40vmin, 420px); transform-origin: 70% 80%; filter: contrast(1.3) brightness(1.1) drop-shadow(0 0 40px rgba(255, 0, 20, 0.7)); animation: js-lunge 0.95s cubic-bezier(0.2, 0, 0.3, 1) both; }
+@keyframes js-lunge { 0% { opacity: 0; transform: none; } 10% { opacity: 1; transform: translate(-4%, -2%) scale(1.05); } 32% { transform: translate(-60%, -30%) scale(2.6); } 60% { opacity: 1; transform: translate(-64%, -32%) scale(2.7); } 100% { opacity: 0; transform: translate(-66%, -34%) scale(2.8); } }
+@media (prefers-reduced-motion: reduce) { .js { display: none; } }
+.content-warning { border: 1px solid rgba(255, 59, 79, 0.45); background: rgba(80, 6, 14, 0.35); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
+.content-warning p { margin: 0 0 6px; }
+.setting { display: flex; gap: 8px; align-items: center; font-weight: 700; cursor: pointer; }
+.setting input { width: 18px; height: 18px; accent-color: #ff3b4f; }

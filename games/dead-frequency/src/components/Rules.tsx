@@ -5,12 +5,21 @@ import { formatX } from '../app/format';
 import published from '../config/publishedMath.json';
 import { SymbolArt } from './SymbolArt';
 
-export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp: boolean; onClose: () => void }) {
+export function RulesModal({ cfg, showRtp, scaresOn, onScares, onClose }: { cfg: GameConfig; showRtp: boolean; scaresOn: boolean; onScares: (on: boolean) => void; onClose: () => void }) {
   const math = published.modes as Record<string, { rtp: number; maxWinX: number; maxWinOneIn: number }>;
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Rules">
       <div className="overlay-card rules">
         <h2>How the station works</h2>
+        <section className="content-warning">
+          <p className="small">
+            <strong>Content warning:</strong> this game contains horror imagery, sudden frightening images, loud sounds and brief flashes.
+            Random jump scares appear now and then during play; they are only visual and never affect a result.
+          </p>
+          <label className="setting">
+            <input type="checkbox" checked={scaresOn} onChange={(e) => onScares(e.target.checked)} /> Random jump scares
+          </label>
+        </section>
         <section>
           <h3>Ways</h3>
           <p>{cfg.reels} reels × {cfg.rows} rows, {(cfg.rows ** cfg.reels).toLocaleString()} ways. Wins pay left to right from reel 1 for {cfg.minWayLength}+ adjacent reels. Each winning symbol pays its value × the number of ways.</p>

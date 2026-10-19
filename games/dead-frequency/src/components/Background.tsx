@@ -6,7 +6,7 @@ export type BackgroundMood = 'base' | BonusType;
 
 /** Per-mood palette and how often the scares happen (events per second, roughly). */
 const MOODS: Record<BackgroundMood, { sky: [string, string]; glow: string; beacon: string; rate: number; pulse: number }> = {
-  base: { sky: ['#2a1242', '#0e0716'], glow: '255, 138, 31', beacon: '#ff3b4f', rate: 1, pulse: 0.5 },
+  base: { sky: ['#0b0507', '#050608'], glow: '255, 59, 79', beacon: '#ff3b4f', rate: 1, pulse: 0.5 },
   NIGHT_SHIFT: { sky: ['#03100b', '#030806'], glow: '54, 217, 160', beacon: '#36d9a0', rate: 1.6, pulse: 0.8 },
   POSSESSION: { sky: ['#0d0514', '#050308'], glow: '170, 90, 255', beacon: '#b46bff', rate: 1.8, pulse: 0.9 },
   DEAD_AIR: { sky: ['#1a0306', '#070203'], glow: '255, 40, 60', beacon: '#ff2038', rate: 2.6, pulse: 1.3 },
@@ -24,6 +24,33 @@ interface Mote { x: number; y: number; vx: number; vy: number; r: number; a: num
 interface Fog { x: number; y: number; r: number; v: number; a: number }
 interface Cloud { img: HTMLCanvasElement; x: number; y: number; v: number; a: number }
 interface Bat { x: number; y: number; vx: number; s: number; ph: number; bob: number }
+interface Drop { x: number; y: number; v: number; len: number }
+
+/** A tall, thin figure with long arms, standing still (feet at y). Drawn as one dark shape. */
+function drawFigure(ctx: CanvasRenderingContext2D, x: number, y: number, h: number) {
+  const u = h / 10;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 9.2 * u, 0.55 * u, 0.75 * u, 0, 0, Math.PI * 2); // head, slightly tilted down
+  ctx.moveTo(x - 0.25 * u, y - 8.4 * u);
+  ctx.lineTo(x - 1.1 * u, y - 7.9 * u); // shoulders
+  ctx.lineTo(x - 1.4 * u, y - 4.2 * u); // left arm, far too long
+  ctx.lineTo(x - 1.25 * u, y - 3.1 * u);
+  ctx.lineTo(x - 0.9 * u, y - 4.4 * u);
+  ctx.lineTo(x - 0.75 * u, y - 4.6 * u);
+  ctx.lineTo(x - 0.6 * u, y); // legs
+  ctx.lineTo(x - 0.25 * u, y);
+  ctx.lineTo(x, y - 4.2 * u);
+  ctx.lineTo(x + 0.25 * u, y);
+  ctx.lineTo(x + 0.6 * u, y);
+  ctx.lineTo(x + 0.75 * u, y - 4.6 * u);
+  ctx.lineTo(x + 0.9 * u, y - 4.4 * u);
+  ctx.lineTo(x + 1.3 * u, y - 2.9 * u); // right arm
+  ctx.lineTo(x + 1.45 * u, y - 4.1 * u);
+  ctx.lineTo(x + 1.1 * u, y - 7.9 * u);
+  ctx.lineTo(x + 0.25 * u, y - 8.4 * u);
+  ctx.closePath();
+  ctx.fill();
+}
 
 /** A soft cloud sprite: a cluster of dark blurred puffs with a faint lit rim on top. */
 function makeCloud(w: number, h: number): HTMLCanvasElement {
@@ -186,6 +213,10 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
     let nextGhost = 6 + Math.random() * 8;
     let nextBats = 3 + Math.random() * 6;
     let bats: Bat[] = [];
+    // Rain, and the figure that sometimes stands in the fog (lightning reveals it).
+    let drops: Drop[] = [];
+    let figure: { x: number; t: number; dur: number; h: number } | null = null;
+    let nextFigure = 8 + Math.random() * 10;
     let bolt: [number, number][][] | null = null;
     let shock = -1;
     let surgeT = 0;
@@ -249,16 +280,16 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
       // Placed in the gap right of the reels (landscape) or above them (portrait).
       const mx = W > H ? W * 0.86 : W * 0.78;
       const my = W > H ? H * 0.32 : H * 0.1;
-      const mr = Math.min(W, H) * 0.095;
+      const mr = Math.min(W, H) * 0.075;
       const halo = ctx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 5);
       halo.addColorStop(0, `rgba(${m.glow}, 0.22)`);
       halo.addColorStop(1, `rgba(${m.glow}, 0)`);
       ctx.fillStyle = halo;
       ctx.fillRect(mx - mr * 5, my - mr * 5, mr * 10, mr * 10);
       const disc = ctx.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr);
-      disc.addColorStop(0, moodRef.current === 'base' ? '#ffd88a' : `rgb(${m.glow})`);
-      disc.addColorStop(1, moodRef.current === 'base' ? '#e8742a' : '#3a0d14');
-      ctx.globalAlpha = 0.95;
+      disc.addColorStop(0, moodRef.current === 'base' ? '#e9dcc8' : `rgb(${m.glow})`);
+      disc.addColorStop(1, moodRef.current === 'base' ? '#8a7766' : '#3a0d14');
+      ctx.globalAlpha = 0.8;
       ctx.fillStyle = disc;
       ctx.beginPath();
       ctx.arc(mx, my, mr, 0, Math.PI * 2);
@@ -348,6 +379,27 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
       for (let x = 0; x <= W; x += W / 24) ctx.lineTo(x, H * 0.9 - Math.sin(x * 0.011) * H * 0.03 - Math.sin(x * 0.037) * H * 0.012);
       ctx.lineTo(W, H);
       ctx.fill();
+
+      // --- the figure: barely there in the fog, a solid black shape when lightning flashes
+      nextFigure -= dt * m.rate;
+      if (nextFigure <= 0 && !figure) {
+        const side = Math.random() < 0.5 ? 0.08 + Math.random() * 0.17 : 0.75 + Math.random() * 0.17;
+        figure = { x: W * side, t: 0, dur: 5 + Math.random() * 5, h: H * (0.16 + Math.random() * 0.08) };
+        nextFigure = 18 + Math.random() * 22;
+        if (Math.random() < 0.6) { lightning = 1; bolt = makeBolt(W, H); } // often arrives with a flash
+      }
+      if (figure) {
+        figure.t += dt;
+        const p = figure.t / figure.dur;
+        const fade = Math.min(1, figure.t / 0.8, (figure.dur - figure.t) / 0.8);
+        const groundY = H * 0.9 - Math.sin(figure.x * 0.011) * H * 0.03 - Math.sin(figure.x * 0.037) * H * 0.012 + 2;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, lightning > 0.35 ? 1 : 0.32 * fade);
+        ctx.fillStyle = lightning > 0.35 ? '#000' : '#050407';
+        drawFigure(ctx, figure.x, groundY, figure.h);
+        ctx.restore();
+        if (p >= 1) figure = null;
+      }
       ctx.strokeStyle = lit ? '#3a3a46' : '#050507';
       ctx.lineWidth = 1.5;
       for (const [i, t] of towers.entries()) {
@@ -422,6 +474,22 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
         ctx.stroke();
         if (shock >= 1) shock = -1;
       }
+
+      // --- rain: thin slanted streaks, heavier in the bonuses
+      const want = Math.round((W * H) / (moodRef.current === 'base' ? 1400 : 900));
+      while (drops.length < want) drops.push({ x: Math.random() * W, y: Math.random() * H, v: H * (1.4 + Math.random() * 0.8), len: 6 + Math.random() * 10 });
+      if (drops.length > want) drops.length = want;
+      ctx.strokeStyle = 'rgba(170, 182, 210, 0.22)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      for (const d of drops) {
+        d.y += d.v * dt;
+        d.x += d.v * 0.18 * dt;
+        if (d.y > H) { d.y = -d.len; d.x = Math.random() * W * 1.2 - W * 0.2; }
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.len * 0.18, d.y + d.len);
+      }
+      ctx.stroke();
 
       // --- rising ash
       for (const p of motes) {

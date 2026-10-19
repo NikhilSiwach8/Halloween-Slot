@@ -10,6 +10,7 @@ import { Splash, splashSkipped } from '../components/Splash';
 import { RulesModal } from '../components/Rules';
 import { StationMenu } from '../components/StationMenu';
 import { AutoPanel, type AutoSettings } from '../components/AutoPanel';
+import { JumpScares, useScareSetting } from '../components/JumpScares';
 import { audio } from './audio';
 import { formatMoney } from './format';
 import { useGame } from './useGame';
@@ -59,6 +60,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   // Title screen, except in bet replay (reviewers and shared links go straight to the round).
   const [splash, setSplash] = useState(() => !session.replay && !splashSkipped());
   const [muted, setMuted] = useState(audio.muted);
+  const [scaresOn, setScaresOn] = useScareSetting();
   const replay = session.replay;
   const money = (units: number) => formatMoney(session.currency, units);
   const spinMode: ModeId = replay?.mode ?? g.featureMode ?? (g.doubleChance ? 'DOUBLE_CHANCE' : 'BASE');
@@ -260,6 +262,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
       <p className="disclaimer">{session.demo ? 'Demo · demo credits only · not real money' : replay ? 'Bet replay · no bets are placed' : 'Winnings are settled by the game server.'}</p>
 
       {splash ? <Splash cfg={cfg} onContinue={() => setSplash(false)} /> : null}
+      <JumpScares enabled={scaresOn && !replay} blocked={!!view.overlay || panel !== 'none' || splash} busy={view.busy} spinning={view.spinning} spinId={view.spinId} />
       {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={g.bet} onContinue={g.advance} auto={!!auto} /> : null}
       {panel === 'auto' ? (
         <AutoPanel
@@ -273,7 +276,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
           }}
         />
       ) : null}
-      {panel === 'rules' ? <RulesModal cfg={cfg} showRtp={session.flags.displayRTP !== false} onClose={() => setPanel('none')} /> : null}
+      {panel === 'rules' ? <RulesModal cfg={cfg} showRtp={session.flags.displayRTP !== false} scaresOn={scaresOn} onScares={setScaresOn} onClose={() => setPanel('none')} /> : null}
       {panel === 'menu' ? (
         <StationMenu
           cfg={cfg}
