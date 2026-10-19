@@ -58,6 +58,13 @@ glare); and a channel strip (CH1–CH6) whose LEDs blink as each reel stops and 
 in a win. Tiles are smoky glass with a phosphor line in each symbol's colour. The screen's
 phosphor colour changes per bonus (green, violet, red), and winning tiles get a CRT scan sweep.
 
+**Depth and life.** One light from the upper left shades the whole game: bevelled glass tiles with
+symbols casting shadows, a walnut cabinet with real slab thickness, domed physical buttons that press
+down, an extruded logo, and solid, deeper radio cabinets on the title screen. Winning symbols turn in
+3D, and the characters breathe. The Night Host acts like someone in the room: he shifts his weight,
+glances at the reels, leans in while they spin and nods along on a win. For 3D re-renders of the
+painted symbols, see "3D, lifelike re-renders" in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
+
 **Presentation.** Reels scroll downward and stop left to right with a bounce. A small reel engine
 (Reels.tsx) moves them with transforms only, one animation loop for all six reels; each stop eases
 out from exactly the cruise speed, so there is no jolt. Once two Antennas

@@ -546,11 +546,11 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 /* ---------------------------------------------------------------- character */
 .character { justify-self: start; position: relative; width: min(100%, 420px, 54vh); aspect-ratio: 1; pointer-events: none; align-self: end; margin-bottom: -10px; }
-.character img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)); animation: breathe 4.2s ease-in-out infinite; transform-origin: 50% 95%; will-change: transform; }
+.character img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)); }
+.character-breath { position: relative; width: 100%; height: 100%; animation: breathe 4.2s ease-in-out infinite; transform-origin: 50% 95%; will-change: transform; }
 .character-glow { position: absolute; inset: 8% 10% 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 59, 79, 0.35), transparent 65%); animation: glow-pulse 3s ease-in-out infinite; }
-.character-eyes { position: absolute; left: 30%; top: 30%; width: 40%; height: 16%; border-radius: 50%; background: radial-gradient(ellipse at 30% 50%, rgba(54, 217, 160, 0.55), transparent 30%), radial-gradient(ellipse at 70% 50%, rgba(54, 217, 160, 0.55), transparent 30%); mix-blend-mode: screen; animation: eyes 5s steps(1) infinite; }
-.character.excited img { animation: breathe 4.2s ease-in-out infinite, excited 0.12s linear 6; }
-.character.excited .character-eyes { animation: none; opacity: 1; filter: brightness(2.2); }
+.character-eyes { position: absolute; left: 30%; top: 30%; width: 40%; height: 16%; border-radius: 50%; background: radial-gradient(ellipse at 30% 50%, rgba(54, 217, 160, 0.55), transparent 30%), radial-gradient(ellipse at 70% 50%, rgba(54, 217, 160, 0.55), transparent 30%); animation: eyes 5s steps(1) infinite; } /* no blend mode: it would re-blend the whole figure every frame */
+.character.excited .character-eyes { animation: none; opacity: 1; background: radial-gradient(ellipse at 30% 50%, rgba(160, 255, 220, 0.85), transparent 32%), radial-gradient(ellipse at 70% 50%, rgba(160, 255, 220, 0.85), transparent 32%); }
 @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1) rotate(0deg); } 50% { transform: translateY(-6px) scale(1.015) rotate(-0.6deg); } }
 @keyframes glow-pulse { 50% { opacity: 0.55; transform: scale(1.06); } }
 @keyframes eyes { 0%, 62%, 66%, 100% { opacity: 1; } 63%, 65% { opacity: 0.1; } }
@@ -1047,4 +1047,155 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 }
 @media (prefers-reduced-motion: reduce) {
   .splash *, .splash { animation: none !important; }
+}
+
+
+/* ======================================================================== */
+/* Depth & materials: one light from the upper left across the whole game.  */
+/* Everything here shades what is already there (bevels, speculars, cast   */
+/* and contact shadows, extrusion); sizes and layout are unchanged. Static */
+/* layers only, except where noted, so it costs nothing per frame.         */
+/* ======================================================================== */
+
+/* ---- Symbols: tiles become bevelled glass, symbols stand up off them ---- */
+/*
+ * Glass reflection streak, floor shadow and bevel are extra layers of the tile's own background
+ * and box-shadow (no pseudo-elements), so a tile is still one element to draw.
+ */
+.cell {
+  background:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.04) 22%, transparent 23%, transparent 70%, rgba(255, 255, 255, 0.03) 71%, transparent 78%),
+    radial-gradient(ellipse 30% 6% at 50% 89%, rgba(0, 0, 0, 0.6), transparent 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 38%),
+    radial-gradient(circle at 50% 42%, rgba(var(--acc), 0.16), #08090d 72%);
+  box-shadow:
+    inset 2px 2px 1px rgba(255, 255, 255, 0.08), inset -3px -4px 6px rgba(0, 0, 0, 0.55),
+    inset 0 -2px 0 rgba(var(--acc), 0.85), inset 0 -16px 18px -12px rgba(var(--acc), 0.5);
+}
+.cell .sym { position: relative; z-index: 2; transform: translateY(-3%); }
+/* One soft cast shadow down-right: the symbol stands off the glass. */
+.cell .sym-img img { filter: drop-shadow(3px 7px 5px rgba(0, 0, 0, 0.75)); }
+/* The win scan sweep passes over the symbol. */
+.reels .reel .cell.win::after { z-index: 3; }
+/* A winning symbol comes alive: it lifts off the glass and turns in 3D (only while winning). */
+.reels .reel .cell.win .sym { animation: sym-alive 2.2s ease-in-out infinite; transform-origin: 50% 85%; }
+@keyframes sym-alive {
+  0%, 100% { transform: perspective(500px) translateY(-3%) rotateY(-12deg) rotateX(4deg) scale(0.98); }
+  50% { transform: perspective(500px) translateY(-5%) rotateY(12deg) rotateX(-3deg) scale(1.02); }
+}
+/* The characters breathe instead of turning: a living, human beat. */
+.reels .reel .cell.win.tile-host .sym, .reels .reel .cell.win.tile-widow .sym, .reels .reel .cell.win.tile-priest .sym { animation: sym-breathe 2.6s ease-in-out infinite; }
+@keyframes sym-breathe {
+  0%, 100% { transform: perspective(500px) translateY(-3%) scale(0.98) rotateZ(-1.2deg); }
+  40% { transform: perspective(500px) translateY(-5%) scale(1.02, 1.03) rotateZ(1.2deg) rotateX(-5deg); }
+  60% { transform: perspective(500px) translateY(-5%) scale(1.02, 1.03) rotateZ(1.2deg) rotateX(-5deg); }
+}
+
+/* ---- Cabinet: lit walnut with a real slab thickness and a bevelled edge ---- */
+.frame {
+  box-shadow:
+    0 0 0 3px #b8893f, 0 0 0 5px #3a2208,
+    0 9px 0 4px #1a0c06, 0 10px 0 5px #0a0503, /* the cabinet's thickness under the front face */
+    inset 3px 3px 2px rgba(255, 220, 170, 0.16), inset -4px -6px 12px rgba(0, 0, 0, 0.6),
+    0 34px 70px rgba(0, 0, 0, 0.8), 0 0 70px rgba(var(--phos), 0.1);
+}
+.frame::before { /* key light falling across the wood from the upper left */
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 18% 0%, rgba(255, 210, 160, 0.13), transparent 60%), linear-gradient(160deg, transparent 55%, rgba(0, 0, 0, 0.28));
+}
+.frame-top, .frame-body, .frame-foot { position: relative; }
+/* Header instruments sit in recesses with a lit lip and a dark lower edge. */
+.nixie, .scope-wrap, .plaque-led { box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.04), 0 1px 0 rgba(255, 220, 170, 0.22), 0 -1px 0 rgba(0, 0, 0, 0.7); }
+.nixie-tube { box-shadow: inset 3px 0 4px rgba(255, 255, 255, 0.12), inset -3px 0 5px rgba(0, 0, 0, 0.6), 0 2px 3px rgba(0, 0, 0, 0.6); }
+.nixie-tube { position: relative; }
+.nixie-tube::before { /* curved glass highlight */
+  content: ''; position: absolute; left: 18%; top: 8%; width: 22%; height: 70%; border-radius: 50%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+}
+.on-air-lamp { box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 220, 170, 0.15); }
+.on-air-lamp.lit { box-shadow: 0 0 18px rgba(255, 59, 79, 0.9), inset 0 -3px 6px rgba(80, 0, 10, 0.6), inset 0 2px 2px rgba(255, 220, 225, 0.6); }
+.pillar { box-shadow: inset 2px 0 2px rgba(255, 220, 170, 0.1), inset -3px 0 6px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 220, 170, 0.08); }
+.tube::before { content: ''; position: absolute; left: 18%; top: 6%; width: 22%; height: 60%; border-radius: 50%; background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent); }
+/* The CRT bezel: a moulded rubber lip around the glass. */
+.frame-window { box-shadow: 0 0 0 3px #0c0705, 0 0 0 5px #8a6428, 0 0 0 6px #2a1806, -1px -1px 0 6px rgba(255, 220, 160, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.95), inset 0 6px 14px rgba(0, 0, 0, 0.9); }
+.led { box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 220, 170, 0.2); }
+.corner { filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 1px rgba(255, 230, 170, 0.3)); }
+
+/* ---- Signal panel: bevelled walnut-and-brass housing, domed glass lamps, a knurled knob ---- */
+.signal-panel {
+  background: radial-gradient(ellipse 90% 50% at 25% 0%, rgba(255, 210, 160, 0.12), transparent 60%), linear-gradient(180deg, #2a2018, #110d0a);
+  box-shadow: 0 0 0 4px #120d08, 0 0 0 6px #8a6a35, 0 8px 0 5px #0a0705, inset 3px 3px 2px rgba(255, 220, 170, 0.12), inset -4px -6px 12px rgba(0, 0, 0, 0.6), 0 26px 50px rgba(0, 0, 0, 0.75);
+}
+.lamp { position: relative; box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.95), 0 1px 0 rgba(255, 220, 170, 0.18); }
+.lamp::after { /* domed glass cover */
+  content: ''; position: absolute; inset: 3px; border-radius: 6px; pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 32% 22%, rgba(255, 255, 255, 0.22), transparent 70%), radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.4), transparent 60%);
+}
+.dial svg { filter: drop-shadow(0 0 12px rgba(255, 140, 50, 0.35)) drop-shadow(3px 6px 6px rgba(0, 0, 0, 0.7)); }
+.knob {
+  background: radial-gradient(circle at 34% 30%, rgba(255, 245, 210, 0.55), transparent 32%), repeating-conic-gradient(#8a6a35 0 10deg, #c9a45e 10deg 20deg);
+  box-shadow: 0 6px 0 #2a1a08, 0 10px 14px rgba(0, 0, 0, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Night Host: grounded, rim-lit, and behaving like someone in the room ---- */
+.character-shadow { position: absolute; left: 14%; right: 14%; bottom: 2%; height: 9%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0, 0, 0, 0.75), transparent 70%); animation: shadow-breathe 4.2s ease-in-out infinite; }
+@keyframes shadow-breathe { 50% { transform: scaleX(0.94); opacity: 0.85; } }
+.character-body { position: relative; width: 100%; height: 100%; transform-origin: 50% 92%; will-change: transform; animation: host-idle 11s ease-in-out infinite; }
+.character img { filter: drop-shadow(-6px 0 10px rgba(var(--phos), 0.28)) drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8)); }
+/* Idle: weight shifts, and every so often a slow glance toward the reels and back. */
+@keyframes host-idle {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  18% { transform: rotate(-1deg) translateX(-1%); }
+  30% { transform: rotate(-1deg) translateX(-1%); }
+  42% { transform: perspective(700px) rotateY(-14deg) rotate(-2.5deg) translateX(-3%); } /* glance at the reels */
+  52% { transform: perspective(700px) rotateY(-14deg) rotate(-2.5deg) translateX(-3%); }
+  64% { transform: rotate(0.6deg) translateX(0.5%); }
+  82% { transform: rotate(0.6deg) translateX(0.5%); }
+}
+/* Watching the spin: leans in toward the reels and holds still. */
+.character.watching .character-body { animation: none; transform: perspective(700px) rotateY(-16deg) rotate(-4deg) translateX(-5%) translateY(-1%); transition: transform 0.5s cubic-bezier(0.3, 1.3, 0.5, 1); }
+/* A win: he nods along, twice, then keeps a satisfied bob. */
+.character.excited .character-body { animation: host-nod 0.9s ease-in-out 2, host-bob 1.6s ease-in-out 1.8s infinite; }
+@keyframes host-nod { 0%, 100% { transform: rotate(0deg); } 30% { transform: perspective(700px) rotateX(10deg) rotate(1.5deg) translateY(2%); } 60% { transform: rotate(-1deg) translateY(-1%); } }
+@keyframes host-bob { 50% { transform: translateY(-1.5%) rotate(1deg); } }
+
+/* ---- Control bar: machined panels and domed physical buttons ---- */
+.bar-main, .bet-pill {
+  background: linear-gradient(180deg, rgba(40, 44, 54, 0.96), rgba(14, 15, 20, 0.96) 55%, rgba(8, 9, 12, 0.96));
+  box-shadow: 0 5px 0 #050608, 0 12px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -2px 4px rgba(0, 0, 0, 0.6);
+}
+.bar-field output { text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8), 0 0 1px rgba(0, 0, 0, 0.9); }
+.round-btn {
+  position: relative;
+  background: radial-gradient(circle at 36% 28%, #3a404c, #171a21 55%, #07080b 85%);
+  box-shadow: 0 5px 0 #050608, 0 10px 16px rgba(0, 0, 0, 0.6), inset 0 2px 1px rgba(255, 255, 255, 0.16), inset 0 -4px 6px rgba(0, 0, 0, 0.6);
+}
+.round-btn::before { /* specular highlight on the dome */
+  content: ''; position: absolute; left: 22%; top: 9%; width: 46%; height: 30%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 255, 255, 0.3), transparent 70%);
+}
+.round-btn svg, .round-btn small, .round-btn .dc-x { position: relative; filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.8)); }
+.round-btn:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 #050608, 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 2px 1px rgba(255, 255, 255, 0.1), inset 0 -2px 4px rgba(0, 0, 0, 0.6); }
+.round-btn.on { box-shadow: 0 5px 0 #3a2a10, 0 0 18px rgba(247, 217, 141, 0.6), inset 0 0 10px rgba(247, 217, 141, 0.25), inset 0 2px 1px rgba(255, 255, 255, 0.2); }
+.round-btn.buy { background: radial-gradient(circle at 36% 28%, #7a2432, #3a0d16 55%, #12060a 85%); box-shadow: 0 5px 0 #4a3010, 0 0 22px rgba(255, 59, 79, 0.35), 0 10px 16px rgba(0, 0, 0, 0.6), inset 0 2px 1px rgba(255, 220, 220, 0.25), inset 0 -4px 6px rgba(0, 0, 0, 0.6); }
+.spin-btn {
+  background: radial-gradient(ellipse 46% 26% at 46% 20%, rgba(255, 255, 255, 0.4), transparent 70%), radial-gradient(circle at 40% 32%, #d0243c, #7a0c1a 50%, #2a0408 85%);
+  box-shadow: 0 0 0 4px #1a0e05, 0 7px 0 4px #3a0610, 0 0 30px rgba(255, 59, 79, 0.55), 0 16px 26px rgba(0, 0, 0, 0.7), inset 0 3px 2px rgba(255, 220, 220, 0.35), inset 0 -8px 14px rgba(40, 0, 6, 0.75);
+}
+.spin-btn svg { filter: drop-shadow(0 3px 1px rgba(60, 0, 8, 0.9)); }
+.spin-btn:not(:disabled):active { transform: translateY(5px) scale(0.98); box-shadow: 0 0 0 4px #1a0e05, 0 2px 0 4px #3a0610, 0 0 24px rgba(255, 59, 79, 0.5), 0 8px 14px rgba(0, 0, 0, 0.7), inset 0 3px 2px rgba(255, 220, 220, 0.25), inset 0 -4px 10px rgba(40, 0, 6, 0.75); }
+.icon-btn { background: radial-gradient(circle at 36% 28%, rgba(52, 58, 70, 0.9), rgba(8, 9, 12, 0.85) 70%); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.8), 0 6px 14px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.18); }
+
+/* ---- Title screen and win screens: solid, extruded type and deeper cabinets ---- */
+.sp-cabinet { box-shadow: 0 0 0 4px #2a1208, 0 0 0 6px rgba(201, 164, 94, 0.5), 0 12px 0 5px #1a0a04, 0 26px 44px rgba(0, 0, 0, 0.8), 0 0 50px rgba(255, 59, 79, 0.2), inset 4px 4px 3px rgba(255, 210, 160, 0.22), inset -6px -10px 18px rgba(0, 0, 0, 0.65); }
+.sp-cabinet::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(ellipse 80% 45% at 22% 4%, rgba(255, 220, 170, 0.18), transparent 60%); }
+.sp-dial { box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.55), 0 0 18px rgba(255, 170, 70, 0.45), inset 0 6px 4px -2px rgba(255, 255, 255, 0.35); }
+.sp-knobs i { box-shadow: 0 4px 0 #1a0e04, 0 7px 8px rgba(0, 0, 0, 0.7), inset 0 -3px 4px rgba(0, 0, 0, 0.5); }
+.sp-cloth { box-shadow: inset 0 6px 18px rgba(0, 0, 0, 0.95), inset 0 0 22px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 220, 170, 0.2); }
+.sp-maxwin span, .bw-title span { filter: drop-shadow(0 1px 0 #7a4a10) drop-shadow(0 2px 0 #4a2a06) drop-shadow(0 3px 0 #2a1402) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 18px rgba(var(--glow, 255, 190, 70), 0.6)); }
+.sp-mult, .bw-ladder li.on { box-shadow: 0 4px 0 rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 59, 79, 0.7), inset 0 2px 2px rgba(255, 255, 255, 0.35), inset 0 -4px 6px rgba(0, 0, 0, 0.35); }
+.win-pop { text-shadow: 0 1px 0 #b07020, 0 2px 0 #8a5010, 0 3px 0 #6a3a08, 0 4px 0 #4a2404, 0 10px 14px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 190, 80, 0.8); }
+
+@media (prefers-reduced-motion: reduce) {
+  .character-body, .character-breath, .character-shadow, .reels .reel .cell.win .sym { animation: none !important; }
 }

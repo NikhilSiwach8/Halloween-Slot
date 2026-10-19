@@ -97,9 +97,22 @@ export function Logo({ className = 'logo' }: { className?: string }) {
           <path className="logo-wave w1" d="M10 4a18 18 0 0 0 0 20M34 4a18 18 0 0 1 0 20" stroke="#ff3b4f" strokeWidth="3" fill="none" strokeLinecap="round" />
           <path className="logo-wave w2" d="M2 -4a30 30 0 0 0 0 36M42 -4a30 30 0 0 1 0 36" stroke="#ff3b4f" strokeWidth="3" fill="none" strokeLinecap="round" />
         </g>
+        {/* Extrusion: offset copies stepping down-right, darkening with depth, so the letters
+            read as solid cast metal lit from the upper left. */}
+        <g aria-hidden="true">
+          {[6, 5, 4, 3, 2, 1].map((d) => (
+            <g key={d} transform={`translate(${d * 0.6} ${d})`} fill={d > 4 ? '#0d0204' : d > 2 ? '#2a080d' : '#4a1018'}>
+              <text x="210" y="66" textAnchor="middle" className="logo-word1">DEAD</text>
+              <text x="210" y="122" textAnchor="middle" className="logo-word2">FREQUENCY</text>
+            </g>
+          ))}
+        </g>
         <g filter={`url(#${id}-glow)`}>
           <text x="210" y="66" textAnchor="middle" className="logo-word1" fill={`url(#${id}-fill)`} stroke="#2b0a10" strokeWidth="3" paintOrder="stroke">DEAD</text>
           <text x="210" y="122" textAnchor="middle" className="logo-word2" fill={`url(#${id}-red)`} stroke="#1a0508" strokeWidth="3" paintOrder="stroke">FREQUENCY</text>
+          {/* Specular edge: a thin light line along the top of the letters. */}
+          <text x="210" y="66" textAnchor="middle" className="logo-word1 logo-spec" fill="none" stroke="rgba(255,248,230,0.55)" strokeWidth="0.8" transform="translate(-0.6 -0.8)">DEAD</text>
+          <text x="210" y="122" textAnchor="middle" className="logo-word2 logo-spec" fill="none" stroke="rgba(255,200,200,0.45)" strokeWidth="0.8" transform="translate(-0.6 -0.8)">FREQUENCY</text>
         </g>
         <path d="M96 80h228" stroke="#c9a45e" strokeWidth="2" opacity="0.7" />
         <circle cx="96" cy="80" r="3" fill="#c9a45e" />
@@ -343,15 +356,28 @@ export function SignalPanel({ cfg, antennas, bonus, spinning }: {
 }
 
 /* --------------------------------------------------------- character */
-/** The Night Host, standing beside the reels: idle breathing and sway, eyes flaring on wins. */
-export function Character({ excited }: { excited: boolean }) {
+/**
+ * The Night Host, standing beside the reels, acting like someone in the room: he breathes,
+ * shifts his weight and now and then turns to glance at the reels; he leans in to watch them
+ * spin; on a win he nods along with his eyes flaring. A contact shadow grounds him, and a rim
+ * light from the screen catches his edge.
+ */
+export function Character({ excited, watching }: { excited: boolean; watching: boolean }) {
   const src = SYMBOL_IMAGES.HOST;
   if (!src) return null;
+  const mood = excited ? 'excited' : watching ? 'watching' : '';
   return (
-    <div className={`character ${excited ? 'excited' : ''}`} aria-hidden="true">
+    <div className={`character ${mood}`} aria-hidden="true">
+      <div className="character-shadow" />
       <div className="character-glow" />
-      <img src={src} alt="" draggable={false} />
-      <div className="character-eyes" />
+      {/* Posture (body) and breathing (breath) animate on wrappers: the image and its shadows are
+          drawn once and only moved, never re-filtered per frame. */}
+      <div className="character-body">
+        <div className="character-breath">
+          <img src={src} alt="" draggable={false} />
+          <div className="character-eyes" />
+        </div>
+      </div>
     </div>
   );
 }

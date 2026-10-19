@@ -123,7 +123,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
         >
           <Reels cfg={cfg} view={view} turbo={turboOn} />
         </ReelFrame>
-        <Character excited={view.spinWinX100 >= 500 || view.overlay?.kind === 'bigWin'} />
+        <Character excited={view.spinWinX100 >= 500 || view.overlay?.kind === 'bigWin'} watching={view.spinning || (view.busy && !view.overlay)} />
       </main>
 
       {g.error ? (
