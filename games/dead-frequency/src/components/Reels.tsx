@@ -244,7 +244,7 @@ export function ChannelStrip({ cfg, view, turbo }: { cfg: GameConfig; view: View
             key={`${spinId}`}
             style={{ '--stop': `${stops ? motion.baseMs + stops.delays[r] + motion.hitMs : 0}ms` } as CSSProperties}
           />
-          <span>CH{r + 1}</span>
+          <span><em>TRK </em>{r + 1}</span>
         </div>
       ))}
     </div>

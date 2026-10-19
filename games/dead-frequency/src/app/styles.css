@@ -1410,3 +1410,185 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .content-warning p { margin: 0 0 6px; }
 .setting { display: flex; gap: 8px; align-items: center; font-weight: 700; cursor: pointer; }
 .setting input { width: 18px; height: 18px; accent-color: #ff3b4f; }
+
+/* ======================================================================== */
+/* THE BOARD: a six-track reel-to-reel recorder ("the last recording").     */
+/* Graphite deck plate with brushed-aluminium trim and screws; spools and  */
+/* tape across the top; a tape counter for the multiplier; masking-tape    */
+/* label for messages; the reels are six tracks of brown oxide tape under  */
+/* a smoked acrylic cover; transport keys on the right. Sizes and the grid */
+/* are the same as before, so every layout keeps fitting.                  */
+/* ======================================================================== */
+.app { --alu-hi: #e9ecef; --alu: #a7adb4; --alu-d: #5d6268; --deck: #1b1c1f; --deck-d: #0d0e10; --oxide: 38, 24, 17; --amber: #ffb347; }
+.frame.deck {
+  border-radius: 14px; border: 1px solid #050506;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(220, 230, 240, 0.08), transparent 60%),
+    linear-gradient(180deg, #26272b, var(--deck) 40%, var(--deck-d));
+  box-shadow:
+    0 0 0 2px var(--alu-d), 0 0 0 4px var(--alu), 0 0 0 5px var(--alu-hi), 0 0 0 7px #2a2c30, /* brushed-aluminium trim */
+    0 10px 0 6px #08090a, /* the deck's thickness */
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -8px 18px rgba(0, 0, 0, 0.6),
+    0 36px 70px rgba(0, 0, 0, 0.85), 0 0 80px rgba(var(--phos), 0.08);
+}
+.frame.deck::before { background: linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 18%, transparent 18.5% 60%, rgba(255, 255, 255, 0.025) 60.5% 66%, transparent 66.5%); }
+.frame.deck::after { /* rust bleeding from the screws and a dark stain at the bottom */
+  background:
+    radial-gradient(ellipse 4% 9% at 2.4% 6%, rgba(120, 50, 20, 0.45), transparent 70%),
+    radial-gradient(ellipse 3% 12% at 97.6% 10%, rgba(110, 40, 15, 0.4), transparent 70%),
+    radial-gradient(ellipse 22% 7% at 70% 100%, rgba(70, 5, 10, 0.5), transparent 70%),
+    radial-gradient(ellipse 10% 5% at 12% 100%, rgba(90, 40, 15, 0.35), transparent 70%);
+}
+.corner { display: none; }
+/* Screws: Phillips heads sunk into the plate. */
+.screw { position: absolute; z-index: 7; width: 12px; height: 12px; border-radius: 50%; pointer-events: none;
+  background: linear-gradient(45deg, transparent 44%, #2a2c30 44% 56%, transparent 56%), linear-gradient(-45deg, transparent 44%, #2a2c30 44% 56%, transparent 56%), radial-gradient(circle at 35% 30%, var(--alu-hi), var(--alu) 45%, var(--alu-d));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 2px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+.screw.tl { top: 7px; left: 7px; transform: rotate(12deg); } .screw.tr { top: 7px; right: 7px; transform: rotate(-30deg); }
+.screw.bl { bottom: 7px; left: 7px; transform: rotate(40deg); } .screw.br { bottom: 7px; right: 7px; transform: rotate(5deg); }
+
+/* ---- header: spools, tape path, counter, REC + monitor, masking-tape label ---- */
+.frame.deck .frame-top { grid-template-columns: auto auto auto minmax(0, 1fr) auto; gap: 10px; padding: 0 2px; }
+.frame.deck .frame-top::before { /* the tape running from spool to spool, over the heads */
+  content: ''; position: absolute; left: 30px; right: 30px; top: 50%; height: 3px; margin-top: -1.5px; z-index: 0;
+  background: linear-gradient(180deg, #6b4027, #2a1a12); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.frame.deck .frame-top > * { position: relative; z-index: 1; }
+.spool { width: 54px; height: 54px; display: block; filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.8)); }
+.spool-turn { transform-box: view-box; transform-origin: 50% 50%; will-change: transform; animation: spool-turn 14s linear infinite; }
+.spool.r .spool-turn { animation-duration: 11s; }
+.vu-spin .spool-turn { animation-duration: 0.9s; }
+.vu-spin .spool.r .spool-turn { animation-duration: 0.7s; }
+.vu-win .spool-turn { animation-duration: 3s; }
+@keyframes spool-turn { to { transform: rotate(360deg); } }
+/* Tape counter: white digits on black wheels behind a little window. */
+.counter { display: flex; align-items: center; gap: 2px; height: 40px; padding: 4px 6px; border-radius: 6px;
+  background: linear-gradient(180deg, #3a3d42, #16171a); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px #050506; }
+.counter-x { font: 800 14px var(--ui); color: var(--alu); margin-right: 2px; }
+.counter-digit { width: 22px; height: 30px; display: grid; place-items: center; overflow: hidden; border-radius: 3px;
+  background: linear-gradient(180deg, #000 0%, #1d1e21 20%, #2b2c30 50%, #1d1e21 80%, #000 100%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.counter-digit b { font: 700 22px/1 'Courier New', monospace; color: #f2efe8; animation: counter-roll 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes counter-roll { from { transform: translateY(-110%); } to { transform: none; } }
+.counter.hot { box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--amber), 0 0 16px rgba(255, 179, 71, 0.55); }
+.counter.hot .counter-digit b { color: var(--amber); text-shadow: 0 0 8px rgba(255, 179, 71, 0.8); }
+/* REC lamp: a red jewel that glows while a round is playing. */
+.rec-lamp { display: flex; align-items: center; gap: 6px; font: 800 11px var(--ui); letter-spacing: 0.2em; color: rgba(233, 236, 239, 0.45); }
+.rec-lamp i { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7a3036, #3a0a0f 70%); box-shadow: 0 0 0 2px #2a2c30, 0 0 0 3px var(--alu-d); }
+.rec-lamp.lit { color: #ffd9dc; }
+.rec-lamp.lit i { background: radial-gradient(circle at 35% 30%, #fff1f1, #ff2a3a 45%, #8a0010); box-shadow: 0 0 0 2px #2a2c30, 0 0 0 3px var(--alu-d), 0 0 14px #ff2a3a; animation: beacon 1.2s steps(1) infinite; }
+.frame.deck .scope-wrap { width: 120px; border-radius: 6px; background: radial-gradient(ellipse at 50% 40%, rgba(var(--phos), 0.08), #020403 75%); border: 2px solid #2a2c30; box-shadow: inset 0 0 12px #000, 0 0 0 1px var(--alu-d); }
+/* Masking-tape label with the station's typed message. */
+.label-tape {
+  min-width: 0; height: 34px; display: flex; align-items: center; padding: 0 14px; transform: rotate(-0.6deg);
+  font: 700 14px 'Courier New', monospace; letter-spacing: 0.02em; color: #2a1a12;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 40%), linear-gradient(90deg, #cbbd98, #ded2b0 30%, #d3c6a3 70%, #c2b48e);
+  clip-path: polygon(0 6%, 2% 0, 98% 4%, 100% 0, 99% 50%, 100% 100%, 3% 96%, 0 100%, 1% 50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+.label-tape span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: type-in 0.4s steps(8) both; }
+@keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* ---- sides: level meter (left) and transport keys (right) ---- */
+.frame.deck .pillar { border-radius: 6px; border: 1px solid #050506; background: linear-gradient(90deg, #121315, #222327 50%, #121315); box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06); }
+.frame.deck .pillar-label { color: rgba(233, 236, 239, 0.5); }
+.frame.deck .vu i { background: var(--amber); box-shadow: 0 0 6px rgba(255, 179, 71, 0.6); }
+.frame.deck .vu i:nth-child(n + 12) { background: #ff3b3b; box-shadow: 0 0 6px rgba(255, 59, 59, 0.7); }
+.frame.deck .vu-cover { background: rgba(10, 10, 12, 0.9); }
+.keys { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.key { position: relative; display: block; height: 30px; border-radius: 3px; background: linear-gradient(180deg, #f2f2ee, #c9c8c1 60%, #a9a8a0); box-shadow: 0 3px 0 #55544f, 0 4px 4px rgba(0, 0, 0, 0.6), inset 0 1px 0 #fff; }
+.key::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.key.rew::before, .key.rew::after { content: ''; position: absolute; top: 50%; width: 0; height: 0; border: 5px solid transparent; border-right: 7px solid #2a2a2a; border-left: 0; transform: translateY(-50%); }
+.key.rew::before { left: calc(50% - 7px); } .key.rew::after { left: 50%; }
+.key.play::after { width: 0; height: 0; border: 6px solid transparent; border-left: 9px solid #2a2a2a; border-right: 0; }
+.key.stop::after { width: 9px; height: 9px; background: #2a2a2a; }
+.key.rec { background: linear-gradient(180deg, #d84a4f, #9a1d24 60%, #6a1016); box-shadow: 0 3px 0 #3a0a0d, 0 4px 4px rgba(0, 0, 0, 0.6), inset 0 1px 0 #ff9a9a; }
+.key.rec::after { width: 9px; height: 9px; border-radius: 50%; background: #f2e2e2; }
+/* While the round plays, PLAY and REC are held down. */
+.vu-spin .key.play, .vu-spin .key.rec, .vu-win .key.play { transform: translateY(3px); box-shadow: 0 0 0 #55544f, 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 1px 0 #fff; }
+.vu-spin .key.rec { box-shadow: 0 0 12px rgba(255, 42, 58, 0.8), inset 0 1px 0 #ff9a9a; }
+
+/* ---- the tracks: oxide tape under a smoked acrylic dust cover ---- */
+.frame.deck .frame-window {
+  border-radius: 8px; background: linear-gradient(180deg, #0b0b0d, #050506);
+  box-shadow: 0 0 0 1px #050506, 0 0 0 3px var(--alu-d), 0 0 0 4px rgba(233, 236, 239, 0.35), inset 0 0 30px rgba(0, 0, 0, 0.95), inset 0 8px 14px rgba(0, 0, 0, 0.9);
+}
+.frame.deck .reel { border-radius: 3px; box-shadow: 0 0 0 1px rgba(167, 173, 180, 0.22), -3px 0 0 -1px rgba(233, 236, 239, 0.07), 3px 0 0 -1px rgba(0, 0, 0, 0.6); }
+.frame.deck .reel-cells, .frame.deck .reel-old { background: rgb(15, 9, 6); }
+.frame.deck .strip-cell { border-radius: 2px; background: rgb(var(--oxide)); }
+.frame.deck .cell {
+  border: 0; border-radius: 2px;
+  background:
+    radial-gradient(ellipse 30% 6% at 50% 89%, rgba(0, 0, 0, 0.55), transparent 100%),
+    radial-gradient(circle at 50% 45%, rgba(var(--acc), 0.16), transparent 68%),
+    repeating-linear-gradient(0deg, rgba(255, 220, 190, 0.025) 0 1px, transparent 1px 4px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 12% 88%, rgba(0, 0, 0, 0.35)),
+    rgb(var(--oxide));
+  box-shadow: inset 0 1px 0 rgba(255, 220, 190, 0.06), inset 0 -1px 0 rgba(0, 0, 0, 0.7), inset 0 -2px 0 -1px rgba(var(--acc), 0.5);
+}
+.frame.deck .reels .reel .cell.win { box-shadow: inset 0 0 0 2px rgba(var(--phos), 0.9), inset 0 0 22px rgba(var(--phos), 0.35), 0 0 16px rgba(var(--phos), 0.6); }
+/* The dust cover: smoky acrylic with a broad reflection and specks of dust (static), no scanlines. */
+.frame.deck .crt-lines {
+  background:
+    linear-gradient(118deg, transparent 0 8%, rgba(255, 255, 255, 0.07) 8% 20%, transparent 20% 70%, rgba(255, 255, 255, 0.03) 70% 74%, transparent 74%),
+    radial-gradient(circle at 23% 31%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 61% 72%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 81% 18%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 42% 88%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1.5px),
+    radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.frame.deck .crt-roll { display: none; }
+/* Track lamps under the tracks. */
+.frame.deck .channel { color: rgba(233, 236, 239, 0.45); font-weight: 700; }
+.frame.deck .led { border-radius: 2px; width: 10px; height: 6px; }
+
+/* ---- signal panel in the same metal ---- */
+.signal-panel {
+  border-radius: 18px; border: 1px solid #050506;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px), radial-gradient(ellipse 90% 50% at 25% 0%, rgba(220, 230, 240, 0.08), transparent 60%), linear-gradient(180deg, #26272b, #0d0e10);
+  box-shadow: 0 0 0 2px var(--alu-d), 0 0 0 4px var(--alu), 0 0 0 5px var(--alu-hi), 0 0 0 7px #2a2c30, 0 9px 0 6px #08090a, inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 26px 50px rgba(0, 0, 0, 0.75);
+}
+.lamp { border-color: #2a2c30; }
+.tiers b { color: var(--amber); }
+.knob { background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.7), transparent 32%), repeating-conic-gradient(#5d6268 0 10deg, #a7adb4 10deg 20deg); border-color: #1b1c1f; box-shadow: 0 6px 0 #08090a, 0 10px 14px rgba(0, 0, 0, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.5); }
+
+/* ---- smaller screens ---- */
+@media (max-aspect-ratio: 1/1) {
+  .frame.deck .frame-top { gap: 6px; }
+  .spool { width: 38px; height: 38px; }
+  .frame.deck .frame-top::before { left: 20px; right: 20px; }
+  .counter { height: 32px; padding: 3px 4px; } .counter-digit { width: 16px; height: 24px; } .counter-digit b { font-size: 16px; } .counter-x { font-size: 11px; }
+  .frame.deck .scope-wrap { width: 60px; }
+  .rec-lamp { font-size: 0; gap: 0; } .rec-lamp i { width: 11px; height: 11px; }
+  .label-tape { height: 28px; font-size: 11px; padding: 0 8px; }
+  .keys { gap: 4px; justify-content: flex-end; } .key { height: 12px; border-radius: 2px; } .key::after { display: none; }
+  .screw { width: 8px; height: 8px; } .screw.tl, .screw.tr { top: 4px; } .screw.bl, .screw.br { bottom: 4px; } .screw.tl, .screw.bl { left: 4px; } .screw.tr, .screw.br { right: 4px; }
+}
+@media (max-aspect-ratio: 1/1) and (max-width: 520px) {
+  .frame.deck .crown .scope-wrap { display: none; }
+  .spool { width: 32px; height: 32px; }
+  .keys .key:not(.rec) { display: none; }
+}
+@media (max-height: 560px) and (min-aspect-ratio: 5/4) {
+  .spool { width: 30px; height: 30px; }
+  .frame.deck .frame-top { grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 6px; }
+  .frame.deck .frame-top::before { left: 15px; right: 15px; }
+  .counter { height: 26px; padding: 2px 3px; } .counter-digit { width: 13px; height: 20px; } .counter-digit b { font-size: 13px; } .counter-x { font-size: 10px; }
+  .label-tape { height: 22px; font-size: 10px; padding: 0 6px; }
+  .screw { width: 7px; height: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spool-turn, .counter-digit b, .label-tape span { animation: none; }
+}
+/* Big spools standing up above the deck (desktop and tablet landscape). */
+@media (min-aspect-ratio: 1/1) and (min-height: 561px) {
+  .frame.deck .frame-top { grid-template-columns: 72px auto auto minmax(0, 1fr) 72px; }
+  .spool { width: 104px; height: 104px; margin: -52px -16px 0; }
+  .frame.deck .frame-top::before { left: 40px; right: 40px; }
+}
+.dial svg { filter: drop-shadow(0 0 10px rgba(255, 179, 71, 0.2)) drop-shadow(3px 6px 6px rgba(0, 0, 0, 0.7)); }
+@media (min-aspect-ratio: 1/1) and (min-height: 561px) { .screw.tl, .screw.tr { z-index: 0; } }
+.channel span { white-space: nowrap; } .channel em { font-style: normal; }
+@media (max-aspect-ratio: 1/1) and (max-width: 520px) { .channel em { display: none; } }

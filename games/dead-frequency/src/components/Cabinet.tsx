@@ -224,24 +224,36 @@ export function Scope({ state }: { state: ScopeState }) {
   return <canvas ref={ref} className="scope" aria-hidden="true" />;
 }
 
-/** Brass art-deco corner ornament (drawn once, mirrored for the other corners). */
-function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
+/**
+ * A tape spool: an aluminium flange with three cut-outs over a pack of brown tape. It turns
+ * (CSS, transform only) slowly at idle, fast while the reels spin and at a steady pace on a win.
+ */
+function Spool({ side }: { side: 'l' | 'r' }) {
   return (
-    <svg className={`corner ${pos}`} viewBox="0 0 60 60" aria-hidden="true">
-      <path d="M2 58V14Q2 2 14 2h44" fill="none" stroke="url(#brass-grad)" strokeWidth="4" />
-      <path d="M10 58V20q0-10 10-10h38" fill="none" stroke="url(#brass-grad)" strokeWidth="1.5" opacity="0.8" />
-      <path d="M2 30h8M30 2v8" stroke="url(#brass-grad)" strokeWidth="2" />
-      <circle cx="17" cy="17" r="4" fill="url(#brass-grad)" />
-      <circle cx="17" cy="17" r="1.6" fill="#ff3b4f" className="corner-gem" />
+    <svg className={`spool ${side}`} viewBox="0 0 100 100" aria-hidden="true">
+      {/* The supply spool (left) is full of tape; the take-up spool (right) has only a little. */}
+      <circle cx="50" cy="50" r={side === 'l' ? 47 : 30} fill="url(#tape-pack)" />
+      <g className="spool-turn">
+        <circle cx="50" cy="50" r="44" fill="url(#spool-metal)" fillOpacity="0.92" stroke="#0b0b0c" strokeWidth="1.5" />
+        {[0, 120, 240].map((a) => (
+          <path key={a} transform={`rotate(${a} 50 50)`} d="M50 14a36 36 0 0 1 31 18L60 44a12 12 0 0 0-10-6Z" fill={`url(#tape-seen-${side})`} stroke="rgba(0,0,0,0.6)" strokeWidth="1" />
+        ))}
+        <circle cx="50" cy="50" r="11" fill="url(#spool-metal)" stroke="#0b0b0c" strokeWidth="1.2" />
+        <path d="M50 42v-4M57 54l3.5 2M43 54l-3.5 2" stroke="#0b0b0c" strokeWidth="2.4" strokeLinecap="round" />
+        {/* a smear of something dark on one flange */}
+        <path d="M70 70q6-2 10-10q-3 9-12 14z" fill="rgba(110, 6, 14, 0.75)" />
+      </g>
     </svg>
   );
 }
 
 /**
- * The reel cabinet: a 1970s broadcast monitor in walnut and brass. Header: nixie-tube multiplier,
- * a live oscilloscope with the ON AIR lamp, and a VFD ticker. Body: a VU meter, the reels behind
- * curved CRT glass (scanlines, rolling refresh band, glare, phosphor tint per bonus), and a speaker
- * grille with a glowing valve. `footer` sits on the bezel under the screen (the channel strip).
+ * The reel cabinet: a six-track reel-to-reel recorder found in the dead station's basement.
+ * Header: a supply spool and a take-up spool with the tape running between them, a mechanical
+ * tape counter (the multiplier), the REC lamp with a playback monitor, and a strip of masking
+ * tape with the station's typed message. Body: a level meter, the reels as six tracks of tape
+ * under a smoked acrylic dust cover (cracked, with a bloody handprint), and the transport keys.
+ * `footer` sits under the tracks (the track lamps).
  */
 export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }: {
   multiplier: number;
@@ -251,30 +263,48 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
   footer?: ReactNode;
   children: ReactNode;
 }) {
-  const digits = String(multiplier).split('');
+  const digits = String(multiplier).padStart(2, '0').split('');
   return (
-    <div className={`frame vu-${scope}`}>
+    <div className={`frame deck vu-${scope}`}>
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <defs>
-          <linearGradient id="brass-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fbe3a0" />
-            <stop offset="0.45" stopColor="#b8893f" />
-            <stop offset="1" stopColor="#5a3e14" />
-          </linearGradient>
+          <radialGradient id="spool-metal" cx="0.35" cy="0.3" r="0.8">
+            <stop offset="0" stopColor="#eef1f4" />
+            <stop offset="0.45" stopColor="#9aa1a9" />
+            <stop offset="1" stopColor="#3c4046" />
+          </radialGradient>
+          {/* The tape seen through a spool's windows: wound tape out to the pack's edge, then the
+              dark deck behind. */}
+          {([['l', 47], ['r', 30]] as const).map(([k, r]) => (
+            <radialGradient key={k} id={`tape-seen-${k}`} gradientUnits="userSpaceOnUse" cx="50" cy="50" r="47">
+              <stop offset="0.2" stopColor="#1a0f0a" />
+              <stop offset={(r - 3) / 47} stopColor="#5a3420" />
+              <stop offset={r / 47} stopColor="#6b4027" />
+              <stop offset={Math.min(1, (r + 0.5) / 47)} stopColor="#0c0a09" />
+            </radialGradient>
+          ))}
+          <radialGradient id="tape-pack" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0.25" stopColor="#1a0f0a" />
+            <stop offset="0.8" stopColor="#4a2c1a" />
+            <stop offset="0.97" stopColor="#6b4027" />
+            <stop offset="1" stopColor="#1a0f0a" />
+          </radialGradient>
         </defs>
       </svg>
       <div className="frame-top">
-        <div className={`nixie ${multiplier > 1 ? 'hot' : ''}`} aria-label={`Multiplier x${multiplier}`} role="img">
-          <span className="nixie-tube x"><b>x</b></span>
-          {digits.map((d, i) => <span className="nixie-tube" key={`${i}-${d}`}><b>{d}</b></span>)}
+        <Spool side="l" />
+        <div className={`counter ${multiplier > 1 ? 'hot' : ''}`} aria-label={`Multiplier x${multiplier}`} role="img">
+          <span className="counter-x">×</span>
+          {digits.map((d, i) => <span className="counter-digit" key={`${i}-${d}`}><b>{d}</b></span>)}
         </div>
         <div className="crown" aria-hidden="true">
-          <span className={`on-air-lamp ${onAir ? 'lit' : ''}`}>ON AIR</span>
+          <span className={`rec-lamp ${onAir ? 'lit' : ''}`}><i />REC</span>
           <div className="scope-wrap"><Scope state={scope} /></div>
         </div>
-        <div className="plaque-led" aria-live="polite">
+        <div className="label-tape" aria-live="polite">
           <span key={ticker}>{ticker}</span>
         </div>
+        <Spool side="r" />
       </div>
       <div className="frame-body">
         <div className="pillar left" aria-hidden="true">
@@ -282,14 +312,14 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
             {Array.from({ length: 14 }, (_, i) => <i key={i} />)}
             <div className="vu-cover" />
           </div>
-          <span className="pillar-label">VU</span>
+          <span className="pillar-label">LVL</span>
         </div>
         <div className="frame-window">
           {children}
           <div className="crt" aria-hidden="true">
             <i className="crt-lines" />
-            {/* Damage on the glass: a fracture in the top-right corner and a bloody handprint
-                dragged down the lower left. Static. */}
+            {/* Damage on the dust cover: a fracture in the top-right corner and a bloody
+                handprint dragged down the lower left. Static. */}
             <svg className="crt-damage" viewBox="0 0 600 400" preserveAspectRatio="none" aria-hidden="true">
               <g stroke="rgba(230, 240, 255, 0.42)" strokeWidth="1.1" fill="none" strokeLinecap="round">
                 <path d="M560 34l-38 22-30 6-26 24M560 34l-12 44-22 30M560 34l-46-8-40 10M560 34l8 50 -6 40M560 34l-24-26M522 56l-10 28M492 62l-30-18M548 78l26 20" />
@@ -304,12 +334,15 @@ export function ReelFrame({ multiplier, ticker, onAir, scope, footer, children }
           </div>
         </div>
         <div className="pillar right" aria-hidden="true">
-          <div className="grille" />
-          <div className="tube"><i /></div>
+          <div className="keys">
+            <i className="key rew" /><i className="key play" /><i className="key stop" /><i className="key rec" />
+          </div>
+          <span className="pillar-label">TR6</span>
         </div>
       </div>
       {footer ? <div className="frame-foot">{footer}</div> : null}
-      <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
+      <i className="screw tl" aria-hidden="true" /><i className="screw tr" aria-hidden="true" />
+      <i className="screw bl" aria-hidden="true" /><i className="screw br" aria-hidden="true" />
     </div>
   );
 }
@@ -337,19 +370,19 @@ export function SignalPanel({ cfg, antennas, bonus, spinning }: {
         <svg viewBox="0 0 120 120">
           <defs>
             <radialGradient id="dial-face" cx="0.5" cy="0.45" r="0.6">
-              <stop offset="0" stopColor="#3a2410" />
-              <stop offset="1" stopColor="#0d0805" />
+              <stop offset="0" stopColor="#2b2a26" />
+              <stop offset="1" stopColor="#0b0b0c" />
             </radialGradient>
           </defs>
-          <circle cx="60" cy="60" r="56" fill="#1a1410" stroke="#c9a45e" strokeWidth="4" />
-          <circle cx="60" cy="60" r="46" fill="url(#dial-face)" stroke="#5a4520" strokeWidth="2" />
+          <circle cx="60" cy="60" r="56" fill="#141518" stroke="#a7adb4" strokeWidth="4" />
+          <circle cx="60" cy="60" r="46" fill="url(#dial-face)" stroke="#3c4046" strokeWidth="2" />
           {Array.from({ length: 21 }, (_, i) => {
             const a = (-120 + i * 12) * (Math.PI / 180);
             const long = i % 5 === 0;
-            return <line key={i} x1={60 + Math.sin(a) * 40} y1={60 - Math.cos(a) * 40} x2={60 + Math.sin(a) * (long ? 31 : 35)} y2={60 - Math.cos(a) * (long ? 31 : 35)} stroke="#e8cb8c" strokeWidth={long ? 2 : 1} />;
+            return <line key={i} x1={60 + Math.sin(a) * 40} y1={60 - Math.cos(a) * 40} x2={60 + Math.sin(a) * (long ? 31 : 35)} y2={60 - Math.cos(a) * (long ? 31 : 35)} stroke={long ? '#ffb347' : '#d8d4c8'} strokeWidth={long ? 2 : 1} />;
           })}
           <g className="dial-needle"><line x1="60" y1="60" x2="60" y2="22" stroke="#ff3b4f" strokeWidth="2.5" strokeLinecap="round" /></g>
-          <circle cx="60" cy="60" r="6" fill="#c9a45e" />
+          <circle cx="60" cy="60" r="6" fill="#a7adb4" />
           <circle cx="60" cy="86" r="5" className="dial-lamp" />
         </svg>
       </div>

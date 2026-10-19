@@ -51,16 +51,21 @@ cabinets advertising Static & Retune / On Air wilds, the Antenna bonuses and Mys
 max win (numbers read from the game config), and "Click to continue" (any click or key). It is not
 shown in bet replay, and the player can tick "Don't show again" (kept in the browser).
 
-**The board.** The reels sit in a 1970s broadcast monitor: a walnut cabinet with brass art-deco
-corners; a nixie-tube multiplier, a live oscilloscope and a VFD ticker on top; a VU meter and a
-speaker grille either side; the reels behind curved CRT glass (scanlines, a rolling refresh band,
-glare); and a channel strip (CH1–CH6) whose LEDs blink as each reel stops and light up for reels
-in a win. Tiles are smoky glass with a phosphor line in each symbol's colour. The screen's
-phosphor colour changes per bonus (green, violet, red), and winning tiles get a CRT scan sweep.
+**The board.** The reels are six tracks of a haunted reel-to-reel tape recorder, the station's
+last recording: a graphite deck plate with brushed-aluminium trim and rusting screws. Two big
+spools stand above it (the supply spool full of tape, the take-up spool nearly empty) with the
+tape running between them; they creep round at idle, race while the reels spin and turn steadily
+on a win. Along the tape: a mechanical tape counter that rolls to the multiplier, a REC lamp that
+glows while a round plays, a playback monitor (a live oscilloscope), and a strip of masking tape
+with the station's typed message. A level meter runs down the left, and the transport keys (rewind,
+play, stop, record) on the right are held down while the reels spin. Each reel is a track of brown
+oxide tape under a smoked acrylic dust cover, which is cracked and carries a bloody handprint. Track
+lamps (TRK 1–6) blink as each reel stops and light up for reels in a win. The win colour changes
+per bonus (green, violet, red), and winning tiles get a scan sweep. The Signal Panel matches the deck.
 
 **Art style.** Realistic, grim horror: a near-black night sky with rain, lightning and a shadow
-figure that sometimes stands at the edge of the light; a dark walnut-and-brass cabinet with grime;
-cracked CRT glass with a bloody handprint; and blood dripping from the FREQUENCY logo. The palette
+figure that sometimes stands at the edge of the light; a grimy graphite-and-aluminium tape deck;
+a cracked dust cover with a bloody handprint; and blood dripping from the FREQUENCY logo. The palette
 is ink black, bone, toxic phosphor green, rust and blood red. The symbols are the original
 paintings. Prompts for a painterly creature redraw (textured, droopy-eyed creatures filling each
 tile) are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Painterly creature style").
@@ -81,8 +86,8 @@ hums and flickers, the ON AIR neon buzzes, Static glitches, the Antenna sends ou
 the Tape rattles. The wild, the Antenna and the Tape keep a gentle idle animation so they stand
 out. Only transform and opacity animate, so it costs nothing measurable per frame.
 
-**Depth and life.** One light from the upper left shades the whole game: bevelled glass tiles with
-symbols casting shadows, a walnut cabinet with real slab thickness, domed physical buttons that press
+**Depth and life.** One light from the upper left shades the whole game: symbols casting shadows on
+the tape, a deck with real slab thickness, domed physical buttons that press
 down, an extruded logo, and solid, deeper radio cabinets on the title screen. Winning symbols turn in
 3D, and the characters breathe. The Night Host acts like someone in the room: he shifts his weight,
 glances at the reels, leans in while they spin and nods along on a win. For 3D re-renders of the
