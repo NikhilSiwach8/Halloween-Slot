@@ -45,8 +45,10 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
   - the Mystery prize and every bonus spin.
 
   Way wins are not stored. The client recomputes them from the revealed board with the same
-  evaluator. It refuses any round whose recomputed wins do not equal the stored wins, the stored
-  total and the RGS `payoutMultiplier`.
+  evaluator. It refuses any round whose recomputed wins do not equal the stored wins and the stored
+  total. If the RGS `payoutMultiplier` differs from the book (for example a server-side payout
+  cap), the bet has already been taken, so the round still plays and the win shown is the
+  server's figure, which is what gets paid.
 - **Criteria.** A criterion's probability is fixed up front, and books inside it are equally
   likely.
   - **Base / Double Chance** are split by the Antenna count, which the engine draws from an exact
@@ -85,15 +87,17 @@ bet), so a mode's RTP is E[payoutMultiplier] / 100 / cost.
 
 | Item | Status |
 |---|---|
-| `?sessionID&rgs_url` → `/wallet/authenticate`, `/wallet/play` `{amount, mode}`, `/wallet/end-round` | Done; tested against a mock RGS serving real books (balances match to the cent) |
+| `?sessionID&rgs_url` → `/wallet/authenticate`, `/wallet/play` `{amount, currency, mode}` (`amount` is the base bet; the RGS charges amount × the mode's cost), `/wallet/end-round` | Done; tested against a mock RGS serving real books (balances match to the cent) |
 | Bet levels, min/max and `stepBet` from authenticate; currency symbols and decimals | Done |
 | Unfinished round settled on load | Done |
 | **Bet replay** `?replay=true&game&version&mode&event&rgs_url[&currency&amount]`, no wallet calls, controls and balance hidden, Play / Play Again | Done; tested with a 50,000x replay |
 | RTP and max win per mode, cost per mode, every prize value, controls guide, disclaimer in the rules | Done |
-| Space = bet, mute, no autoplay | Done |
+| Space = bet, mute, autoplay with confirmation and stop conditions | Done |
 | Jurisdiction flags: `disabledSpacebar`, `disabledBuyFeature` (hides Feature Spins and Bonus Buy), `disabledTurbo`, `displayRTP` | Done |
 | Static build, no requests to other origins, clean console | Verified in Chromium |
-| Error messages for `ERR_IPB`, `ERR_IS`, `ERR_VAL` and others | Done |
+| Error messages for `ERR_IPB`, `ERR_IS`, `ERR_VAL`, `ERR_GEN`, `ERR_MAINTENANCE` and others, read from `error`, `code` or `status.statusCode` | Done |
+| A buy or Feature Spins mode the RGS refuses as an invalid bet (`ERR_VAL`, e.g. a cap on the total of a buy) | Clear message; that mode, and any costing as much or more, is disabled with "Above the bet limit: lower the bet" until the bet is lowered |
+| Wins shown at the bet the round was played at | Changing the bet after a round no longer changes the win shown |
 | `mode` sent to `/wallet/play`: the spelling the RGS lists in authenticate `config.betModes` (matched case-insensitively); upper-case `index.json` name if it lists none | Done; unit-tested with object and array forms |
 | **Social mode** (`social=true` or the RGS `socialCasino` flag): Stake's restricted-phrase list applied to all visible text, `aria-label` and `title` | Done; browser scan of 8 screens incl. full rules found 0 restricted phrases |
 | **Viewports** desktop 1200×675, laptop 1024×576, popout L 800×450, popout S 400×225, mobile 425×812 / 375×667 / 320×568 | All fit without scrolling, board never distorted (square cells); popouts use a landscape layout with controls on the right |

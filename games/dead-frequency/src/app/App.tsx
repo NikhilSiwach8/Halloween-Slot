@@ -121,7 +121,8 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   });
 
   const betIndex = bets.indexOf(g.bet);
-  const winMoney = Math.floor((g.bet * view.roundWinX100) / 100);
+  // Paid on the bet the round was played at, so changing the bet afterwards doesn't change it.
+  const winMoney = Math.floor((view.roundBet * view.roundWinX100) / 100);
 
   const turboOn = g.speed === 'turbo';
   const modeChip = auto
@@ -263,7 +264,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
 
       {splash ? <Splash cfg={cfg} onContinue={() => setSplash(false)} /> : null}
       <JumpScares enabled={scaresOn && !replay} blocked={!!view.overlay || panel !== 'none' || splash} busy={view.busy} spinning={view.spinning} spinId={view.spinId} />
-      {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={g.bet} onContinue={g.advance} auto={!!auto} /> : null}
+      {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={view.roundBet || g.bet} onContinue={g.advance} auto={!!auto} /> : null}
       {panel === 'auto' ? (
         <AutoPanel
           costText={money(cost)}
@@ -283,6 +284,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
           currency={session.currency}
           bet={g.bet}
           balance={g.balance}
+          costLimit={g.costLimit}
           featureMode={g.featureMode}
           onFeature={(m) => { g.setFeatureMode(m); setPanel('none'); }}
           onBuy={(m) => { setPanel('none'); void g.play(m); }}

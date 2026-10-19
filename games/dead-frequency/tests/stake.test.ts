@@ -4,7 +4,7 @@ import { BookFormatError, decodeRound, encodeRound } from '../src/math/bookForma
 import { STAKE_MODE_NAME, assignWeights, generateMode, lookupStats, modeMaxWinX, stakePlans } from '../src/math/books';
 import { SeededRng } from '../src/engine/rng';
 import { playRound } from '../src/engine/round';
-import { ReplayPlatform, StakePlatform, listedModeNames, modeFromRgsName, payoutMatches, rgsModeName } from '../src/platform/platform';
+import { ReplayPlatform, StakePlatform, listedModeNames, modeFromRgsName, payoutMatches, rgsErrorCode, rgsModeName } from '../src/platform/platform';
 
 const cfg = DEFAULT_CONFIG;
 
@@ -95,22 +95,35 @@ describe('RGS client', () => {
     expect(session.flags.disabledBuyFeature).toBe(true);
     const played = await p.play('BASE', 1_000_000);
     expect(played.round.winX100).toBe(round.winX100);
-    expect(calls[1]).toEqual({ url: 'https://rgs.example.com/wallet/play', body: { sessionID: 'abc', amount: 1_000_000, mode: 'BASE' } });
+    expect(calls[1]).toEqual({ url: 'https://rgs.example.com/wallet/play', body: { sessionID: 'abc', amount: 1_000_000, currency: 'USD', mode: 'BASE' } });
     const after = await p.endRound(played.round, 1_000_000);
     expect(after).toBe(999_000_000 + (1_000_000 * round.winX100) / 100);
     expect(calls.map((c) => c.url.split('/').slice(-2).join('/'))).toEqual(['wallet/authenticate', 'wallet/play', 'wallet/end-round']);
   });
 
-  it('refuses a round whose payout does not match its events', async () => {
+  it('pays and shows the server payout when it differs from the book, and sends the currency', async () => {
     const round = playRound(cfg, 'BUY_POSSESSION', new SeededRng(4));
-    vi.stubGlobal('fetch', (url: string) =>
-      url.endsWith('/wallet/play')
-        ? json({ balance: { amount: 1, currency: 'USD' }, round: { payoutMultiplier: round.winX100 + 500, active: true, state: encodeRound(cfg, round) } })
-        : json({ balance: { amount: 1, currency: 'USD' }, round: null, config: { betLevels: [1_000_000], defaultBetLevel: 1_000_000, minBet: 1, maxBet: 1e9, stepBet: 1 } }),
-    );
+    const bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+      bodies.push(JSON.parse(String(init.body)));
+      return url.endsWith('/wallet/play')
+        ? json({ balance: { amount: 1, currency: 'EUR' }, round: { payoutMultiplier: round.winX100 / 100 + 5, active: true, state: encodeRound(cfg, round) } })
+        : json({ balance: { amount: 1, currency: 'EUR' }, round: null, config: { betLevels: [1_000_000], defaultBetLevel: 1_000_000, minBet: 1, maxBet: 1e9, stepBet: 1 } });
+    });
     const p = StakePlatform.fromUrl(cfg, '?sessionID=x&rgs_url=https://r.example')!;
     await p.init();
-    await expect(p.play('BUY_POSSESSION', 1_000_000)).rejects.toThrow(/verification/);
+    const r = await p.play('BUY_POSSESSION', 1_000_000);
+    expect(r.round.winX100).toBe(round.winX100 + 500);
+    expect(bodies[1]).toMatchObject({ amount: 1_000_000, currency: 'EUR', mode: expect.any(String) });
+  });
+
+  it('reads RGS error codes from every response shape and keeps the code', async () => {
+    for (const body of [{ error: 'ERR_VAL' }, { error: { code: 'ERR_VAL' } }, { status: { statusCode: 'ERR_VAL' } }]) {
+      vi.stubGlobal('fetch', () => json(body, 400));
+      const p = StakePlatform.fromUrl(cfg, '?sessionID=x&rgs_url=r.example')!;
+      await expect(p.init()).rejects.toMatchObject({ code: 'ERR_VAL', message: expect.stringMatching(/not allowed/) });
+    }
+    expect(rgsErrorCode({ status: { statusCode: 'SUCCESS' } })).toBeUndefined();
   });
 
   it('maps RGS errors to player messages', async () => {

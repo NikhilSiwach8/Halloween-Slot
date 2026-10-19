@@ -3,7 +3,7 @@ import { roundCost } from '../config/gameConfig';
 import type { BonusType, GameConfig, ModeId, MysteryPrize } from '../config/types';
 import type { Board } from '../engine/board';
 import type { RoundResult, SpinResult } from '../engine/round';
-import type { Platform, PlatformSession } from '../platform/platform';
+import { PlatformError, type Platform, type PlatformSession } from '../platform/platform';
 import { audio } from './audio';
 
 export type Speed = 'normal' | 'turbo';
@@ -49,6 +49,8 @@ export interface View {
   ticker: string;
   /** Win of the round so far, hundredths of stake. */
   roundWinX100: number;
+  /** Base bet the shown round was played at (wins are paid on it, whatever the bet is now). */
+  roundBet: number;
   bonus: BonusView | null;
   overlay: Overlay | null;
   busy: boolean;
@@ -109,7 +111,7 @@ export function reelStops(board: Board, turbo: boolean): { delays: number[]; tea
   return { delays, tease };
 }
 
-const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0, instant: false };
+const EMPTY: View = { board: null, unrevealed: false, winCells: new Set(), spinning: false, ticker: 'Tune in… press SPIN.', roundWinX100: 0, roundBet: 0, bonus: null, overlay: null, busy: false, bonusFx: 0, spinId: 0, antennas: 0, spinWinX100: 0, instant: false };
 
 export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSession) {
   const [balance, setBalance] = useState(session.balance);
@@ -120,6 +122,12 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
   const [doubleChance, setDoubleChance] = useState(false);
   const [featureMode, setFeatureMode] = useState<ModeId | null>(null);
   const [speed, setSpeed] = useState<Speed>('normal');
+  /**
+   * Lowest round cost the server refused as an invalid bet (ERR_VAL) for a mode costing more
+   * than 1x: the RGS may cap the total stake of buys. Modes costing that much or more are
+   * disabled from then on, so the player isn't sent into the same error again.
+   */
+  const [costLimit, setCostLimit] = useState<number | null>(null);
   const [view, setView] = useState<View>(EMPTY);
   const skip = useRef(false);
   const waiter = useRef<(() => void) | null>(null);
@@ -217,7 +225,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
     skip.current = false;
     setError(null);
     audio.resume();
-    patch({ busy: true, roundWinX100: 0, bonus: null, overlay: null, ticker: session.replay ? 'Replaying a past broadcast…' : 'Tuning in…' });
+    patch({ busy: true, roundWinX100: 0, roundBet: bet, bonus: null, overlay: null, ticker: session.replay ? 'Replaying a past broadcast…' : 'Tuning in…' });
     let round: RoundResult;
     try {
       const r = await platform.play(mode, bet);
@@ -225,7 +233,10 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       if (!session.replay) setBalance(r.balance);
       onRoundRef.current?.(round);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      if (e instanceof PlatformError && e.code === 'ERR_VAL' && cfg.modes[mode].cost > 1) {
+        setCostLimit((l) => (l === null ? cost : Math.min(l, cost)));
+        setError(`${cfg.modes[mode].name} isn't available at this bet: the total of this purchase is above the server's limit. Lower the bet and try again.`);
+      } else setError(e instanceof Error ? e.message : String(e));
       patch({ busy: false, ticker: 'The signal was lost.' });
       return;
     }
@@ -298,5 +309,5 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
     patch({ busy: false, overlay: null, roundWinX100: round.winX100, ticker: round.winX100 > 0 ? (round.capped ? 'MAXIMUM WIN — the broadcast ends.' : 'Signal lost… for now.') : 'Dead air. Spin again.' });
   }, [bet, balance, view.busy, cfg, platform, session]);
 
-  return { balance, bet, setBet, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance, error, setError, replayed, autoRef, onRoundRef };
+  return { balance, bet, setBet, costLimit, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance, error, setError, replayed, autoRef, onRoundRef };
 }

@@ -41,7 +41,8 @@ export interface Platform {
 }
 
 export class PlatformError extends Error {
-  constructor(message: string) {
+  /** The RGS error code (ERR_VAL, ERR_IPB, …), when the error came from the server. */
+  constructor(message: string, readonly code?: string) {
     super(message);
     this.name = 'PlatformError';
   }
@@ -121,6 +122,20 @@ export function payoutMatches(round: RoundResult, payoutMultiplier: number | und
 
 interface RgsBalance { amount: number; currency: string }
 
+/** /wallet/play's payoutMultiplier (payout / amount, a float) as hundredths of the bet. */
+export const serverWinX100 = (payoutMultiplier: number) => Math.round(payoutMultiplier * 100);
+
+/** The error code in an RGS response body, if it reports one. */
+export function rgsErrorCode(data: unknown): string | undefined {
+  const d = data as { code?: unknown; error?: unknown; status?: { statusCode?: unknown } } | null;
+  const err = d?.error as { code?: unknown } | string | undefined;
+  const status = d?.status?.statusCode;
+  for (const c of [d?.code, typeof err === 'object' ? err?.code : err, status]) {
+    if (typeof c === 'string' && c && c !== 'SUCCESS') return c;
+  }
+  return undefined;
+}
+
 /**
  * Stake Engine RGS client (endpoints and payloads per the RGS docs):
  *   POST {rgs_url}/wallet/authenticate { sessionID, language }
@@ -132,6 +147,7 @@ export class StakePlatform implements Platform {
   private active = false;
   /** Mode names as the RGS spells them (from authenticate `config.betModes`). */
   private listedModes: string[] = [];
+  private currency = 'USD';
   constructor(private readonly cfg: GameConfig, private readonly sessionID: string, private readonly rgsUrl: string, private readonly lang: string) {}
 
   static fromUrl(cfg: GameConfig, search: string): StakePlatform | null {
@@ -145,7 +161,9 @@ export class StakePlatform implements Platform {
   private async post<T>(path: string, body: Record<string, unknown>): Promise<T> {
     const res = await fetchOrFail(`${this.rgsUrl}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionID: this.sessionID, ...body }) });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new PlatformError(rgsMessage(data?.code ?? data?.error, res.status));
+    // The RGS reports errors as { error }, { code } or { status: { statusCode } }, sometimes with a 200.
+    const code = rgsErrorCode(data);
+    if (!res.ok || code) throw new PlatformError(rgsMessage(code, res.status), code);
     return data as T;
   }
 
@@ -166,6 +184,7 @@ export class StakePlatform implements Platform {
     bets = [...new Set(bets)].sort((a, b) => a - b);
     if (!bets.length) throw new PlatformError('No usable bet levels for this session.');
     this.listedModes = listedModeNames(r.config.betModes);
+    this.currency = r.balance.currency;
     let balance = r.balance.amount;
     // An unfinished round is settled on load; its outcome is already fixed by the RGS.
     if (r.round && r.round.active !== false && (r.round.payoutMultiplier ?? 0) > 0) balance = (await this.post<{ balance: RgsBalance }>('/wallet/end-round', {})).balance.amount;
@@ -184,10 +203,13 @@ export class StakePlatform implements Platform {
   }
 
   async play(mode: ModeId, bet: number) {
-    const r = await this.post<{ balance: RgsBalance; round: { payoutMultiplier?: number; active?: boolean; state: unknown } }>('/wallet/play', { amount: bet, mode: rgsModeName(mode, this.listedModes) });
-    const round = decodeRound(this.cfg, r.round.state);
+    // `amount` is the base bet; the RGS charges amount x the mode's cost (as the official web-sdk sends it).
+    const r = await this.post<{ balance: RgsBalance; round: { payoutMultiplier?: number; active?: boolean; state: unknown } }>('/wallet/play', { amount: bet, currency: this.currency, mode: rgsModeName(mode, this.listedModes) });
+    let round = decodeRound(this.cfg, r.round.state);
     if (round.mode !== mode) throw new PlatformError('The server returned a round for a different mode. Please reload.');
-    if (!payoutMatches(round, r.round.payoutMultiplier)) throw new PlatformError('Round verification failed. Please reload.');
+    // The bet is already taken, so a payout that differs from the book (e.g. a server-side payout
+    // cap) must not abort the round: the server's figure is what gets paid, so that is what we show.
+    if (!payoutMatches(round, r.round.payoutMultiplier)) round = { ...round, winX100: serverWinX100(r.round.payoutMultiplier!) };
     this.active = round.winX100 > 0 && r.round.active !== false;
     return { round, balance: r.balance.amount };
   }
@@ -254,7 +276,9 @@ function rgsMessage(code: unknown, status: number): string {
   switch (code) {
     case 'ERR_IPB': return 'Insufficient balance.';
     case 'ERR_IS': return 'Your session has expired. Please reload the game.';
-    case 'ERR_VAL': return 'That bet is not allowed.';
+    case 'ERR_VAL': return 'That bet is not allowed for this game or mode. Try a lower bet.';
+    case 'ERR_GEN': return 'The game server had a problem. Please try again.';
+    case 'ERR_MAINTENANCE': return 'The game is under maintenance. Please try again later.';
     case 'ERR_ATE': return 'Authentication failed. Please reload the game.';
     case 'ERR_GLE': return 'Gambling limits reached.';
     case 'ERR_LOC': return 'This game is not available in your location.';
