@@ -79,6 +79,7 @@ export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp
         <section>
           <h3>Controls</h3>
           <ul className="small controls-guide">
+            <li><strong>Auto (circular arrows)</strong>: auto bets. Choose 10, 25, 50, 100 or 250 rounds and, optionally, to stop when a bonus starts, on a single win of 10x/50x/100x or more, or if the balance falls by 10x/50x/100x the stake; then confirm. Auto bets also stop when the balance runs out. While they run, the spin button shows the rounds left and stops them, as does Space or the Auto button.</li>
             <li><strong>Round spin button</strong> (or Space): plays a round. While a round plays it shows a stop square and skips the animations.</li>
             <li><strong>Bet ˄ / ˅</strong>: raise or lower the stake. The cost of a round is shown under the bet when it differs from the stake.</li>
             <li><strong>⚡ Turbo</strong>: faster animations.</li>

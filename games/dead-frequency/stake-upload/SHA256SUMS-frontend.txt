@@ -3,8 +3,8 @@
 3658c0fd3974a994437f9e8734f16a9ab1787c92e62b84c43e3bec13acea3d47  ./assets/cinzel-latin-700-normal-DSxGOqh5.woff2
 f4d245ead288eed022417f58d875bd3827caeb9439df2309df18e25143354ec8  ./assets/cinzel-latin-ext-700-normal-BPIBBQU9.woff
 0dc1223538c731bd1f338f85211de25355115c9d23bb435e5c82d55769036bf5  ./assets/cinzel-latin-ext-700-normal-BhgFjnpQ.woff2
-c9d7b3220148416d899082df6b25cfd3c96bcde67a9a96881cd7213fd8715570  ./assets/index-BpFhNEn3.css
-843434afd91b5887c83969a4eaa774919a4e9010f72b7938c0c278ae1ebbbb43  ./assets/index-Da9fKxAo.js
+84f20761af6fe6536c62d590900ffa1e28da0d4e510b3d9e9e3c13c0bc934287  ./assets/index-DFQD0gw9.js
+ffa284fe8259157c499e7105fd609a7d12e8db67e89c7a5c1be2c478cbf05c1a  ./assets/index-Dl2C4ocx.css
 d2575d4fa3632580aafcbcdf6978b3b57e144b90cf5bd9c2c98194f28b869704  ./assets/lilita-one-latin-400-normal-87r-Z-Re.woff2
 029b74f2487e0daee58a161103173c0deec879d0b6375cc536c03cbaab46d11b  ./assets/lilita-one-latin-400-normal-DXkechA3.woff
 ab230b116b5a7328c132c638d34b06dd6e9fc19fff85885681e129dd81b950e8  ./assets/symbols/antenna.webp
@@ -20,5 +20,5 @@ b8693ced8cacb1ba57d6f138166945de5912d86b5dcfd0546b9fbd6af1c85a89  ./assets/symbo
 dba471df270a81f35c5d49be6092fd6b2801c6cef379119e40a9ae1aae770409  ./assets/symbols/widow.webp
 5a773eca24715de2237a4a52fce341a3313f1b86f4aa39fb5dc3ac58882d56ea  ./assets/symbols/wild.webp
 f32ba5faecd7c4c8c652e8c126d3f439c44fd15253cf8e16e0fd59d37c4881d5  ./favicon.svg
-d006ba8128b582ca5864311e618f95cf280336719bb93ac1a2c9004c0f32d79e  ./index.html
-a213c76f95b60df6a5a3372314e9a5405ab1a848d34162341da934dbd3c7031b  dead-frequency-frontend.zip
+3dd16890489c13fc8e402f82f4117e1b2dd6f483e2a55a2e8468e0fe917b2fbb  ./index.html
+8b26e2917bde7bf8adf2ce14a5f7cda7f543acfc102e2746ad7392a6b9602595  dead-frequency-frontend.zip

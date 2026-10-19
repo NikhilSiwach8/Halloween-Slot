@@ -55,7 +55,7 @@ function BonusIntro({ cfg, overlay, onContinue }: { cfg: GameConfig; overlay: Ex
   );
 }
 
-export function OverlayView({ cfg, currency, overlay, bet, onContinue }: { cfg: GameConfig; currency: Currency; overlay: Overlay; bet: number; onContinue: () => void }) {
+export function OverlayView({ cfg, currency, overlay, bet, onContinue, auto = false }: { cfg: GameConfig; currency: Currency; overlay: Overlay; bet: number; onContinue: () => void; auto?: boolean }) {
   const money = (x100: number) => formatMoney(currency, Math.floor((bet * x100) / 100));
   let body;
   let button = 'Continue';
@@ -91,7 +91,7 @@ export function OverlayView({ cfg, currency, overlay, bet, onContinue }: { cfg: 
       );
       break;
     case 'bigWin':
-      return <BigWin overlay={overlay} money={money} onContinue={onContinue} />;
+      return <BigWin overlay={overlay} money={money} onContinue={onContinue} auto={auto} />;
   }
   return (
     <div className="overlay" role="dialog" aria-modal="true">

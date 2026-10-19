@@ -15,6 +15,13 @@ export const Icon = {
     </g>
   ),
   stop: <rect x="7" y="7" width="10" height="10" rx="1.5" />,
+  auto: (
+    <g fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3M19.5 12a7.5 7.5 0 0 1-12.8 5.3" />
+      <path d="M17.6 2.8v4.1h-4.1M6.4 21.2v-4.1h4.1" />
+      <path d="M10 9.2v5.6l4.6-2.8Z" fill="currentColor" strokeWidth="1.4" />
+    </g>
+  ),
   play: <path d="M8 5v14l11-7L8 5Z" />,
   sound: <path d="M4 9v6h4l5 4V5L8 9H4Zm12.5 3a4 4 0 0 0-2.2-3.6v7.2A4 4 0 0 0 16.5 12Zm-2.2-8v2.1a7 7 0 0 1 0 11.8V20a9 9 0 0 0 0-16Z" />,
   muted: <path d="M4 9v6h4l5 4V5L8 9H4Zm12.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4-2.7-2.7Z" />,

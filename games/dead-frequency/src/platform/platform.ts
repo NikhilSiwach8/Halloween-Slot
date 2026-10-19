@@ -25,7 +25,7 @@ export interface PlatformSession {
   defaultBet: number;
   balance: number;
   currency: Currency;
-  flags: { disabledSpacebar?: boolean; disabledBuyFeature?: boolean; disabledTurbo?: boolean; displayRTP?: boolean; socialCasino?: boolean };
+  flags: { disabledSpacebar?: boolean; disabledBuyFeature?: boolean; disabledTurbo?: boolean; disabledAutoplay?: boolean; displayRTP?: boolean; socialCasino?: boolean };
   /** Present in replay mode: the round's mode and base bet. */
   replay?: { mode: ModeId; bet: number };
   /** Demo credits only (shows the prototype notice). */
@@ -178,7 +178,7 @@ export class StakePlatform implements Platform {
       defaultBet: roundBet ?? (bets.includes(r.config.defaultBetLevel) ? r.config.defaultBetLevel : bets[0]),
       balance,
       currency: currencyFor(r.balance.currency),
-      flags: { disabledSpacebar: !!j.disabledSpacebar, disabledBuyFeature: !!j.disabledBuyFeature, disabledTurbo: !!j.disabledTurbo, displayRTP: j.displayRTP !== false, socialCasino: !!j.socialCasino },
+      flags: { disabledSpacebar: !!j.disabledSpacebar, disabledBuyFeature: !!j.disabledBuyFeature, disabledTurbo: !!j.disabledTurbo, disabledAutoplay: !!(j.disabledAutoplay ?? j.disabledAutoBet), displayRTP: j.displayRTP !== false, socialCasino: !!j.socialCasino },
       demo: false,
     };
   }

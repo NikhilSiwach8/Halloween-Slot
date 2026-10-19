@@ -124,6 +124,10 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
   const skip = useRef(false);
   const waiter = useRef<(() => void) | null>(null);
   const speedRef = useRef(speed);
+  /** Autoplay is running: overlays continue by themselves (set by the app). */
+  const autoRef = useRef(false);
+  /** Called as soon as a round's result is known (autoplay's stop conditions use it). */
+  const onRoundRef = useRef<((round: RoundResult) => void) | null>(null);
   useEffect(() => void (speedRef.current = speed), [speed]);
 
   const patch = (p: Partial<View>) => setView((v) => ({ ...v, ...p }));
@@ -133,7 +137,22 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       setTimeout(res, speedRef.current === 'turbo' ? ms * TURBO_FACTOR : ms);
     });
   /** Waits for the player to press the overlay button. */
-  const waitForPlayer = () => new Promise<void>((res) => (waiter.current = res));
+  /**
+   * Waits for the player to press the overlay button. During autoplay (`autoRef`), it moves on
+   * by itself after `autoMs`, so an unattended autoplay never stalls on a pop-up.
+   */
+  const waitForPlayer = (autoMs?: number) =>
+    new Promise<void>((res) => {
+      waiter.current = res;
+      if (autoRef.current && autoMs !== undefined) {
+        setTimeout(() => {
+          if (waiter.current === res) {
+            waiter.current = null;
+            res();
+          }
+        }, speedRef.current === 'turbo' ? autoMs * 0.5 : autoMs);
+      }
+    });
   const advance = useCallback(() => {
     if (waiter.current) {
       const w = waiter.current;
@@ -204,6 +223,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       const r = await platform.play(mode, bet);
       round = r.round;
       if (!session.replay) setBalance(r.balance);
+      onRoundRef.current?.(round);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       patch({ busy: false, ticker: 'The signal was lost.' });
@@ -220,12 +240,12 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       skip.current = false;
       patch({ overlay: { kind: 'mystery', prize: null }, ticker: 'An unmarked tape is in the deck…' });
       audio.tape();
-      await waitForPlayer();
+      await waitForPlayer(1500);
       patch({ overlay: { kind: 'mystery', prize: round.mystery.prize } });
       audio.reveal();
       soFar += round.mystery.winX100;
       patch({ roundWinX100: soFar });
-      await waitForPlayer();
+      await waitForPlayer(2200);
       patch({ overlay: null });
     }
     for (const b of round.bonuses) {
@@ -233,7 +253,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       const def = cfg.bonuses[b.type];
       patch({ overlay: { kind: 'bonusIntro', bonus: b.type, source: b.source, spins: def.spins } });
       audio.intercept();
-      await waitForPlayer();
+      await waitForPlayer(3200);
       skip.current = false;
       const sticky = def.stickyStatic ? Array.from({ length: cfg.reels }, () => Array<boolean>(cfg.rows).fill(false)) : undefined;
       let bonusWin = 0;
@@ -258,7 +278,7 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
       }
       skip.current = false;
       patch({ overlay: { kind: 'bonusEnd', bonus: b.type, winX100: bonusWin } });
-      await waitForPlayer();
+      await waitForPlayer(2400);
       patch({ overlay: null, bonus: null });
     }
     const tier = winTier(round.winX100, round.capped);
@@ -278,5 +298,5 @@ export function useGame(cfg: GameConfig, platform: Platform, session: PlatformSe
     patch({ busy: false, overlay: null, roundWinX100: round.winX100, ticker: round.winX100 > 0 ? (round.capped ? 'MAXIMUM WIN — the broadcast ends.' : 'Signal lost… for now.') : 'Dead air. Spin again.' });
   }, [bet, balance, view.busy, cfg, platform, session]);
 
-  return { balance, bet, setBet, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance, error, setError, replayed };
+  return { balance, bet, setBet, doubleChance, setDoubleChance, featureMode, setFeatureMode, speed, setSpeed, view, play, advance, error, setError, replayed, autoRef, onRoundRef };
 }

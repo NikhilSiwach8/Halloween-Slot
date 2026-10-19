@@ -671,10 +671,11 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .corner { width: 30px; height: 30px; }
   .reels, .reel, .reel-cells, .reel-old { gap: 3px; }
   .reel-strip { gap: 3px; }
-  .bar { display: grid; grid-template-columns: auto 1fr auto auto auto; grid-template-areas: 'main main main main main' 'turbo bet spin dc buy'; gap: 8px; padding: 4px 10px; align-items: center; }
+  .bar { display: grid; grid-template-columns: auto auto 1fr auto auto auto; grid-template-areas: 'main main main main main main' 'turbo auto bet spin dc buy'; gap: 8px; padding: 4px 10px; align-items: center; }
   .bar-main { grid-area: main; max-width: none; height: 54px; }
   .bet-pill { grid-area: bet; min-width: 0; height: 56px; padding-left: 12px; }
   .round-btn.turbo { grid-area: turbo; }
+  .round-btn.auto { grid-area: auto; }
   .round-btn.dc { grid-area: dc; }
   .round-btn.buy { grid-area: buy; width: 58px; height: 58px; }
   .spin-btn { grid-area: spin; width: 82px; height: 82px; margin: 0 4px; }
@@ -693,7 +694,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .vu { width: 4px; }
   .tube { width: 8px; height: 20px; } .tube i { width: 3px; height: 8px; bottom: 4px; }
   .stage { align-content: center; }
-  .bar { grid-template-columns: repeat(4, auto); grid-template-areas: 'main main main main' 'bet bet bet bet' 'turbo dc spin buy'; justify-content: center; row-gap: 6px; column-gap: 14px; }
+  .bar { grid-template-columns: repeat(5, auto); grid-template-areas: 'main main main main main' 'bet bet bet bet bet' 'turbo auto spin dc buy'; justify-content: center; row-gap: 6px; column-gap: 10px; }
   .bet-pill { height: 46px; }
   .bar-main { height: 48px; }
 }
@@ -728,7 +729,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .corner { width: 26px; height: 26px; }
   .reels, .reel, .reel-cells, .reel-old { gap: 3px; }
   .reel-strip { gap: 3px; }
-  .bar { display: grid; width: auto; grid-template-columns: 1fr 1fr; grid-template-areas: 'main main' 'bet bet' 'turbo dc' 'spin buy'; gap: 6px; padding: 8px 8px 44px 0; align-content: center; justify-items: center; }
+  .bar { display: grid; width: auto; grid-template-columns: 1fr 1fr 1fr; grid-template-areas: 'main main main' 'bet bet bet' 'turbo auto dc' 'spin spin buy'; gap: 6px; padding: 8px 8px 44px 0; align-content: center; justify-items: center; }
   .bar-main { grid-area: main; width: 100%; height: auto; flex-wrap: wrap; padding: 4px 8px; gap: 2px 10px; }
   .bar-menu { display: none; }
   .bar-field label { font-size: 9px; }
@@ -738,12 +739,12 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .bet-arrows button { height: 20px; width: 28px; }
   .round-btn { width: 40px; height: 40px; }
   .round-btn small { display: none; }
-  .round-btn.turbo { grid-area: turbo; } .round-btn.dc { grid-area: dc; }
+  .round-btn.turbo { grid-area: turbo; } .round-btn.dc { grid-area: dc; } .round-btn.auto { grid-area: auto; }
   .round-btn.buy { grid-area: buy; width: 44px; height: 44px; }
   .spin-btn { grid-area: spin; width: 58px; height: 58px; margin: 0; border-width: 3px; }
   .spin-btn::before { inset: -7px; }
   .spin-btn svg { width: 34px; height: 34px; }
-  .bar.replay { grid-template-areas: 'main main' 'spin spin'; }
+  .bar.replay { grid-template-areas: 'main main main' 'spin spin spin'; }
   .win-pop { font-size: 26px; }
   .overlay-card { padding: 12px 14px; max-height: calc(100vh - 16px); }
   .overlay-card h2 { font-size: 18px; margin: 2px 0 6px; }
@@ -1519,4 +1520,31 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   .cell, .strip-cell { height: 0; padding-bottom: 100%; position: relative; }
   .cell > .sym, .strip-cell > .sym { position: absolute; left: 5%; top: 5%; width: 90%; height: 90%; }
   .sp-cabinet { height: 56vh; }
+}
+
+/* ------------------------------------------------------------------ auto bets */
+.round-btn.auto small { font-variant-numeric: tabular-nums; }
+.round-btn.auto.on { color: var(--ink); background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45% 80%, #5aa61f 80%); box-shadow: 0 5px 0 var(--ink), 0 0 16px rgba(143, 224, 59, 0.6); }
+.round-btn.auto.on small { color: var(--ink); filter: none; }
+.round-btn.auto.on svg { animation: auto-turn 1.6s linear infinite; }
+@keyframes auto-turn { to { transform: rotate(360deg); } }
+.spin-btn .auto-count {
+  position: absolute; right: -6px; top: -6px; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 15px;
+  display: grid; place-items: center; font: 400 16px/1 var(--display); color: var(--ink);
+  background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45%); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+}
+.auto-panel { max-width: 460px; }
+.auto-panel h3 { margin-top: 12px; }
+.auto-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.auto-chip {
+  min-width: 56px; padding: 8px 12px; border-radius: 12px; font: 400 16px var(--display); color: var(--cream);
+  border: 3px solid var(--ink); background: linear-gradient(180deg, #5a3462 0 45%, var(--plum) 45%); box-shadow: 0 3px 0 var(--ink);
+}
+.auto-chip.on { color: var(--ink); background: linear-gradient(180deg, #c6ff8a 0 45%, var(--toxic) 45%); }
+.auto-chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.auto-check { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 14px; font: 400 15px var(--display); color: var(--cream); }
+.auto-check input { width: 18px; height: 18px; accent-color: var(--toxic); }
+@media (max-height: 560px) and (min-aspect-ratio: 5/4) {
+  .spin-btn .auto-count { min-width: 22px; height: 22px; font-size: 12px; right: -8px; top: -8px; border-width: 2px; }
+  .auto-panel h3 { margin-top: 6px; } .auto-chip { padding: 4px 8px; font-size: 13px; min-width: 40px; }
 }

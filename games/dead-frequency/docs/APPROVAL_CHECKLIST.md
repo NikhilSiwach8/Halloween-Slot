@@ -50,7 +50,7 @@ browser against a mock RGS (22 checks) and by unit tests (`tests/approval.test.t
 ## Auto play
 | Item | Status | How |
 |---|---|---|
-| Auto-bet confirmation | N/A | The game has no autoplay |
+| Auto-bet requires confirmation before starting | Verified | Auto panel (10/25/50/100/250 rounds, stop conditions), then a confirm step: "Start 25 auto bets at $1.00 each (up to $25.00 in total)?"; nothing is sent before Confirm. Stops on Stop/Space, when the rounds run out, when the balance can't cover a round, on the loss limit, on a big single win, or when a bonus starts (default on). Hidden in replay and if the RGS jurisdiction sets `disabledAutoplay` |
 | High-cost modes require confirmation | Verified | Switching on Feature Spins (8x, 12x) and every Bonus Buy asks to confirm |
 
 ## Responsive

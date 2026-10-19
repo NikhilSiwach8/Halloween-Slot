@@ -36,10 +36,12 @@ const STAGE_S = 1.9;
  */
 const REDUCED_MOTION = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function BigWin({ overlay, money, onContinue, reducedMotion = REDUCED_MOTION }: {
+export function BigWin({ overlay, money, onContinue, auto = false, reducedMotion = REDUCED_MOTION }: {
   overlay: Extract<Overlay, { kind: 'bigWin' }>;
   money: (x100: number) => string;
   onContinue: () => void;
+  /** Autoplay: collect by itself shortly after the count finishes. */
+  auto?: boolean;
   reducedMotion?: boolean;
 }) {
   const final = overlay.winX100;
@@ -55,6 +57,11 @@ export function BigWin({ overlay, money, onContinue, reducedMotion = REDUCED_MOT
   const [shown, setShown] = useState(reducedMotion ? final : 0);
   const [stage, setStage] = useState(reducedMotion ? stages.current.length - 1 : 0);
   const [done, setDone] = useState(reducedMotion);
+  useEffect(() => {
+    if (!auto || !done) return;
+    const t = setTimeout(onContinue, 1800);
+    return () => clearTimeout(t);
+  }, [auto, done]);
   const skipRef = useRef(false);
 
   useEffect(() => {

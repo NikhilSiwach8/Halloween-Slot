@@ -81,6 +81,13 @@ down, an extruded logo, and solid, deeper radio cabinets on the title screen. Wi
 glances at the reels, leans in while they spin and nods along on a win. For 3D re-renders of the
 painted symbols, see "3D, lifelike re-renders" in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md).
 
+**Auto bets.** The Auto button (circular arrows) opens a panel: 10/25/50/100/250 rounds, stop when
+a bonus starts (default on), on a single win of 10x/50x/100x+, or if the balance falls by
+10x/50x/100x the stake. A confirmation step shows the cost per round and the total before it
+starts. While running, the spin button shows the rounds left and stops autoplay (as do Space and
+the Auto button); win screens and pop-ups continue by themselves. Not available in replay or when
+the RGS jurisdiction disables autoplay.
+
 **Presentation.** Reels scroll downward and stop left to right with a bounce. A small reel engine
 (Reels.tsx) moves them with transforms only, one animation loop for all six reels; each stop eases
 out from exactly the cruise speed, so there is no jolt. Once two Antennas

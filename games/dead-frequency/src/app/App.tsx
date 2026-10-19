@@ -9,6 +9,7 @@ import { OverlayView } from '../components/Overlays';
 import { Splash, splashSkipped } from '../components/Splash';
 import { RulesModal } from '../components/Rules';
 import { StationMenu } from '../components/StationMenu';
+import { AutoPanel, type AutoSettings } from '../components/AutoPanel';
 import { audio } from './audio';
 import { formatMoney } from './format';
 import { useGame } from './useGame';
@@ -54,7 +55,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
     };
   }, []);
   useEffect(() => audio.setMood(view.bonus?.type ?? 'base'), [view.bonus?.type]);
-  const [panel, setPanel] = useState<'none' | 'rules' | 'menu'>('none');
+  const [panel, setPanel] = useState<'none' | 'rules' | 'menu' | 'auto'>('none');
   // Title screen, except in bet replay (reviewers and shared links go straight to the round).
   const [splash, setSplash] = useState(() => !session.replay && !splashSkipped());
   const [muted, setMuted] = useState(audio.muted);
@@ -66,8 +67,43 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   const bets = session.bets;
   const showMenu = !session.flags.disabledBuyFeature;
 
+  // ---------------------------------------------------------------- auto bets
+  const [auto, setAuto] = useState<(AutoSettings & { left: number; startBalance: number }) | null>(null);
+  const [autoNote, setAutoNote] = useState<string | null>(null);
+  const showAuto = !replay && !session.flags.disabledAutoplay;
+  const stopAuto = (why: string | null) => {
+    g.autoRef.current = false;
+    setAuto(null);
+    setAutoNote(why);
+  };
+  // Overlays continue by themselves only while autoplay is running.
+  g.autoRef.current = !!auto;
+  // Stop conditions that depend on the round itself are checked as soon as its result arrives:
+  // the round still plays out, then waits for the player.
+  g.onRoundRef.current = (round) => {
+    if (!auto) return;
+    if (auto.stopOnBonus && round.bonuses.length) stopAuto('Auto bets stopped: a bonus started.');
+    else if (auto.stopOnWinX && round.winX100 >= auto.stopOnWinX * 100) stopAuto(`Auto bets stopped: a win of ${auto.stopOnWinX}x or more.`);
+  };
+  // The loop: between rounds, check the remaining stop conditions, then play the next round.
+  useEffect(() => {
+    if (!auto || view.busy || view.overlay || panel !== 'none') return;
+    if (auto.left <= 0) return stopAuto('Auto bets finished.');
+    if (!canSpin) return stopAuto('Auto bets stopped: not enough balance.');
+    if (auto.lossLimitX && auto.startBalance - g.balance >= auto.lossLimitX * g.bet) return stopAuto(`Auto bets stopped: balance fell by ${auto.lossLimitX}x the stake.`);
+    const t = setTimeout(() => {
+      setAuto((a) => a && { ...a, left: a.left - 1 });
+      void g.play(spinMode);
+    }, g.speed === 'turbo' ? 250 : 600);
+    return () => clearTimeout(t);
+  }, [auto, view.busy, view.overlay, panel, g.balance]);
+  useEffect(() => {
+    if (g.error && auto) stopAuto('Auto bets stopped.');
+  }, [g.error]);
+
   const onSpin = () => {
-    if (view.busy) g.advance();
+    if (auto) stopAuto('Auto bets stopped.');
+    else if (view.busy) g.advance();
     else if (canSpin) void g.play(spinMode);
   };
 
@@ -86,7 +122,11 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
   const winMoney = Math.floor((g.bet * view.roundWinX100) / 100);
 
   const turboOn = g.speed === 'turbo';
-  const modeChip = replay
+  const modeChip = auto
+    ? `Auto bets · ${auto.left} left`
+    : autoNote && !view.busy
+      ? autoNote
+      : replay
     ? // Replay: the mode, the base bet, the mode's cost multiplier and what the round cost.
       `Bet replay · ${cfg.modes[replay.mode].name} · bet ${money(replay.bet)} × ${cfg.modes[replay.mode].cost} = ${money(roundCost(cfg, replay.mode, replay.bet))}`
     : g.featureMode
@@ -94,6 +134,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
       : g.doubleChance
         ? 'Double Chance ON · stake x1.5'
         : null;
+  const locked = view.busy || !!auto;
   const spinLabel = view.busy ? 'SKIP' : replay ? (g.replayed ? 'PLAY AGAIN' : 'PLAY') : 'SPIN';
 
   return (
@@ -141,6 +182,18 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
             <Svg size={26}>{Icon.bolt}</Svg>
           </button>
         ) : null}
+        {showAuto ? (
+          <button
+            className={`round-btn auto ${auto ? 'on' : ''}`}
+            aria-pressed={!!auto}
+            aria-label={auto ? 'Stop auto bets' : 'Auto bets'}
+            disabled={view.busy && !auto}
+            onClick={() => (auto ? stopAuto('Auto bets stopped.') : (setAutoNote(null), setPanel('auto')))}
+          >
+            <Svg size={24}>{Icon.auto}</Svg>
+            <small>{auto ? auto.left : 'Auto'}</small>
+          </button>
+        ) : null}
         <div className="bar-main">
           <button className="bar-menu" aria-label="Menu and rules" onClick={() => setPanel('rules')}>
             <Svg size={26}>{Icon.menu}</Svg>
@@ -165,10 +218,10 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
                 {cost !== g.bet ? <small>Cost {money(cost)}</small> : null}
               </div>
               <div className="bet-arrows">
-                <button aria-label="Raise stake" disabled={view.busy || betIndex >= bets.length - 1} onClick={() => g.setBet(bets[betIndex + 1])}>
+                <button aria-label="Raise stake" disabled={locked || betIndex >= bets.length - 1} onClick={() => g.setBet(bets[betIndex + 1])}>
                   <Svg size={22}>{Icon.up}</Svg>
                 </button>
-                <button aria-label="Lower stake" disabled={view.busy || betIndex <= 0} onClick={() => g.setBet(bets[betIndex - 1])}>
+                <button aria-label="Lower stake" disabled={locked || betIndex <= 0} onClick={() => g.setBet(bets[betIndex - 1])}>
                   <Svg size={22}>{Icon.down}</Svg>
                 </button>
               </div>
@@ -177,7 +230,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
               className={`round-btn dc ${g.doubleChance ? 'on' : ''}`}
               aria-pressed={g.doubleChance}
               aria-label="Double Chance"
-              disabled={view.busy || g.featureMode !== null}
+              disabled={locked || g.featureMode !== null}
               onClick={() => g.setDoubleChance(!g.doubleChance)}
               title="Double Chance: stake x1.5, twice the chance to trigger a bonus. Bonus buys are unaffected."
             >
@@ -187,17 +240,18 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
           </>
         )}
         <button
-          className={`spin-btn ${view.busy ? 'busy' : ''}`}
+          className={`spin-btn ${view.busy || auto ? 'busy' : ''} ${auto ? 'auto' : ''}`}
           data-testid="spin"
           onClick={onSpin}
-          disabled={!view.busy && !canSpin}
-          aria-label={view.busy ? 'Skip' : replay ? (g.replayed ? 'Play again' : 'Play replay') : `Spin for ${money(cost)}`}
+          disabled={!auto && !view.busy && !canSpin}
+          aria-label={auto ? 'Stop auto bets' : view.busy ? 'Skip' : replay ? (g.replayed ? 'Play again' : 'Play replay') : `Spin for ${money(cost)}`}
         >
-          <Svg size={58}>{view.busy ? Icon.stop : replay ? Icon.play : Icon.spin}</Svg>
-          <span className="sr">{spinLabel}</span>
+          <Svg size={58}>{view.busy || auto ? Icon.stop : replay ? Icon.play : Icon.spin}</Svg>
+          {auto ? <span className="auto-count" aria-hidden="true">{auto.left}</span> : null}
+          <span className="sr">{auto ? 'STOP' : spinLabel}</span>
         </button>
         {!replay && showMenu ? (
-          <button className="round-btn buy" aria-label="Feature Spins and Bonus Buy" disabled={view.busy} onClick={() => setPanel('menu')}>
+          <button className="round-btn buy" aria-label="Feature Spins and Bonus Buy" disabled={locked} onClick={() => setPanel('menu')}>
             <Svg size={26}>{Icon.tower}</Svg>
             <small>Buy</small>
           </button>
@@ -206,7 +260,19 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
       <p className="disclaimer">{session.demo ? 'Demo · demo credits only · not real money' : replay ? 'Bet replay · no bets are placed' : 'Winnings are settled by the game server.'}</p>
 
       {splash ? <Splash cfg={cfg} onContinue={() => setSplash(false)} /> : null}
-      {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={g.bet} onContinue={g.advance} /> : null}
+      {view.overlay ? <OverlayView cfg={cfg} currency={session.currency} overlay={view.overlay} bet={g.bet} onContinue={g.advance} auto={!!auto} /> : null}
+      {panel === 'auto' ? (
+        <AutoPanel
+          costText={money(cost)}
+          totalText={(n) => money(cost * n)}
+          onClose={() => setPanel('none')}
+          onStart={(st) => {
+            setPanel('none');
+            setAutoNote(null);
+            setAuto({ ...st, left: st.rounds, startBalance: g.balance });
+          }}
+        />
+      ) : null}
       {panel === 'rules' ? <RulesModal cfg={cfg} showRtp={session.flags.displayRTP !== false} onClose={() => setPanel('none')} /> : null}
       {panel === 'menu' ? (
         <StationMenu
