@@ -58,6 +58,14 @@ glare); and a channel strip (CH1–CH6) whose LEDs blink as each reel stops and 
 in a win. Tiles are smoky glass with a phosphor line in each symbol's colour. The screen's
 phosphor colour changes per bonus (green, violet, red), and winning tiles get a CRT scan sweep.
 
+**Art style.** A bold cartoon look: thick dark-brown ink outlines, flat colour with hard highlight
+and shadow bands, solid offset shadows, chunky Lilita One lettering, and a Halloween palette
+(pumpkin, toxic green, bone, blood red, plum, warm wood) under a purple night sky with an orange
+moon. The cabinet is chunky cartoon wood with skull mascots in headphones on the top corners and
+rope lashings at the bottom. The painted symbols and the Night Host carry a thick sticker outline
+for now (`scripts/art/toonify.py`; originals in `art/painted/`). Prompts to redraw them in the
+cartoon style are in [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) ("Cartoon redraw").
+
 **Depth and life.** One light from the upper left shades the whole game: bevelled glass tiles with
 symbols casting shadows, a walnut cabinet with real slab thickness, domed physical buttons that press
 down, an extruded logo, and solid, deeper radio cabinets on the title screen. Winning symbols turn in

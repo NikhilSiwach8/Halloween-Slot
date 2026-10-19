@@ -74,3 +74,49 @@ or "image-to-image" mode.
 `python3 -c "from PIL import Image; Image.open('host.png').resize((512,512), Image.LANCZOS).save('host.webp', quality=92)"`).
 The game picks them up with no code changes. Check that every symbol still reads clearly at phone
 size, and that the Widow and every other character are clearly adults (Stake's content rules).
+
+## Cartoon redraw (current direction)
+
+The UI is now in a bold cartoon style: thick dark-brown ink outlines, flat colour with hard
+highlight and shadow bands, chunky shapes and the Lilita One font. Until the art is redrawn, the
+painted symbols and the Night Host carry a thick sticker outline (`scripts/art/toonify.py`, sticker
+mode; originals in `art/painted/`). These prompts redraw them to match the UI.
+
+**Shared style (put this first in every prompt):**
+
+> Bold cartoon slot-game art in a polished mobile-game style: thick dark-brown (#1b0e08) ink
+> outlines of even weight, flat cel shading with one hard highlight band and one hard shadow band,
+> chunky simplified shapes, exaggerated friendly-spooky proportions, saturated Halloween palette
+> (pumpkin orange, toxic green, bone white, blood red, deep purple, warm wood brown). Lit from the
+> upper left. A 1970s haunted radio station theme. Clean edges, readable at small size, centred,
+> filling about 85% of the frame, fully transparent background, no text unless stated, no watermark.
+
+**Symbol sheet (one image, like the original sheet):**
+
+> [shared style] A 4×3 grid sprite sheet of 12 separate slot symbols with even spacing on a flat
+> mid-grey background (#808080) so they can be cut out: row 1: a cartoon undead radio DJ (skull face
+> with a cheeky grin, glowing green eyes, red headphones, vintage mic, small ON AIR sign); a cartoon
+> grieving widow (clearly an adult woman) in a black lace veil; a cartoon spooky old priest with a
+> crucifix and green underglow; a chunky arched tube radio with a glowing green dial. Row 2: a chrome
+> studio microphone; chunky studio headphones; a purple cassette tape; a glowing orange vacuum tube.
+> Row 3: a red neon sign reading exactly "ON AIR"; a little CRT screen of static with a ghost face
+> and a "?"; a red radio tower crackling with energy; a VHS tape with a green glow and a label
+> reading exactly "DON'T PLAY".
+
+**The Night Host (beside the reels, larger):**
+
+> [shared style] Full upper-body portrait of the Night Host, an undead 1970s radio DJ: a cartoon
+> skull face with a cheeky, confident grin, glowing green eyes, big red headphones, a leather
+> jacket over a wide-collar shirt, holding a vintage microphone, a glowing ON AIR sign behind him.
+> Three-quarter view facing left (toward the reels). 1024×1024.
+
+**Background (behind everything, 1920×1080, no transparency):**
+
+> [shared style, but painted background with softer outlines] A cartoon Halloween night outside a
+> haunted 1970s radio station: a big orange moon in a deep purple sky, two radio towers with
+> blinking red beacons, a wooden station shack with a glowing window, rolling hills, crooked fence,
+> pumpkins, a few bats. Keep the centre calm and darker (the reels sit there); detail at the edges.
+
+Save the symbols as 512×512 transparent WebP under the same names in `public/assets/symbols/`
+(cut a sheet with `scripts/art/slice_symbol_sheet.py`). Since they will already have outlines, skip
+the sticker pass. The Widow and every character must be clearly adult (Stake's content rules).

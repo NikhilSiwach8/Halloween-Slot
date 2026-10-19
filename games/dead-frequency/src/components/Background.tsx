@@ -6,7 +6,7 @@ export type BackgroundMood = 'base' | BonusType;
 
 /** Per-mood palette and how often the scares happen (events per second, roughly). */
 const MOODS: Record<BackgroundMood, { sky: [string, string]; glow: string; beacon: string; rate: number; pulse: number }> = {
-  base: { sky: ['#0b0507', '#050608'], glow: '255, 59, 79', beacon: '#ff3b4f', rate: 1, pulse: 0.5 },
+  base: { sky: ['#2a1242', '#0e0716'], glow: '255, 138, 31', beacon: '#ff3b4f', rate: 1, pulse: 0.5 },
   NIGHT_SHIFT: { sky: ['#03100b', '#030806'], glow: '54, 217, 160', beacon: '#36d9a0', rate: 1.6, pulse: 0.8 },
   POSSESSION: { sky: ['#0d0514', '#050308'], glow: '170, 90, 255', beacon: '#b46bff', rate: 1.8, pulse: 0.9 },
   DEAD_AIR: { sky: ['#1a0306', '#070203'], glow: '255, 40, 60', beacon: '#ff2038', rate: 2.6, pulse: 1.3 },
@@ -249,16 +249,16 @@ export function Background({ mood, reducedMotion, surge = 0 }: { mood: Backgroun
       // Placed in the gap right of the reels (landscape) or above them (portrait).
       const mx = W > H ? W * 0.86 : W * 0.78;
       const my = W > H ? H * 0.32 : H * 0.1;
-      const mr = Math.min(W, H) * 0.075;
+      const mr = Math.min(W, H) * 0.095;
       const halo = ctx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 5);
       halo.addColorStop(0, `rgba(${m.glow}, 0.22)`);
       halo.addColorStop(1, `rgba(${m.glow}, 0)`);
       ctx.fillStyle = halo;
       ctx.fillRect(mx - mr * 5, my - mr * 5, mr * 10, mr * 10);
       const disc = ctx.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr);
-      disc.addColorStop(0, moodRef.current === 'base' ? '#e9dcc8' : `rgb(${m.glow})`);
-      disc.addColorStop(1, moodRef.current === 'base' ? '#8a7766' : '#3a0d14');
-      ctx.globalAlpha = 0.8;
+      disc.addColorStop(0, moodRef.current === 'base' ? '#ffd88a' : `rgb(${m.glow})`);
+      disc.addColorStop(1, moodRef.current === 'base' ? '#e8742a' : '#3a0d14');
+      ctx.globalAlpha = 0.95;
       ctx.fillStyle = disc;
       ctx.beginPath();
       ctx.arc(mx, my, mr, 0, Math.PI * 2);

@@ -77,13 +77,16 @@ export function Logo({ className = 'logo' }: { className?: string }) {
       <svg viewBox="0 0 360 150" aria-hidden="true">
         <defs>
           <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#fff4e2" />
-            <stop offset="0.55" stopColor="#e6c8a0" />
-            <stop offset="1" stopColor="#8a2a33" />
+            <stop offset="0" stopColor="#fffbea" />
+            <stop offset="0.5" stopColor="#f6e2b6" />
+            <stop offset="0.52" stopColor="#e2c48a" />
+            <stop offset="1" stopColor="#c99a56" />
           </linearGradient>
           <linearGradient id={`${id}-red`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ff6b7a" />
-            <stop offset="1" stopColor="#7a0d1c" />
+            <stop offset="0" stopColor="#ffd34a" />
+            <stop offset="0.48" stopColor="#ff9a1f" />
+            <stop offset="0.5" stopColor="#ff7a12" />
+            <stop offset="1" stopColor="#e2401a" />
           </linearGradient>
           <filter id={`${id}-glow`} x="-20%" y="-40%" width="140%" height="180%">
             <feGaussianBlur stdDeviation="4" result="b" />
@@ -101,15 +104,15 @@ export function Logo({ className = 'logo' }: { className?: string }) {
             read as solid cast metal lit from the upper left. */}
         <g aria-hidden="true">
           {[6, 5, 4, 3, 2, 1].map((d) => (
-            <g key={d} transform={`translate(${d * 0.6} ${d})`} fill={d > 4 ? '#0d0204' : d > 2 ? '#2a080d' : '#4a1018'}>
+            <g key={d} transform={`translate(${d * 0.3} ${d})`} fill="#1b0e08" stroke="#1b0e08" strokeWidth="9" strokeLinejoin="round">
               <text x="210" y="66" textAnchor="middle" className="logo-word1">DEAD</text>
               <text x="210" y="122" textAnchor="middle" className="logo-word2">FREQUENCY</text>
             </g>
           ))}
         </g>
         <g filter={`url(#${id}-glow)`}>
-          <text x="210" y="66" textAnchor="middle" className="logo-word1" fill={`url(#${id}-fill)`} stroke="#2b0a10" strokeWidth="3" paintOrder="stroke">DEAD</text>
-          <text x="210" y="122" textAnchor="middle" className="logo-word2" fill={`url(#${id}-red)`} stroke="#1a0508" strokeWidth="3" paintOrder="stroke">FREQUENCY</text>
+          <text x="210" y="66" textAnchor="middle" className="logo-word1" fill={`url(#${id}-fill)`} stroke="#1b0e08" strokeWidth="9" strokeLinejoin="round" paintOrder="stroke">DEAD</text>
+          <text x="210" y="122" textAnchor="middle" className="logo-word2" fill={`url(#${id}-red)`} stroke="#1b0e08" strokeWidth="9" strokeLinejoin="round" paintOrder="stroke">FREQUENCY</text>
           {/* Specular edge: a thin light line along the top of the letters. */}
           <text x="210" y="66" textAnchor="middle" className="logo-word1 logo-spec" fill="none" stroke="rgba(255,248,230,0.55)" strokeWidth="0.8" transform="translate(-0.6 -0.8)">DEAD</text>
           <text x="210" y="122" textAnchor="middle" className="logo-word2 logo-spec" fill="none" stroke="rgba(255,200,200,0.45)" strokeWidth="0.8" transform="translate(-0.6 -0.8)">FREQUENCY</text>
@@ -209,14 +212,47 @@ export function Scope({ state }: { state: ScopeState }) {
 }
 
 /** Brass art-deco corner ornament (drawn once, mirrored for the other corners). */
+/**
+ * Cartoon corner pieces: a skull wearing headphones on each top corner (the station's mascot),
+ * and rope lashings binding the bottom corners. Bold ink outlines, flat fills, hard highlights.
+ */
 function Corner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
+  if (pos === 'tl' || pos === 'tr') {
+    return (
+      <svg className={`corner skull ${pos}`} viewBox="0 0 64 64" aria-hidden="true">
+        <g stroke="#1b0e08" strokeWidth="3.5" strokeLinejoin="round">
+          {/* headphone band and cups */}
+          <path d="M10 30Q10 6 32 6T54 30" fill="none" stroke="#1b0e08" strokeWidth="9" />
+          <path d="M10 30Q10 6 32 6T54 30" fill="none" stroke="#e0313b" strokeWidth="4" />
+          <path d="M14 22q-1-4 2-10" fill="none" stroke="#ff8a95" strokeWidth="2" strokeLinecap="round" />
+          {/* cranium and jaw */}
+          <path d="M14 30q0-18 18-18t18 18q0 8-5 12v8H19v-8q-5-4-5-12Z" fill="#f3e3c3" />
+          <path d="M20 22q2-5 9-7" fill="none" stroke="#fffbea" strokeWidth="3" strokeLinecap="round" />
+          <path d="M19 45h26v6q0 4-4 4H23q-4 0-4-4Z" fill="#dcc79c" />
+          <path d="M26 46v8M32 46v8M38 46v8" strokeWidth="2.5" />
+          {/* glowing eyes and nose */}
+          <ellipse cx="24.5" cy="32" rx="5.5" ry="6" fill="#1b0e08" />
+          <ellipse cx="39.5" cy="32" rx="5.5" ry="6" fill="#1b0e08" />
+          <circle cx="24.5" cy="32" r="2.4" fill="#8fe03b" stroke="none" className="skull-eye" />
+          <circle cx="39.5" cy="32" r="2.4" fill="#8fe03b" stroke="none" className="skull-eye" />
+          <path d="M32 38l-3 4h6Z" fill="#1b0e08" />
+          <rect x="4" y="26" width="10" height="16" rx="4" fill="#e0313b" />
+          <rect x="50" y="26" width="10" height="16" rx="4" fill="#e0313b" />
+        </g>
+      </svg>
+    );
+  }
   return (
-    <svg className={`corner ${pos}`} viewBox="0 0 60 60" aria-hidden="true">
-      <path d="M2 58V14Q2 2 14 2h44" fill="none" stroke="url(#brass-grad)" strokeWidth="4" />
-      <path d="M10 58V20q0-10 10-10h38" fill="none" stroke="url(#brass-grad)" strokeWidth="1.5" opacity="0.8" />
-      <path d="M2 30h8M30 2v8" stroke="url(#brass-grad)" strokeWidth="2" />
-      <circle cx="17" cy="17" r="4" fill="url(#brass-grad)" />
-      <circle cx="17" cy="17" r="1.6" fill="#ff3b4f" className="corner-gem" />
+    <svg className={`corner rope ${pos}`} viewBox="0 0 60 60" aria-hidden="true">
+      <g stroke="#1b0e08" strokeWidth="3.5" strokeLinejoin="round">
+        {[0, 1, 2].map((i) => (
+          <g key={i} transform={`rotate(-45 30 30) translate(0 ${i * 12 - 12})`}>
+            <rect x="4" y="24" width="52" height="12" rx="6" fill="#d9a75a" />
+            <path d={`M12 25l6 10M22 25l6 10M32 25l6 10M42 25l6 10`} strokeWidth="2.5" stroke="#8a5a24" />
+            <path d="M9 27h40" stroke="#f2cf8a" strokeWidth="2" strokeLinecap="round" />
+          </g>
+        ))}
+      </g>
     </svg>
   );
 }
