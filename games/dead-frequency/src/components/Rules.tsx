@@ -14,6 +14,11 @@ export function RulesModal({ cfg, showRtp, onClose }: { cfg: GameConfig; showRtp
         <section>
           <h3>Ways</h3>
           <p>{cfg.reels} reels × {cfg.rows} rows, {(cfg.rows ** cfg.reels).toLocaleString()} ways. Wins pay left to right from reel 1 for {cfg.minWayLength}+ adjacent reels. Each winning symbol pays its value × the number of ways.</p>
+          <p className="small">
+            <strong>Example of a winning combination:</strong> Microphones on reels 1, 2 and 3 pay the 3-of-a-kind value ({formatX(cfg.paytable.MIC[0])}).
+            With two Microphones on reel 2 that is 2 ways, so it pays {formatX(cfg.paytable.MIC[0] * 2)}. An On Air wild on reels 2–6 counts as any paying
+            symbol. Each symbol pays once, for its longest run from reel 1; wins on different symbols are added together.
+          </p>
           <table className="paytable">
             <thead><tr><th /><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
             <tbody>

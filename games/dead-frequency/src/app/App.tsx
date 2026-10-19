@@ -87,7 +87,8 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
 
   const turboOn = g.speed === 'turbo';
   const modeChip = replay
-    ? `Bet replay · ${cfg.modes[replay.mode].name} · stake ${money(replay.bet)}`
+    ? // Replay: the mode, the base bet, the mode's cost multiplier and what the round cost.
+      `Bet replay · ${cfg.modes[replay.mode].name} · bet ${money(replay.bet)} × ${cfg.modes[replay.mode].cost} = ${money(roundCost(cfg, replay.mode, replay.bet))}`
     : g.featureMode
       ? `${cfg.modes[g.featureMode].name} active`
       : g.doubleChance
@@ -132,7 +133,7 @@ function Game({ platform, session }: { platform: Platform; session: PlatformSess
           <button onClick={() => g.setError(null)} aria-label="Dismiss">×</button>
         </div>
       ) : null}
-      {modeChip ? <div className="mode-chip">{modeChip}</div> : null}
+      {modeChip ? <div className={`mode-chip ${replay ? 'replay' : ''}`} data-testid="mode-chip">{modeChip}</div> : null}
 
       <footer className={`bar ${replay ? 'replay' : ''}`}>
         {!replay && !session.flags.disabledTurbo ? (

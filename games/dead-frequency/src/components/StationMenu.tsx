@@ -18,9 +18,14 @@ interface Props {
   onClose: () => void;
 }
 
-/** Feature Spins (a paid spin mode that stays on) and Bonus Buys (one-off, confirmed). */
+/**
+ * Feature Spins (a paid spin mode that stays on) and Bonus Buys (one-off). Both are high-cost
+ * modes, so both ask for confirmation first: switching a Feature Spins mode on, and every bonus
+ * purchase. Switching Feature Spins off needs no confirmation.
+ */
 export function StationMenu({ cfg, currency, bet, balance, featureMode, onFeature, onBuy, onClose }: Props) {
   const [confirm, setConfirm] = useState<ModeId | null>(null);
+  const isFeature = confirm !== null && FEATURES.includes(confirm);
   const money = (m: ModeId) => formatMoney(currency, roundCost(cfg, m, bet));
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Feature Spins and Bonus Buy">
@@ -28,10 +33,17 @@ export function StationMenu({ cfg, currency, bet, balance, featureMode, onFeatur
         <h2>Station Menu</h2>
         {confirm ? (
           <div className="confirm">
-            <p>Buy <strong>{cfg.modes[confirm].name.replace('Buy ', '')}</strong> for <strong>{money(confirm)}</strong>?</p>
+            {isFeature ? (
+              <p>
+                Switch on <strong>{cfg.modes[confirm].name.replace('Feature Spins: ', '')}</strong>? Every spin will cost{' '}
+                <strong>{money(confirm)}</strong> ({cfg.modes[confirm].cost}x) until you switch it off.
+              </p>
+            ) : (
+              <p>Buy <strong>{cfg.modes[confirm].name.replace('Buy ', '')}</strong> for <strong>{money(confirm)}</strong>?</p>
+            )}
             <div className="row">
               <button onClick={() => setConfirm(null)}>Cancel</button>
-              <button className="primary" onClick={() => onBuy(confirm)}>Confirm</button>
+              <button className="primary" onClick={() => (isFeature ? onFeature(confirm) : onBuy(confirm))}>Confirm</button>
             </div>
           </div>
         ) : (
@@ -40,7 +52,7 @@ export function StationMenu({ cfg, currency, bet, balance, featureMode, onFeatur
             <p className="small">Every spin is guaranteed a feature. The mode stays on until you switch it off.</p>
             <div className="menu-grid">
               {FEATURES.map((m) => (
-                <button key={m} className={`menu-item ${featureMode === m ? 'on' : ''}`} aria-pressed={featureMode === m} onClick={() => onFeature(featureMode === m ? null : m)}>
+                <button key={m} className={`menu-item ${featureMode === m ? 'on' : ''}`} aria-pressed={featureMode === m} onClick={() => (featureMode === m ? onFeature(null) : setConfirm(m))}>
                   <strong>{cfg.modes[m].name.replace('Feature Spins: ', '')}</strong>
                   <span>{cfg.modes[m].description}</span>
                   <em>{cfg.modes[m].cost}x · {money(m)} per spin{featureMode === m ? ' · ON' : ''}</em>

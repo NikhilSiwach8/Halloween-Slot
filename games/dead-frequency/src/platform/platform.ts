@@ -77,7 +77,10 @@ const CURRENCY_META: Record<string, { symbol: string; decimals: number; symbolAf
   IDR: { symbol: 'Rp', decimals: 0 }, KRW: { symbol: '₩', decimals: 0 }, BRL: { symbol: 'R$', decimals: 2 }, MXN: { symbol: 'MX$', decimals: 2 },
   DKK: { symbol: 'KR', decimals: 2, symbolAfter: true }, PLN: { symbol: 'zł', decimals: 2, symbolAfter: true }, VND: { symbol: '₫', decimals: 0, symbolAfter: true },
   TRY: { symbol: '₺', decimals: 2 }, CLP: { symbol: 'CLP', decimals: 0, symbolAfter: true }, ARS: { symbol: 'ARS', decimals: 2, symbolAfter: true },
-  PEN: { symbol: 'S/', decimals: 2, symbolAfter: true }, XGC: { symbol: 'GC', decimals: 2 }, XSC: { symbol: 'SC', decimals: 2 },
+  PEN: { symbol: 'S/', decimals: 2, symbolAfter: true },
+  // Stake.us social currencies: shown after the amount ("12.50 SC"), never with a "$".
+  XGC: { symbol: 'GC', decimals: 2, symbolAfter: true }, XSC: { symbol: 'SC', decimals: 2, symbolAfter: true },
+  GC: { symbol: 'GC', decimals: 2, symbolAfter: true }, SC: { symbol: 'SC', decimals: 2, symbolAfter: true },
 };
 const RGS_UNITS = 1_000_000;
 
@@ -85,6 +88,15 @@ const currencyFor = (code: string): Currency => {
   const meta = CURRENCY_META[code] ?? { symbol: code, decimals: 2, symbolAfter: true };
   return { unitsPerCredit: RGS_UNITS, code, ...meta };
 };
+
+/** fetch, but a network failure (bad rgs_url, offline, blocked) becomes a clear PlatformError. */
+async function fetchOrFail(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch {
+    throw new PlatformError('Could not connect to the game server. Please check the game link and your connection, then reload.');
+  }
+}
 
 const normaliseUrl = (u: string) => (/^https?:\/\//.test(u) ? u : `https://${u}`).replace(/\/$/, '');
 
@@ -131,7 +143,7 @@ export class StakePlatform implements Platform {
   }
 
   private async post<T>(path: string, body: Record<string, unknown>): Promise<T> {
-    const res = await fetch(`${this.rgsUrl}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionID: this.sessionID, ...body }) });
+    const res = await fetchOrFail(`${this.rgsUrl}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionID: this.sessionID, ...body }) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new PlatformError(rgsMessage(data?.code ?? data?.error, res.status));
     return data as T;
@@ -140,20 +152,30 @@ export class StakePlatform implements Platform {
   async init(): Promise<PlatformSession> {
     const r = await this.post<{
       balance: RgsBalance;
-      round: { active?: boolean; payoutMultiplier?: number } | null;
+      round: { active?: boolean; payoutMultiplier?: number; amount?: number; mode?: string } | null;
       config: { betLevels: number[]; defaultBetLevel: number; minBet: number; maxBet: number; stepBet: number; betModes?: unknown; jurisdiction?: Record<string, unknown> };
     }>('/wallet/authenticate', { language: this.lang });
-    // Wins are bet × payoutMultiplier / 100: bet levels divisible by 100 keep every payout exact.
-    const bets = r.config.betLevels.filter((b) => b >= r.config.minBet && b <= r.config.maxBet && b % r.config.stepBet === 0);
+    // Every betting parameter comes from authenticate: the listed levels within min/max on the step
+    // grid; if no levels are listed, the levels are built from min, max and step.
+    const { minBet, maxBet, stepBet } = r.config;
+    const listed = Array.isArray(r.config.betLevels) ? r.config.betLevels : [];
+    let bets = listed.filter((b) => b >= minBet && b <= maxBet && (!stepBet || b % stepBet === 0));
+    if (!bets.length && minBet > 0 && maxBet >= minBet && stepBet > 0) {
+      for (let b = minBet; b <= maxBet && bets.length < 200; b += stepBet) bets.push(b);
+    }
+    bets = [...new Set(bets)].sort((a, b) => a - b);
     if (!bets.length) throw new PlatformError('No usable bet levels for this session.');
     this.listedModes = listedModeNames(r.config.betModes);
     let balance = r.balance.amount;
     // An unfinished round is settled on load; its outcome is already fixed by the RGS.
     if (r.round && r.round.active !== false && (r.round.payoutMultiplier ?? 0) > 0) balance = (await this.post<{ balance: RgsBalance }>('/wallet/end-round', {})).balance.amount;
     const j = r.config.jurisdiction ?? {};
+    // An active round restores its bet amount; otherwise the server's default bet level.
+    const roundBet = r.round && r.round.active !== false && typeof r.round.amount === 'number' ? r.round.amount : undefined;
+    if (roundBet !== undefined && !bets.includes(roundBet)) bets = [...bets, roundBet].sort((a, b) => a - b);
     return {
       bets,
-      defaultBet: bets.includes(r.config.defaultBetLevel) ? r.config.defaultBetLevel : bets[0],
+      defaultBet: roundBet ?? (bets.includes(r.config.defaultBetLevel) ? r.config.defaultBetLevel : bets[0]),
       balance,
       currency: currencyFor(r.balance.currency),
       flags: { disabledSpacebar: !!j.disabledSpacebar, disabledBuyFeature: !!j.disabledBuyFeature, disabledTurbo: !!j.disabledTurbo, displayRTP: j.displayRTP !== false, socialCasino: !!j.socialCasino },
@@ -199,7 +221,7 @@ export class ReplayPlatform implements Platform {
     const mode = modeFromRgsName(this.p.get('mode')!);
     if (!mode) throw new PlatformError('Replay link has an unknown mode.');
     const url = `${normaliseUrl(this.p.get('rgs_url')!)}/bet/replay/${encodeURIComponent(this.p.get('game')!)}/${encodeURIComponent(this.p.get('version')!)}/${encodeURIComponent(this.p.get('mode')!)}/${encodeURIComponent(this.p.get('event')!)}`;
-    const res = await fetch(url);
+    const res = await fetchOrFail(url);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new PlatformError(res.status === 404 ? 'This bet could not be found.' : rgsMessage(data?.code, res.status));
     const round = decodeRound(this.cfg, data.state);

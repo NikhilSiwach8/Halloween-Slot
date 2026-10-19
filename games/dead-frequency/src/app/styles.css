@@ -17,6 +17,8 @@
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
+/* The game frame never scrolls or rubber-bands, and double-tap never zooms (dialogs scroll inside). */
+html, body { overflow: hidden; overscroll-behavior: none; touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 body {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(255, 59, 79, 0.12), transparent 55%),
@@ -1503,4 +1505,18 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 @media (prefers-reduced-motion: reduce) {
   .reel-cells .sym, .reel-cells .sym-img::before, .reel-cells .sym-img::after { animation: none !important; }
+}
+
+/* Bet replay: the cost line stays visible in every layout, including the mini-players. */
+@media (max-height: 560px) and (min-aspect-ratio: 5/4) {
+  .mode-chip.replay { display: block; position: fixed; top: 4px; left: 50%; transform: translateX(-50%); z-index: 8; margin: 0; max-width: calc(100vw - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; padding: 1px 8px; }
+}
+@media (max-aspect-ratio: 1/1) and (max-width: 520px) {
+  .mode-chip.replay { font-size: 11px; max-width: calc(100vw - 16px); }
+}
+/* Older browsers without aspect-ratio (iOS Safari < 15): keep tiles square with the padding trick. */
+@supports not (aspect-ratio: 1 / 1) {
+  .cell, .strip-cell { height: 0; padding-bottom: 100%; position: relative; }
+  .cell > .sym, .strip-cell > .sym { position: absolute; left: 5%; top: 5%; width: 90%; height: 90%; }
+  .sp-cabinet { height: 56vh; }
 }
